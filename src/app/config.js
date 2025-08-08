@@ -1,11 +1,3 @@
-const DexList = [ '1inch','KyberSwap','Matcha','ODOS','OKXDEX','LIFI'];
-
-const CexShortMap = {
-    Binance: 'BINC',
-    MEXC: 'MEXC',
-    Gate: 'GATE',
-    INDODAX: 'INDX'
-};
 
 const CHAIN_CONFIG = {
     ethereum: {
@@ -17,6 +9,24 @@ const CHAIN_CONFIG = {
         explorer: 'https://etherscan.io',
         rpc: 'https://eth.llamarpc.com',
         DATAJSON: 'https://monitoring-koin.vercel.app/DATA/erc.json',
+        WALLET_CEX: {
+            GATE: {
+                address: '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe',
+                chainCEX: 'ETH'
+            },
+            BINANCE: {
+                address: '0xDFd5293D8e347dFe59E90eFd55b2956a1343963d',
+                chainCEX: 'ETH'
+            },
+            MEXC: {
+                address: '0x75e89d5979E4f6Fba9F97c104c2F0AFB3F1dcB88',
+                chainCEX: 'ETH'
+            },
+            INDODAX: {
+                address : '0x3C02290922a3618A4646E3BbCa65853eA45FE7C6',
+                chainCEX : 'ETH'
+            }
+        }
     },
     bsc: {
         name: 'BSC',
@@ -27,6 +37,24 @@ const CHAIN_CONFIG = {
         explorer: 'https://bscscan.com',
         rpc: 'https://bsc-dataseed.binance.org/',
         DATAJSON: 'https://monitoring-koin.vercel.app/DATA/bsc.json',
+        WALLET_CEX: {
+            GATE: {
+                address: '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe',
+                chainCEX: 'BSC'
+            },
+            BINANCE: {
+                address: '0x8894E0a0c962CB723c1976a4421c95949bE2D4E3',
+                chainCEX: 'BSC'
+            },
+            MEXC: {
+                address: '0x4982085C9e2F89F2eCb8131Eca71aFAD896e89CB',
+                chainCEX: 'BSC'
+            },
+            INDODAX: {
+                address : '0xaBa3002AB1597433bA79aBc48eeAd54DC10A45F2',
+                chainCEX : 'BSC',
+            }
+        }
     },
     polygon: {
         name: 'Polygon',
@@ -37,6 +65,24 @@ const CHAIN_CONFIG = {
         explorer: 'https://polygonscan.com',
         rpc: 'https://polygon-pokt.nodies.app',
         DATAJSON: 'https://monitoring-koin.vercel.app/DATA/poly.json',
+        WALLET_CEX: {
+        GATE: {
+            address: '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe',
+            chainCEX: 'MATIC'
+        },
+        BINANCE: {
+            address: '0x290275e3db66394C52272398959845170E4DCb88',
+            chainCEX: 'MATIC'
+        },
+        MEXC: {
+            address: '0x51E3D44172868Acc60D68ca99591Ce4230bc75E0',
+            chainCEX: 'MATIC'
+        },
+        INDODAX: {
+            address : '0x3C02290922a3618A4646E3BbCa65853eA45FE7C6',
+            chainCEX : 'POLYGON',
+            },
+        }
     },
     arbitrum: {
         name: 'Arbitrum',
@@ -47,6 +93,24 @@ const CHAIN_CONFIG = {
         explorer: 'https://arbiscan.io',
         rpc: 'https://arbitrum-one-rpc.publicnode.com',
         DATAJSON: 'https://monitoring-koin.vercel.app/DATA/arb.json',
+        WALLET_CEX: {
+            GATE: {
+                address: '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe',
+                chainCEX: 'ARBEVM'
+            },
+            BINANCE: {
+                address: '0x290275e3db66394C52272398959845170E4DCb88',
+                chainCEX: 'ARBITRUM'
+            },
+            MEXC: {
+                address: '0x4982085C9e2F89F2eCb8131Eca71aFAD896e89CB',
+                chainCEX: 'ARB'
+            },
+            INDODAX: {
+                address : '0xaBa3002AB1597433bA79aBc48eeAd54DC10A45F2',
+                chainCEX : 'ARB',
+            }
+        }
     },
     base: {
         name: 'Base',
@@ -57,6 +121,24 @@ const CHAIN_CONFIG = {
         explorer: 'https://basescan.org/',
         rpc: 'https://base.llamarpc.com',
         DATAJSON: 'https://monitoring-koin.vercel.app/DATA/base.json',
+        WALLET_CEX: {
+            GATE: {
+                address: '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe',
+                chainCEX: 'BASEEVM'
+            },
+            BINANCE: {
+                address: '0xDFd5293D8e347dFe59E90eFd55b2956a1343963d',
+                chainCEX: 'BASE'
+            },
+            MEXC: {
+                address: '0x4e3ae00E8323558fA5Cac04b152238924AA31B60',
+                chainCEX: 'BASE'
+            },
+            INDODAX: {
+                address : '0xaBa3002AB1597433bA79aBc48eeAd54DC10A45F2',
+                chainCEX : 'BASE',
+            }
+        }
     },
 };
 
@@ -104,113 +186,13 @@ const DEX_URLS = {
         `https://jumper.exchange/?fromChain=${chainCode}&fromToken=${tokenAddress}&toChain=${chainCode}&toToken=${pairAddress}`,
 };
 
-const CEXWallets = {
-    polygon: {
-        Kode_Chain: 137,
-        WALLET_CEX: {
-        GATE: {
-            address: '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe',
-            chainCEX: 'MATIC'
-        },
-        BINANCE: {
-            address: '0x290275e3db66394C52272398959845170E4DCb88',
-            chainCEX: 'MATIC'
-        },
-        MEXC: {
-            address: '0x51E3D44172868Acc60D68ca99591Ce4230bc75E0',
-            chainCEX: 'MATIC'
-        },
-        INDODAX: {
-            address : '0x3C02290922a3618A4646E3BbCa65853eA45FE7C6',
-            chainCEX : 'POLYGON',
-            },
-        }
-    },
-    arbitrum: {
-        Kode_Chain: 42161,
-        WALLET_CEX: {
-            GATE: {
-                address: '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe',
-                chainCEX: 'ARBEVM'
-            },
-            BINANCE: {
-                address: '0x290275e3db66394C52272398959845170E4DCb88',
-                chainCEX: 'ARBITRUM'
-            },
-            MEXC: {
-                address: '0x4982085C9e2F89F2eCb8131Eca71aFAD896e89CB',
-                chainCEX: 'ARB'
-            },
-            INDODAX: {
-                address : '0xaBa3002AB1597433bA79aBc48eeAd54DC10A45F2',
-                chainCEX : 'ARB',
-            }
-        }
-    },
-    ethereum: {
-        Kode_Chain: 1,
-        WALLET_CEX: {
-            GATE: {
-                address: '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe',
-                chainCEX: 'ETH'
-            },
-            BINANCE: {
-                address: '0xDFd5293D8e347dFe59E90eFd55b2956a1343963d',
-                chainCEX: 'ETH'
-            },
-            MEXC: {
-                address: '0x75e89d5979E4f6Fba9F97c104c2F0AFB3F1dcB88',
-                chainCEX: 'ETH'
-            },
-            INDODAX: {
-                address : '0x3C02290922a3618A4646E3BbCa65853eA45FE7C6',
-                chainCEX : 'ETH'
-            }
-        }
-    },
-    bsc: {
-        Kode_Chain: 56,
-        WALLET_CEX: {
-            GATE: {
-                address: '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe',
-                chainCEX: 'BSC'
-            },
-            BINANCE: {
-                address: '0x8894E0a0c962CB723c1976a4421c95949bE2D4E3',
-                chainCEX: 'BSC'
-            },
-            MEXC: {
-                address: '0x4982085C9e2F89F2eCb8131Eca71aFAD896e89CB',
-                chainCEX: 'BSC'
-            },
-            INDODAX: {
-                address : '0xaBa3002AB1597433bA79aBc48eeAd54DC10A45F2',
-                chainCEX : 'BSC',
-            }
-        }
-    },
-    base: {
-        Kode_Chain: 8453,
-        WALLET_CEX: {
-            GATE: {
-                address: '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe',
-                chainCEX: 'BASEEVM'
-            },
-            BINANCE: {
-                address: '0xDFd5293D8e347dFe59E90eFd55b2956a1343963d',
-                chainCEX: 'BASE'
-            },
-            MEXC: {
-                address: '0x4e3ae00E8323558fA5Cac04b152238924AA31B60',
-                chainCEX: 'BASE'
-            },
-            INDODAX: {
-                address : '0xaBa3002AB1597433bA79aBc48eeAd54DC10A45F2',
-                chainCEX : 'BASE',
-            }
-        }
-    }
- };
+// Buat DexList dari key DEX_URLS
+const DexList = Object.keys(DEX_URLS);
+// Buat CexShortMap dari key CONFIG_CEX
+const CexShortMap = {};
+Object.keys(CONFIG_CEX).forEach(key => {
+    CexShortMap[key] = key; // atau bisa diisi mapping lain jika perlu
+});
 
 window.CONFIG = {
     DexList,
@@ -218,5 +200,4 @@ window.CONFIG = {
     CHAIN_CONFIG,
     CONFIG_CEX,
     DEX_URLS,
-    CEXWallets
 };

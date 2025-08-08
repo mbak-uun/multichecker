@@ -1,9 +1,10 @@
 class UI {
+    
     constructor(controller) {
         this.controller = controller;
         this.renderTokenModalForms();
-        this.renderFormSettingScan();
         this.renderSyncKoinModalForms();
+        this.renderFormSettingScan();
         this.bindEvents();
     }
 
@@ -29,22 +30,24 @@ class UI {
 
         // CEXs
         for (const cexName in window.CONFIG.CONFIG_CEX) {
-            const checkbox = `
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="sync_cex" value="${cexName}" id="sync_cex_${cexName.toLowerCase()}">
-                    <label class="form-check-label" for="sync_cex_${cexName.toLowerCase()}">${cexName}</label>
+            const row = `
+                <div class="form-check d-flex align-items-center mb-2">
+                    <input class="form-check-input me-2" type="checkbox" name="sync_cex" value="${cexName}" id="sync_cex_${cexName.toLowerCase()}">
+                    <label class="form-check-label me-2" for="sync_cex_${cexName.toLowerCase()}">${cexName}</label>
+                    <input type="number" class="form-control form-control-sm w-auto ms-2" name="modal_cex_${cexName}" value="100" min="1" step="0.01" style="max-width:90px;" title="Modal ${cexName}">
                 </div>`;
-            cexContainer.append(checkbox);
+            cexContainer.append(row);
         }
 
         // DEXs
         window.CONFIG.DexList.forEach(dexName => {
-            const checkbox = `
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="sync_dex" value="${dexName}" id="sync_dex_${dexName.toLowerCase()}">
-                    <label class="form-check-label" for="sync_dex_${dexName.toLowerCase()}">${dexName}</label>
+            const row = `
+                <div class="form-check d-flex align-items-center mb-2">
+                    <input class="form-check-input me-2" type="checkbox" name="sync_dex" value="${dexName.toUpperCase()}" id="sync_dex_${dexName.toLowerCase()}">
+                    <label class="form-check-label me-2" for="sync_dex_${dexName.toLowerCase()}">${dexName.toUpperCase()}</label>
+                    <input type="number" class="form-control form-control-sm w-auto ms-2" name="modal_dex_${dexName}" value="100" min="1" step="0.01" style="max-width:90px;" title="Modal ${dexName}">
                 </div>`;
-            dexContainer.append(checkbox);
+            dexContainer.append(row);
         });
     }
 
@@ -249,11 +252,13 @@ class UI {
         }
     }
 
-    renderFormSettingScan() {
+    renderFormSettingScan(masterTokens = []) {
         const $chainContainer = $('#chainCheckboxGroup');
         const $cexContainer = $('#cexCheckboxGroup');
         $chainContainer.empty();
         $cexContainer.empty();
+
+        const disabled = (!masterTokens || masterTokens.length === 0) ? 'disabled' : '';
 
         // Chain Checkboxes
         for (const chainKey in window.CONFIG.CHAIN_CONFIG) {
@@ -262,7 +267,7 @@ class UI {
             const label = config.short.toUpperCase();
             const checkbox = `
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="set_chain" value="${config.name}" id="${id}">
+                    <input class="form-check-input" type="checkbox" name="set_chain" value="${config.name}" id="${id}" ${disabled}>
                     <label class="form-check-label" for="${id}">${label}</label>
                 </div>`;
             $chainContainer.append(checkbox);
@@ -274,10 +279,17 @@ class UI {
             const label = key.toUpperCase();
             const checkbox = `
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="set_cex" value="${key}" id="${id}">
+                    <input class="form-check-input" type="checkbox" name="set_cex" value="${key}" id="${id}" ${disabled}>
                     <label class="form-check-label" for="${id}">${label}</label>
                 </div>`;
             $cexContainer.append(checkbox);
+        }
+
+        // Tampilkan pesan jika masterTokens kosong
+        if (!masterTokens || masterTokens.length === 0) {
+            $('#scanSettingInfo').html('<span class="text-danger fw-bold">Silakan Sycn Data Koin Terlebih Dahulu</span>');
+        } else {
+            $('#scanSettingInfo').html('');
         }
     }
 
@@ -343,6 +355,8 @@ class UI {
         if (!address || address.length <= start + end) return address;
         return address.substring(0, start) + "..." + address.substring(address.length - end);
     }
+
+    
 }
 
 window.UI = UI;

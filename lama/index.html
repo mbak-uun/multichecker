@@ -1002,7 +1002,7 @@
                                         <i class="bi bi-gear"></i> Setting Aplikasi
                                     </h5>
                                 </div>
-                                <form id="appSettingsForm">
+                                <form id="settingsForm">
                                     <div class="mb-3">
                                         <label for="UserName" class="form-label">User Name</label>
                                         <input type="text" class="form-control" id="UserName" required>
@@ -1164,30 +1164,31 @@
                             </div>
                         </div>
 
-                        <!-- CHAIN -->
-                        <div class="row">
-                            <div class="col-md-12">
+                        <!-- CHAIN & MODAL -->
+                        <div class="row">                        
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Modal CEX → DEX ($)</label>
+                                    <input type="number" class="form-control" id="modalCexToDex" value="100" min="1" step="0.01">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Modal DEX → CEX ($)</label>
+                                    <input type="number" class="form-control" id="modalDexToCex" value="100" min="1" step="0.01">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
                                 <div class="mb-3">
                                     <label class="form-label">Chain</label>
-                                    <div id="token-modal-chain-container">
-                                        <!-- Chain select will be dynamically inserted here -->
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- CEX & DEX MODALS -->
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label class="form-label">Modal CEX → DEX ($)</label>
-                                <div id="token-modal-cex-modal-container" class="border rounded p-3">
-                                    <!-- CEX modal inputs will be dynamically inserted here -->
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Modal DEX → CEX ($)</label>
-                                <div id="token-modal-dex-modal-container" class="border rounded p-3">
-                                    <!-- DEX modal inputs will be dynamically inserted here -->
+                                    <select class="form-select" id="tokenChain" required>
+                                        <option value="">PILIH Chain</option>
+                                        <option value="BSC">BSC</option>
+                                        <option value="Ethereum">ERC</option>
+                                        <option value="Polygon">Polygon</option>
+                                        <option value="Base">Base</option>
+                                        <option value="Arbitrum">Arbitrum</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -1197,8 +1198,23 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">PILIH CEX</label>
-                                    <div class="border rounded p-3" id="token-modal-cex-container">
-                                        <!-- CEX checkboxes will be dynamically inserted here -->
+                                    <div class="border rounded p-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="Binance" id="cexBinance">
+                                            <label class="form-check-label" for="cexBinance">Binance</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="Gate" id="cexGate">
+                                            <label class="form-check-label" for="cexGate">Gate</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="MEXC" id="cexMexc">
+                                            <label class="form-check-label" for="cexMexc">MEXC</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="INDODAX" id="cexINDODAX">
+                                            <label class="form-check-label" for="cexINDODAX">INDODAX</label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1206,8 +1222,41 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">PILIH DEX (MAX 4)</label>
-                                    <div class="border rounded p-3" id="token-modal-dex-container">
-                                        <!-- DEX checkboxes will be dynamically inserted here -->
+                                    <div class="border rounded p-3">
+                                        <div class="row">
+                                            <!-- Kolom Kiri -->
+                                            <div class="col-6">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value="1inch" id="dex1inch">
+                                                    <label class="form-check-label" for="dex1inch">1INCH</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value="KyberSwap" id="dexKyber">
+                                                    <label class="form-check-label" for="dexKyber">KyberSwap</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value="Matcha" id="dexMatcha">
+                                                    <label class="form-check-label" for="dexMatcha">Matcha</label>
+                                                </div>
+                                               
+                                            </div>
+
+                                            <!-- Kolom Kanan -->
+                                            <div class="col-6">
+                                                 <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value="OKXDEX" id="dexOkx">
+                                                    <label class="form-check-label" for="dexOkx">OKX DEX</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value="ODOS" id="dexOdos">
+                                                    <label class="form-check-label" for="dexOdos">ODOS</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value="LIFI" id="dexLIFI">
+                                                    <label class="form-check-label" for="dexLIFI">LIFI (Auto DEX)</label>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1247,8 +1296,41 @@
                 <!-- CHAIN -->
                 <div class="col-md-12 mb-3">
                 <label class="form-label fw-bold">Pilih Chain</label>
-                <div class="border rounded p-3 d-flex flex-wrap gap-3" id="sync-koin-chain-container">
-                    <!-- Sync Koin Chain checkboxes will be dynamically inserted here -->
+                <div class="border rounded p-3 d-flex flex-wrap gap-3">
+                    <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="sync_chain" value="bsc" id="sync_chain_bsc">
+                    <label class="form-check-label" for="sync_chain_bsc">BSC</label>
+                    </div>
+                    <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="sync_chain" value="ethereum" id="sync_chain_ethereum">
+                    <label class="form-check-label" for="sync_chain_ethereum">ERC</label>
+                    </div>
+                    <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="sync_chain" value="polygon" id="sync_chain_polygon">
+                    <label class="form-check-label" for="sync_chain_polygon">POLYGON</label>
+                    </div>
+                    <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="sync_chain" value="arbitrum" id="sync_chain_arbitrum">
+                    <label class="form-check-label" for="sync_chain_arbitrum">ARBITRUM</label>
+                    </div>
+                    <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="sync_chain" value="base" id="sync_chain_base">
+                    <label class="form-check-label" for="sync_chain_base">BASE</label>
+                    </div>
+                </div>
+                </div>
+
+                <!-- MODAL INPUT -->
+                <div class="col-md-12 mb-3">
+                <div class="row">
+                    <div class="col-md-6">
+                    <label class="form-label fw-bold">Modal CEX → DEX ($)</label>
+                    <input type="number" class="form-control" id="sync_modal_cex_dex" value="100" min="1" step="0.01">
+                    </div>
+                    <div class="col-md-6">
+                    <label class="form-label fw-bold">Modal DEX → CEX ($)</label>
+                    <input type="number" class="form-control" id="sync_modal_dex_cex" value="100" min="1" step="0.01">
+                    </div>
                 </div>
                 </div>
 
@@ -1257,18 +1339,56 @@
                 <div class="row">
                     <!-- CEX -->
                     <div class="col-md-6">
-                        <label class="form-label fw-bold">Pilih (CEX) & Modal</label>
-                        <div class="border rounded p-3" id="sync-koin-cex-container">
-                            <!-- Sync Koin CEX checkboxes will be dynamically inserted here -->
+                    <label class="form-label fw-bold">Pilih Market (CEX)</label>
+                    <div class="border rounded p-3">
+                        <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="sync_cex" value="Binance" id="sync_cex_binance">
+                        <label class="form-check-label" for="sync_cex_binance">Binance</label>
                         </div>
+                        <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="sync_cex" value="Gate" id="sync_cex_gate">
+                        <label class="form-check-label" for="sync_cex_gate">Gate</label>
+                        </div>
+                        <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="sync_cex" value="MEXC" id="sync_cex_mexc">
+                        <label class="form-check-label" for="sync_cex_mexc">MEXC</label>
+                        </div>
+                        <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="sync_cex" value="INDODAX" id="sync_cex_indodax">
+                        <label class="form-check-label" for="sync_cex_indodax">INDODAX</label>
+                        </div>
+                    </div>
                     </div>
 
                     <!-- DEX -->
                     <div class="col-md-6">
-                        <label class="form-label fw-bold">Pilih DEX (max 4) & Modal</label>
-                        <div class="border rounded p-3" id="sync-koin-dex-container">
-                            <!-- Sync Koin DEX checkboxes will be dynamically inserted here -->
+                    <label class="form-label fw-bold">Pilih DEX (max 4)</label>
+                    <div class="border rounded p-3">
+                        <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="sync_dex" value="1inch" id="sync_dex_1inch">
+                        <label class="form-check-label" for="sync_dex_1inch">1INCH</label>
                         </div>
+                        <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="sync_dex" value="KyberSwap" id="sync_dex_kyber">
+                        <label class="form-check-label" for="sync_dex_kyber">KyberSwap</label>
+                        </div>
+                        <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="sync_dex" value="Matcha" id="sync_dex_matcha">
+                        <label class="form-check-label" for="sync_dex_matcha">Matcha</label>
+                        </div>
+                        <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="sync_dex" value="OKXDEX" id="sync_dex_okx">
+                        <label class="form-check-label" for="sync_dex_okx">OKX DEX</label>
+                        </div>
+                        <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="sync_dex" value="ODOS" id="sync_dex_odos">
+                        <label class="form-check-label" for="sync_dex_odos">ODOS</label>
+                        </div>
+                        <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="sync_dex" value="LIFI" id="sync_dex_lifi">
+                        <label class="form-check-label" for="sync_dex_lifi">LIFI (Auto DEX)</label>
+                        </div>
+                    </div>
                     </div>
                 </div>
                 </div>
@@ -1300,14 +1420,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.min.js"></script>
     <script src="https://unpkg.com/clusterize.js/clusterize.min.js"></script>
 
-    <!-- Refactored Scripts -->
-    <script src="src/utils/storage.js"></script>
-    <script src="src/utils/price.js"></script>
-    <script src="src/app/config.js"></script>
-    <script src="src/services/api.js"></script>
-    <script src="src/app/state.js"></script>
-    <script src="src/ui/ui.js"></script>
-    <script src="src/app/app.js"></script>
+    <!-- Price APIs -->
+    <script src="price-apis.js"></script>
+    <!-- Custom JS -->
+    <script src="script.js"></script>
 
     <!-- Tombol Scroll ke Atas -->
     <button id="scrollTopBtn" title="Kembali ke Atas" class="btn btn-success rounded-circle shadow" style="
