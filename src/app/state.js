@@ -107,13 +107,13 @@ class State {
 
     constructor() {
         this.settings = LocalStorageUtil.get('SETTING_APP', {});
-        this.masterTokens = LocalStorageUtil.get('MASTER_TOKENS', {});
+        this.masterTokens = LocalStorageUtil.get('MASTER_TOKENS', []);
         this.configScan = LocalStorageUtil.get('CONFIG_SCANNER', {});
-        this.koinScanner = LocalStorageUtil.get('SELECT_KOIN', {});
+        this.koinScanner = LocalStorageUtil.get('SELECT_KOIN', []);
         this.gasInfo = LocalStorageUtil.get('GAS_INFO', {});
         this.logAction = LocalStorageUtil.get('HISTORTY_ACTION', {});
-        this.selectTheme = LocalStorageUtil.rawGet('SELECT_THEME', {});
-        this.autoScroll = LocalStorageUtil.get('AUTO_SCROLL', {});
+        this.selectTheme = LocalStorageUtil.rawGet('SELECT_THEME', 'biru');
+        this.autoScroll = LocalStorageUtil.get('AUTO_SCROLL', false);
         this.tokens = this.loadTokens();
     }
 
@@ -122,46 +122,9 @@ class State {
         return tokens.map(t => ({ ...t, id: String(t.id) }));
     }
 
-    // Tambahkan method ini di dalam class State
-    shortenAddress(address) {
-        if (!address || typeof address !== 'string' || address.length < 10) return address || '-';
-        return address.slice(0, 6) + '...' + address.slice(-4);
-    }
-
     getSettings() {
-        // console.log('Setting App:', STATE.SET_APP);
-        const parsedSettings = LocalStorageUtil.get('SETTING_APP', {
-            tokensPerBatch: '',          // jumlah anggota
-            UserName: '',            // nama user default
-            delayBetweenGrup: '',     // jeda antar grup (ms)
-            TimeoutCount: '',       // timeout API
-            PNLFilter: '',           // filter minimal PNL
-            WalletAddress: ''          // alamat wallet default
-        });
-         // Tampilkan info config ke elemen #infoConfig
-        const shortened = this.shortenAddress(parsedSettings.WalletAddress);
-        // Buat HTML info dengan icon unicode
-        const infoHTML = `
-            🆔&nbsp; UserName: ${parsedSettings.UserName}<br>
-            👛&nbsp; Wallets: ${shortened}<br>
-            👥&nbsp; Anggota Grup: ${parsedSettings.tokensPerBatch} Koin<br>
-            ⏱️&nbsp; Jeda Grup: ${parsedSettings.delayBetweenGrup}ms<br>
-            ⌛&nbsp; Time Out: ${parsedSettings.TimeoutCount}ms<br>
-            💰&nbsp; PNLFilter: $${parsedSettings.PNLFilter}
-        `;
-        $('#infoConfig').html(infoHTML);
-
-        // ISI NILAI FORM (form id: #settingsForm)
-        $('#UserName').val(parsedSettings.UserName);
-        $('#tokensPerBatch').val(parsedSettings.tokensPerBatch);
-        $('#delayBetweenGrup').val(parsedSettings.delayBetweenGrup);
-        $('#TimeoutCount').val(parsedSettings.TimeoutCount);
-        $('#PNLFilter').val(parsedSettings.PNLFilter);
-        $('#WalletAddress').val(parsedSettings.WalletAddress);
-        //console.log("DATA SETTING: ",parsedSettings); // ← log sebelum return
-        return parsedSettings;
         return this.settings;
-    } 
+    }
 
     getMasterTokens() {
         return this.masterTokens;
@@ -175,29 +138,16 @@ class State {
         return this.koinScanner;
     }
 
-    getSelectTheme() {
-        return this.selectTheme;
-    }   
-
-    getGasInfo() {
-        return this.gasInfo;
+    getTokens() {
+        return this.tokens;
     }
+
     saveTokens() {
         LocalStorageUtil.set('SELECT_KOIN', this.tokens);
     }
 
     addToken(tokenData) {
         const newId = Date.now().toString();
-        const modalCexToDex = {};
-        const modalDexToCex = {};
-
-        tokenData.selectedCexs.forEach(cex => {
-            modalCexToDex[cex] = parseFloat(tokenData.modalCexToDex) || 100;
-        });
-        tokenData.selectedDexs.forEach(dex => {
-            modalDexToCex[dex] = parseFloat(tokenData.modalDexToCex) || 100;
-        });
-
         const token = {
             id: newId,
             symbol: tokenData.symbol,
@@ -207,8 +157,8 @@ class State {
             decimals: parseInt(tokenData.decimals),
             pairDecimals: parseInt(tokenData.pairDecimals),
             chain: tokenData.chain,
-            modalCexToDex: modalCexToDex,
-            modalDexToCex: modalDexToCex,
+            modalCexToDex: tokenData.modalCexToDex,
+            modalDexToCex: tokenData.modalDexToCex,
             selectedCexs: tokenData.selectedCexs,
             selectedDexs: tokenData.selectedDexs,
             isActive: true,
@@ -222,21 +172,9 @@ class State {
     updateToken(tokenId, tokenData) {
         const index = this.tokens.findIndex(t => t.id === tokenId);
         if (index !== -1) {
-            const modalCexToDex = {};
-            const modalDexToCex = {};
-
-            tokenData.selectedCexs.forEach(cex => {
-                modalCexToDex[cex] = parseFloat(tokenData.modalCexToDex[cex]) || parseFloat(tokenData.modalCexToDex) || 100;
-            });
-            tokenData.selectedDexs.forEach(dex => {
-                modalDexToCex[dex] = parseFloat(tokenData.modalDexToCex[dex]) || parseFloat(tokenData.modalDexToCex) || 100;
-            });
-
             this.tokens[index] = {
                 ...this.tokens[index],
                 ...tokenData,
-                modalCexToDex: modalCexToDex,
-                modalDexToCex: modalDexToCex,
                 updatedAt: new Date().toISOString()
             };
             this.saveTokens();
@@ -270,8 +208,41 @@ class State {
         LocalStorageUtil.set('SETTING_APP', this.settings);
     }
 
-    getTokens() {
-        return this.tokens;
+    saveScanConfig(config) {
+        this.configScan = config;
+        LocalStorageUtil.set('CONFIG_SCANNER', this.configScan);
+    }
+
+    updateSelectedKoin() {
+        const { chains, cexs } = this.configScan;
+        if (!chains || !cexs) {
+            this.koinScanner = [];
+            LocalStorageUtil.set('SELECT_KOIN', []);
+            return;
+        }
+
+        const selectedTokens = this.masterTokens
+            .filter(token => {
+                if (!token.isActive) return false;
+                if (!chains.includes(token.chain)) return false;
+
+                const hasValidCex = token.selectedCexs.some(cex => {
+                    const cexConfig = cexs.find(c => c.name === cex);
+                    return cexConfig && cexConfig.chains.includes(token.chain);
+                });
+
+                return hasValidCex;
+            })
+            .map(token => {
+                const validCexs = token.selectedCexs.filter(cex => {
+                     const cexConfig = cexs.find(c => c.name === cex);
+                    return cexConfig && cexConfig.chains.includes(token.chain);
+                });
+                return { ...token, selectedCexs: validCexs };
+            });
+
+        this.koinScanner = selectedTokens;
+        LocalStorageUtil.set('SELECT_KOIN', this.koinScanner);
     }
 }
 
