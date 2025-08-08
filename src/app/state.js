@@ -21,9 +21,30 @@ class State {
     }
 
     addToken(tokenData) {
+        const newId = Date.now().toString();
+        const modalCexToDex = {};
+        const modalDexToCex = {};
+
+        tokenData.selectedCexs.forEach(cex => {
+            modalCexToDex[cex] = parseFloat(tokenData.modalCexToDex) || 100;
+        });
+        tokenData.selectedDexs.forEach(dex => {
+            modalDexToCex[dex] = parseFloat(tokenData.modalDexToCex) || 100;
+        });
+
         const token = {
-            id: Date.now().toString(),
-            ...tokenData,
+            id: newId,
+            symbol: tokenData.symbol,
+            pairSymbol: tokenData.pairSymbol,
+            contractAddress: tokenData.contractAddress,
+            pairContractAddress: tokenData.pairContractAddress,
+            decimals: parseInt(tokenData.decimals),
+            pairDecimals: parseInt(tokenData.pairDecimals),
+            chain: tokenData.chain,
+            modalCexToDex: modalCexToDex,
+            modalDexToCex: modalDexToCex,
+            selectedCexs: tokenData.selectedCexs,
+            selectedDexs: tokenData.selectedDexs,
             isActive: true,
             createdAt: new Date().toISOString()
         };
@@ -35,9 +56,21 @@ class State {
     updateToken(tokenId, tokenData) {
         const index = this.tokens.findIndex(t => t.id === tokenId);
         if (index !== -1) {
+            const modalCexToDex = {};
+            const modalDexToCex = {};
+
+            tokenData.selectedCexs.forEach(cex => {
+                modalCexToDex[cex] = parseFloat(tokenData.modalCexToDex[cex]) || parseFloat(tokenData.modalCexToDex) || 100;
+            });
+            tokenData.selectedDexs.forEach(dex => {
+                modalDexToCex[dex] = parseFloat(tokenData.modalDexToCex[dex]) || parseFloat(tokenData.modalDexToCex) || 100;
+            });
+
             this.tokens[index] = {
                 ...this.tokens[index],
                 ...tokenData,
+                modalCexToDex: modalCexToDex,
+                modalDexToCex: modalDexToCex,
                 updatedAt: new Date().toISOString()
             };
             this.saveTokens();

@@ -37,8 +37,63 @@ class App {
     }
 
     async checkPrices() {
-        // ... This will be the core logic from TokenPriceMonitor.CheckPrices ...
-        // It will call this.state.getTokens(), this.api methods, and this.ui methods
+        this.errorStats = {};
+        // this.ui.updateErrorStats(this.errorStats);
+
+        let config = this.state.configScan;
+
+        try {
+            await this.fetchGasTokenPrices();
+        } catch (err) {
+            console.error('Gagal fetchGasTokenPrices:', err);
+            this.ui.showAlert('Gagal mengambil harga Gas Token, scan dibatalkan', 'danger');
+            return;
+        }
+
+        const settings = this.state.getSettings();
+        const tokens = this.state.getTokens();
+
+        const allTokenUnits = [];
+        tokens.forEach(token => {
+            if (!token.isActive) return;
+            // Further filtering based on config can be added here
+            token.selectedCexs.forEach(cexName => {
+                allTokenUnits.push({ ...token, cexName });
+            });
+        });
+
+        const chunkArray = (arr, size) => {
+            const result = [];
+            for (let i = 0; i < arr.length; i += size) {
+                result.push(arr.slice(i, i + size));
+            }
+            return result;
+        };
+
+        const unitBatches = chunkArray(allTokenUnits, settings.tokensPerBatch || 5);
+
+        for (const batch of unitBatches) {
+            await Promise.allSettled(batch.map(async tokenUnit => {
+                const priceData = {
+                    token: tokenUnit,
+                    analisis_data: {
+                        cex_to_dex: {},
+                        dex_to_cex: {}
+                    }
+                };
+
+                await this.api.fetchCEXPrices(tokenUnit, priceData, tokenUnit.cexName, 'cex_to_dex');
+                // this.ui.generateOrderBook(tokenUnit, priceData, tokenUnit.cexName, 'cex_to_dex');
+
+                for (const dexName of tokenUnit.selectedDexs) {
+                    await this.api.fetchDEXPrices(tokenUnit, priceData, dexName, tokenUnit.cexName, 'cex_to_dex');
+                    await this.api.fetchCEXPrices(tokenUnit, priceData, tokenUnit.cexName, 'dex_to_cex');
+                    // this.ui.generateOrderBook(tokenUnit, priceData, tokenUnit.cexName, 'dex_to_cex');
+                    await this.api.fetchDEXPrices(tokenUnit, priceData, dexName, tokenUnit.cexName, 'dex_to_cex');
+                }
+            }));
+            await new Promise(resolve => setTimeout(resolve, settings.delayBetweenGrup || 500));
+        }
     }
 
     // ... other methods from TokenPriceMonitor that represent business logic ...
