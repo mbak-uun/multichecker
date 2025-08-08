@@ -1,60 +1,50 @@
 const PriceUtils = {
-     // Tambahan normalisasi dan perhitungan fee dalam USD
     normalizeAmount(amount, decimals) {
         return parseFloat(amount) / Math.pow(10, decimals);
     },
 
     getGasFeeUSD(chainKey, gasEstimate) {
         const gasData = LocalStorageUtil.get("GAS_INFO");
-        const info = gasData[chainKey];
+        if (!gasData || !chainKey) return 0;
 
-        const tokenPrice = info.tokenPrice; // Harga native token dalam USDT
+        const info = gasData[chainKey.toLowerCase()];
+        if (!info || !info.tokenPrice || !info.gwei) return 0;
+
+        const tokenPrice = info.tokenPrice;
         const gasPriceGwei = info.gwei;
-        const gasInNative = (gasEstimate * gasPriceGwei) / 1e9; // Konversi ke native token
-        return gasInNative * tokenPrice; // Konversi ke USDT
+        const gasInNative = (gasEstimate * gasPriceGwei) / 1e9;
+        return gasInNative * tokenPrice;
     },
 
-    // Convert token symbol to CEX format
     formatCEXSymbol: function(tokenSymbol, pairSymbol) {
         return `${tokenSymbol}${pairSymbol}`;
     },
 
-    // Convert token symbol to Gate.io format
     formatGateSymbol: function(tokenSymbol, pairSymbol) {
         return `${tokenSymbol}_${pairSymbol}`;
     },
 
-    // Get chain ID from chain name
     getChainId: function(chainName) {
-        const chainMap = {
-            "BSC": 56,
-            "Ethereum": 1,
-            "Polygon": 137,
-            "Arbitrum": 42161,
-            "Base": 8453,
-            "Aolana": 501
-        };
-        return chainMap[chainName] || '1';
+        if (!chainName) return '1';
+        const chainConfig = window.CONFIG.CHAIN_CONFIG;
+        const foundChain = Object.values(chainConfig).find(c => c.name.toLowerCase() === chainName.toLowerCase());
+        return foundChain ? foundChain.code.toString() : '1';
     },
 
-    // Calculate amount with decimals
     calculateAmount: function(amount, decimals) {
         return BigInt(Math.round(Math.pow(10, decimals) * amount));
     },
 
-    // Calculate PNL
     calculatePNL: function(buyPrice, sellPrice, amount, fee) {
         const revenue = sellPrice * amount;
         const cost = buyPrice * amount + fee;
         return revenue - cost;
     },
 
-    // Format fee display
     formatFee: function(fee) {
         return `$${fee.toFixed(4)}`;
     },
 
-    // Format PNL display
     formatPNL: function(pnl) {
         const sign = pnl >= 0 ? '+' : '';
         return `${sign}$${pnl.toFixed(2)}`;
@@ -70,7 +60,7 @@ const PriceUtils = {
         }
 
         let strPrice = price.toFixed(20).replace(/0+$/, '');
-        let match = strPrice.match(/0\.(0*)(\d+)/); // nol dan angka signifikan
+        let match = strPrice.match(/0\.(0*)(\d+)/);
 
         if (match) {
             const zeroCount = match[1].length;
@@ -84,17 +74,7 @@ const PriceUtils = {
         }
 
         return `${price.toFixed(8)}`;
-    },
-
-    formatFee(val) {
-        return `$${parseFloat(val).toFixed(2)}`;
-    },
-
-    formatPNL(val) {
-        const prefix = val >= 0 ? '+' : '';
-        return `${prefix}${parseFloat(val).toFixed(2)}`;
     }
-
 };
 
 window.PriceUtils = PriceUtils;

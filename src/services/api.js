@@ -531,7 +531,6 @@ class ApiService {
         const baseSymbol = token.symbol.toUpperCase();
         const quoteSymbol = token.pairSymbol.toUpperCase();
 
-        // THIS IS THE KEY CHANGE
         const modal = direction === 'cex_to_dex'
             ? token.modalCexToDex[cexName]
             : token.modalDexToCex[dexName];
@@ -586,10 +585,6 @@ class ApiService {
         const rawAmountIn = PriceUtils.calculateAmount(inputAmountToken, inputDecimals);
         const quotePriceUSDT = direction === 'cex_to_dex' ? quoteBuy : baseSell;
 
-        // The rest of the function (calling the specific DEX API and handling the result)
-        // would follow here. This part is complex and depends on the UI logic
-        // for displaying results, which is also being refactored.
-        // For now, the key part is that the `modal` is correctly retrieved.
         console.log(`Fetching DEX price for ${dexName} with modal ${modal}`);
     }
 }

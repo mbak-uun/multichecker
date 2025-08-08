@@ -8,294 +8,227 @@ class App {
         this.sortAscending = true;
         this.isAutorun = false;
         this.autorunTimer = null;
+        this.isScanning = false;
 
         this.init();
     }
 
     init() {
-        this.checkTheme();
-
+        this.ui.applyTheme(this.state.selectTheme);
         if (!this.checkAppRequirements()) return;
 
         this.ui.InfoSettingApps(this.state.getSettings());
-        // Di dalam App.init() atau setelah sync token
-        this.ui.updateSettingScanForm(
-            this.state.getMasterTokens ? this.state.getMasterTokens() : [],
-            window.CONFIG.CHAIN_CONFIG,
-            window.CONFIG.CONFIG_CEX
-        );
-        this.ui.bindEvents();
-        // ... other initialization logic from TokenPriceMonitor.init ...
+        this.ui.InfoConfigScan(this.state.getConfigScan(), this.state.getKoinScanner());
+        this.ui.renderFormSettingScan(this.state.getMasterTokens());
 
         window.timeoutApi = this.state.getSettings()?.TimeoutCount || 4000;
 
         this.ui.renderTokenTable(this.state.getTokens());
         this.ui.updateStats(this.state.getTokens());
         this.fetchGasTokenPrices();
-        // this.SearchCTokenMonitoring();
-        this.ui.generateEmptyTable();
         this.fetchUSDTtoIDRRate();
-        
-        // this.initPairSymbolAutocomplete();
+        this.ui.generateEmptyTable(this.state.getTokens(), this.state.getConfigScan());
+        this.logAction(`APP INITIALIZED`);
     }
 
     checkAppRequirements() {
-        console.log('Checking app requirements...');
-        // ... logic from TokenPriceMonitor.checkAppRequirements ...
-        // This will need to be adapted to use this.state and this.ui
-         const checkRequirements = [
-            {
-                key: 'SETTING_APP',
-                data: this.state.getSettings(),
-                message: '⚠️ SILAKAN SETTING APLIKASI TERLEBIH DAHULU.'
-            },
-            {
-                key: 'MASTER_TOKENS',
-                data: this.state.getMasterTokens ? this.state.getMasterTokens() : [],
-                message: '⚠️ SILAKAN SINKRONISASI DATA KOIN !!!'
-            },
-            {
-                key: 'CONFIG_SCANNER',
-                data: this.state.getConfigScan ? this.state.getConfigScan() : {},
-                message: '⚠️ SILAKAN KONFIGURASI KOIN SCANNER'
-            },
-            {
-                key: 'SELECT_KOIN',
-                data: this.state.getKoinScanner ? this.state.getKoinScanner() : [],
-                message: '⚠️ SILAKAN TENTUKAN KOIN ( MEMILIH CHAIN & EXCHANGER )'
-            }
+        const requirements = [
+            { data: this.state.getSettings(), message: '⚠️ SILAKAN SETTING APLIKASI TERLEBIH DAHULU.' },
+            { data: this.state.getMasterTokens(), message: '⚠️ SILAKAN SINKRONISASI DATA KOIN !!!' },
+            { data: this.state.getConfigScan(), message: '⚠️ SILAKAN KONFIGURASI KOIN SCANNER' },
+            { data: this.state.getKoinScanner(), message: '⚠️ SILAKAN TENTUKAN KOIN ( MEMILIH CHAIN & EXCHANGER )' }
         ];
 
-        for (const item of checkRequirements) {
-            const dataEmpty = (
-                item.data == null ||
-                (Array.isArray(item.data) && item.data.length === 0) ||
-                (typeof item.data === 'object' && Object.keys(item.data).length === 0)
+        for (const { data, message } of requirements) {
+            const isEmpty = (
+                data == null ||
+                (Array.isArray(data) && data.length === 0) ||
+                (typeof data === 'object' && Object.keys(data).length === 0)
             );
-
-            if (dataEmpty) {
-                this.ui.showAlert(item.message, 'danger');
-                $('#mainTabs a[href="#appSettings"]').tab('show');
-
-                $('#CheckPrice').prop('disabled', true);
-                $('#autorunBtn').prop('disabled', true);
-                $('#StopScan').addClass('d-none');
-                $('#setting-tab').addClass('petunjuk');
-
-                const disableTab = (selector) => {
-                    const tabBtn = $(`#tabIconController button[data-bs-target="${selector}"]`);
-                    tabBtn.addClass('disabled').css({
-                        'pointer-events': 'none',
-                        'opacity': 0.5
-                    });
-                };
-
-                disableTab('#priceMonitoring');
-                disableTab('#tokenManagement');
-                disableTab('#portfolioTab');
-                disableTab('#WalletCEX');
-
-                return; // Hentikan init()
+            if (isEmpty) {
+                this.ui.showAlert(message, 'danger');
+                this.ui.disableTabs();
+                return false;
             }
         }
-        return true;        
+        return true;
     }
-    
-    checkTheme() {
-        console.log('Checking app theme...');
-        const theme = LocalStorageUtil.rawGet('SELECT_THEME', 'biru');
-        if (this.isValidTheme(theme)) {
-            this.applyTheme(theme);
-        } else {
-            alert("🎨 Tema tidak valid. Diterapkan tema default 'biru'.");
-            this.applyTheme('biru'); // Default theme
+
+    async startPriceCheck() {
+        if (this.isScanning) {
+            this.ui.showAlert("⚠️ SCAN MASIH JALAN..SILAKAN STOP DAHULU", 'warning');
+            return;
         }
-        document.querySelectorAll('.theme-box').forEach(box => {
-            box.addEventListener('click', () => {
-                const selectedTheme = box.getAttribute('data-theme');
-                this.applyTheme(selectedTheme);
-            });
-        });
-    }
-
-    async checkPrices() {
-        this.errorStats = {};
-        // this.ui.updateErrorStats(this.errorStats);
-
-        let config = this.state.configScan;
+        this.isScanning = true;
+        this.ui.toggleScanButtons(true);
 
         try {
             await this.fetchGasTokenPrices();
         } catch (err) {
             console.error('Gagal fetchGasTokenPrices:', err);
             this.ui.showAlert('Gagal mengambil harga Gas Token, scan dibatalkan', 'danger');
+            this.stopPriceCheck();
             return;
         }
 
-        const settings = this.state.getSettings();
-        const tokens = this.state.getTokens();
+        this.ui.initPNLSignalStructure();
 
-        const allTokenUnits = [];
-        tokens.forEach(token => {
-            if (!token.isActive) return;
-            // Further filtering based on config can be added here
-            token.selectedCexs.forEach(cexName => {
-                allTokenUnits.push({ ...token, cexName });
-            });
-        });
+        const tokensToScan = this.state.getKoinScanner();
+        if (tokensToScan.length === 0) {
+            this.ui.showAlert('Tidak ada token untuk di-scan berdasarkan konfigurasi saat ini.', 'info');
+            this.stopPriceCheck();
+            return;
+        }
 
-        const chunkArray = (arr, size) => {
-            const result = [];
-            for (let i = 0; i < arr.length; i += size) {
-                result.push(arr.slice(i, i + size));
-            }
-            return result;
-        };
+        this.ui.generateEmptyTable(tokensToScan, this.state.getConfigScan());
 
-        const unitBatches = chunkArray(allTokenUnits, settings.tokensPerBatch || 5);
+        await this.runScanLoop(tokensToScan);
 
-        for (const batch of unitBatches) {
-            await Promise.allSettled(batch.map(async tokenUnit => {
-                const priceData = {
-                    token: tokenUnit,
-                    analisis_data: {
-                        cex_to_dex: {},
-                        dex_to_cex: {}
-                    }
-                };
-
-                await this.api.fetchCEXPrices(tokenUnit, priceData, tokenUnit.cexName, 'cex_to_dex');
-                // this.ui.generateOrderBook(tokenUnit, priceData, tokenUnit.cexName, 'cex_to_dex');
-
-                for (const dexName of tokenUnit.selectedDexs) {
-                    await this.api.fetchDEXPrices(tokenUnit, priceData, dexName, tokenUnit.cexName, 'cex_to_dex');
-                    await this.api.fetchCEXPrices(tokenUnit, priceData, tokenUnit.cexName, 'dex_to_cex');
-                    // this.ui.generateOrderBook(tokenUnit, priceData, tokenUnit.cexName, 'dex_to_cex');
-                    await this.api.fetchDEXPrices(tokenUnit, priceData, dexName, tokenUnit.cexName, 'dex_to_cex');
-                }
-            }));
-            await new Promise(resolve => setTimeout(resolve, settings.delayBetweenGrup || 500));
+        if (this.isAutorun && this.isScanning) {
+            this.ui.startAutorunCountdown(() => this.startPriceCheck());
+        } else {
+            this.stopPriceCheck();
         }
     }
 
-    // ... other methods from TokenPriceMonitor that represent business logic ...
+    async runScanLoop(tokens) {
+        const settings = this.state.getSettings();
+        const { tokensPerBatch, delayBetweenGrup } = settings;
 
-    startPriceCheck() {
-        // This will be called by the UI event handler
-        this.checkPrices();
+        const chunkArray = (arr, size) => Array.from({ length: Math.ceil(arr.length / size) }, (v, i) => arr.slice(i * size, i * size + size));
+        const batches = chunkArray(tokens, tokensPerBatch);
+
+        let processedCount = 0;
+        const totalCount = tokens.length;
+
+        for (const batch of batches) {
+            if (!this.isScanning) break;
+
+            await Promise.allSettled(batch.map(async (token) => {
+                if (!this.isScanning) return;
+
+                const priceData = { token, analisis_data: { cex_to_dex: {}, dex_to_cex: {} } };
+
+                const cexs = token.selectedCexs || [];
+                for (const cexName of cexs) {
+                    await this.api.fetchCEXPrices(token, priceData, cexName, 'cex_to_dex');
+                    this.ui.generateOrderBook(token, priceData, cexName, 'cex_to_dex');
+
+                    for (const dexName of token.selectedDexs) {
+                         if (!this.isScanning) break;
+                        await this.processTradePath(token, priceData, dexName, cexName, 'cex_to_dex');
+                        await this.processTradePath(token, priceData, dexName, cexName, 'dex_to_cex');
+                    }
+                }
+                processedCount++;
+                this.ui.updateProgressBar(processedCount, totalCount, token.symbol);
+            }));
+
+            if (this.isScanning) {
+                await new Promise(resolve => setTimeout(resolve, delayBetweenGrup));
+            }
+        }
+    }
+
+    async processTradePath(token, priceData, dexName, cexName, direction) {
+        try {
+            this.ui.setDexCellLoading(token, cexName, dexName, direction);
+            const result = await this.api.fetchDEXPrice(token, priceData, dexName, cexName, direction);
+            if(result) {
+                this.ui.CellResult(token, priceData.analisis_data[direction][cexName], result, direction, cexName, dexName);
+            }
+        } catch (error) {
+            console.error(`Error processing ${direction} for ${token.symbol} ${dexName}/${cexName}:`, error);
+            this.ui.CellResult(token, priceData.analisis_data[direction][cexName], { error: error.message || 'Error' }, direction, cexName, dexName);
+        }
     }
 
     stopPriceCheck() {
-        // This will be called by the UI event handler
+        this.isScanning = false;
+        this.isAutorun = false;
+        this.ui.toggleScanButtons(false);
+        this.ui.clearAutorun();
+        this.ui.showAlertWithAudio();
+    }
+
+    toggleAutorun() {
+        this.isAutorun = !this.isAutorun;
+        this.ui.updateAutorunButton(this.isAutorun);
     }
 
     saveToken() {
         const formData = this.ui.getTokenFormData();
-        if (!this.ui.validateTokenForm(formData)) {
-            return;
-        }
+        // Validation can be added here
         if (this.ui.currentEditingToken) {
             this.state.updateToken(this.ui.currentEditingToken.id, formData);
+            this.ui.showAlert('Token berhasil diperbarui', 'success');
         } else {
             this.state.addToken(formData);
+            this.ui.showAlert('Token berhasil ditambahkan', 'success');
         }
         this.ui.renderTokenTable(this.state.getTokens());
         this.ui.updateStats(this.state.getTokens());
         $('#tokenModal').modal('hide');
+        this.ui.resetTokenForm();
+    }
+
+    editToken(tokenId) {
+        const token = this.state.getTokens().find(t => t.id === tokenId);
+        if (token) {
+            this.ui.populateTokenForm(token);
+        }
+    }
+
+    deleteToken(tokenId) {
+        if (confirm('Apakah Anda yakin ingin menghapus token ini?')) {
+            this.state.deleteToken(tokenId);
+            this.ui.renderTokenTable(this.state.getTokens());
+            this.ui.updateStats(this.state.getTokens());
+            this.ui.showAlert('Token berhasil dihapus', 'danger');
+        }
+    }
+
+    toggleTokenStatus(tokenId) {
+        this.state.toggleTokenStatus(tokenId);
+        this.ui.renderTokenTable(this.state.getTokens());
+        this.ui.updateStats(this.state.getTokens());
+    }
+
+    saveSettings() {
+        const newSettings = this.ui.getSettingsFormData();
+        // Validation can be added here
+        this.state.saveSettings(newSettings);
+        this.ui.showAlert('Pengaturan aplikasi berhasil disimpan', 'success');
+        this.logAction('SAVE APP SETTINGS');
+        setTimeout(() => location.reload(), 500);
+    }
+
+    saveScanConfig() {
+        const config = this.ui.getScanConfigFormData();
+        this.state.saveScanConfig(config);
+        this.state.updateSelectedKoin();
+        this.ui.showAlert('Konfigurasi pindai berhasil disimpan', 'success');
+        this.logAction('SAVE SCAN CONFIG');
+        setTimeout(() => location.reload(), 500);
     }
 
     async fetchGasTokenPrices() {
-        // ... implementation from TokenPriceMonitor.fetchGasTokenPrices ...
+        // ... (implementation can be moved here from the old script)
     }
 
     fetchUSDTtoIDRRate() {
-        // ... implementation from TokenPriceMonitor.fetchUSDTtoIDRRate ...
+        // ... (implementation can be moved here)
     }
 
     logAction(message) {
-        // ... implementation from TokenPriceMonitor.logAction ...
-    }
-
-    isValidTheme(theme) {
-        const allowedThemes = ['biru', 'ijo', 'coklat', 'abu', 'pink', 'orange', 'ungu'];
-        return allowedThemes.includes(theme);
-    }
-
-    applyTheme(theme) {
-        const validTheme = this.isValidTheme(theme) ? theme : 'biru';
-
-        document.body.setAttribute('data-theme', validTheme);
-        if (typeof LocalStorageUtil !== 'undefined') {
-            LocalStorageUtil.rawSet('SELECT_THEME', validTheme);
-        } else {
-            localStorage.setItem('SELECT_THEME', validTheme);
-        }
-
-        this.logAction('GANTI TEMA'); 
-        
-        document.querySelectorAll('.theme-box').forEach(box => box.classList.remove('active'));
-        const activeBox = document.querySelector(`.theme-box[data-theme="${validTheme}"]`);
-        if (activeBox) activeBox.classList.add('active');
+        const now = new Date();
+        const timestamp = `${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
+        const fullMessage = `${timestamp} - ${message}`;
+        LocalStorageUtil.set("HISTORTY_ACTION", fullMessage);
+        this.ui.updateLogStatus(fullMessage);
     }
 }
 
 $(document).ready(function() {
     window.app = new App();
-
-    // Misal di UI.js atau app.js
-    $('#appSettingsForm').on('submit', function(e) {
-        e.preventDefault();
-
-        const newSettings = {
-            UserName: $('#UserName').val()?.trim() || '',
-            WalletAddress: $('#WalletAddress').val()?.trim() || '',
-            tokensPerBatch: parseInt($('#tokensPerBatch').val(), 10) || 3,
-            delayBetweenGrup: parseInt($('#delayBetweenGrup').val(), 10) || 400,
-            TimeoutCount: parseInt($('#TimeoutCount').val(), 10) || 10000,
-            PNLFilter: parseFloat($('#PNLFilter').val()) || 0
-        };
-
-        // Validasi (bisa copy dari kode lama)
-        if (!newSettings.UserName) {
-            app.ui.showAlert('❌ Nama pengguna tidak boleh kosong', 'danger');
-            return;
-        }
-        if (!newSettings.WalletAddress || newSettings.WalletAddress === '-' || !newSettings.WalletAddress.startsWith('0x')) {
-            app.ui.showAlert('❌ Alamat wallet SALAH (harus diawali "0x")', 'danger');
-            return;
-        }
-        if (!newSettings.tokensPerBatch || newSettings.tokensPerBatch < 3 || newSettings.tokensPerBatch > 10) {
-            app.ui.showAlert('Jumlah Anggota (Tokens Per Batch) harus antara 3-7', 'danger');
-            return;
-        }
-        if (!newSettings.delayBetweenGrup || newSettings.delayBetweenGrup < 300 || newSettings.delayBetweenGrup > 5000) {
-            app.ui.showAlert('Delay antar grup harus antara 300–5000 ms', 'danger');
-            return;
-        }
-        if (!newSettings.TimeoutCount || newSettings.TimeoutCount < 2000 || newSettings.TimeoutCount > 10000) {
-            app.ui.showAlert('Timeout harus antara 2000–10000 ms', 'danger');
-            return;
-        }
-
-        // Simpan ke state dan localStorage
-        app.state.saveSettings(newSettings);
-        app.ui.showAlert('✅ SIMPAN SETTING APLIKASI BERHASIL!', 'success');
-        app.logAction('SETTING APLIKASI');
-        setTimeout(() => location.reload(), 800); // reload agar setting terupdate
-    });
-
-    $('#saveSyncKoinBtn').off('click').on('click', async function(event) {
-        event.preventDefault();
-        $('body').append(`<div id="freezeOverlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#000000a0;z-index:9999;display:flex;justify-content:center;align-items:center;color:#fff;font-size:1.5em">⏳ Syncing data...</div>`);
-        try {
-            const jumlah = await State.syncMasterTokensFromForm('#SyncKoinForm');
-            $('#freezeOverlay').remove();
-            alert(`✅ Berhasil SYNC DATA ${jumlah} KOIN.\nSILAKAN KLIK OK UNTUK RELOAD HALAMAN`);
-            location.reload();
-            $('#ModalSyncKoin').modal('hide');
-        } catch (err) {
-            $('#freezeOverlay').remove();
-            alert('❌ ' + (err.message || err));
-        }
-    });
 });
