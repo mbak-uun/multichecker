@@ -1,0 +1,205 @@
+Buatkan saya aplikasi berbasis web tanpa database dan javascipt only. untuk membandingkan harga cypto dari market CEX seperti : binance,gate,mexc dan indodax dengan 
+Market DEX seperti kyber,odos,jumper,matcha,1inch dan okxdex. anda bisa membuat dengan framework jqwuery dan bootstrap.dimana Kebutuhan/fitur Aplikasi saya:
+
+*Pisahkan Tanggung Jawab:
+Class App: hanya mengatur alur utama aplikasi.
+Class UI: bertanggung jawab penuh untuk render, enable/disable, dan update elemen UI (termasuk form SettingScan).
+Class State: hanya untuk data dan penyimpanan.
+
+1. manajemen KOIN di localStorage , (Create,Read,Update,Delete,Searhing,sorting) dimana Data yang dikelolah besar sekali (2000+ item) KOIN sehingga butuh scroll virtual ketika ditampilkan(gunakan cluterize.js), 
+data tokenpun bisa export dan import dalam json.
+adapun contoh format datanya
+{
+  "id": 769,
+  "symbol": "AAVE",
+  "pairSymbol": "BNT",
+  "contractAddress": "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9",
+  "pairContractAddress": "0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c",
+  "decimals": 18,
+  "pairDecimals": 18,
+  "chain": "Ethereum",
+  "modalCexToDex": {
+    "GATE": 100,
+    "BINANCE": 120,
+    ...
+  },
+  "modalDexToCex": {
+    "KyberSwap": 150,
+    "Matcha": 100,
+    "OKXDEX": 110,
+    "ODOS": 105,
+    ...
+  },
+  "isActive": true,
+  "selectedCexs": ["GATE", "BINANCE"],
+  "selectedDexs": ["KyberSwap", "Matcha", "OKXDEX", "ODOS"]
+}
+
+2. Tampilan dan fitur dinamis karena berdasarkan konfigurasi dan data setting. 
+adapun data settinganya adalah :  
+chain_config,cex_config,dex_config, setting_app(name,wallet + api setting : jeda dan member batch,pnlfilter),
+log_action:record activty,theme_select, master_token : sync from json server, select_token: kumpulan data token.
+contoh format data.
+const CONFIG_CEX = {
+    GATE: {
+        ApiKey: "577bb104ebb7977925c0ba7a292a722e",
+        ApiSecret: "48b2cd4b122f076d2ebf8833359dfeffd268c5a0ce276b4cbe6ba5aa52e7f7cc",
+        WARNA: "#D5006D",  // Pink tua
+    },
+    BINANCE: {
+        ApiKey: "2U7YGMEUDri6tP3YEzmK3CcZWb9yQ5j3COp9s7pRRUv4vu8hJAlwH4NkbNK74hDU",
+        ApiSecret: "XHjPVjLzbs741xoznV3xz1Wj5SFrcechNBjvezyXLcg8GLWF21VW32f0YhAsQ9pn",
+        WARNA: "#e0a50c",  // Orange tua
+    },
+   ...
+};
+
+const CHAIN_CONFIG = {
+    ethereum: {
+        name: 'Ethereum',
+        code: 1,
+        short: 'ERC',
+        symbol: 'ETH',
+        gasLimit: 250000,
+        explorer: 'https://etherscan.io',
+        rpc: 'https://eth.llamarpc.com',
+        DATAJSON: 'https://monitoring-koin.vercel.app/DATA/erc.json',
+        GATE: {
+            address: '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe',
+            chainCEX: 'MATIC'
+        },
+        BINANCE: {
+            address: '0x290275e3db66394C52272398959845170E4DCb88',
+            chainCEX: 'MATIC'
+        },
+        ....
+    },
+    bsc: {
+        name: 'BSC',
+        code: 56,
+        short: 'BSC',
+        symbol: 'BNB',
+        gasLimit: 80000,
+        explorer: 'https://bscscan.com',
+        rpc: 'https://bsc-dataseed.binance.org/',
+        DATAJSON: 'https://monitoring-koin.vercel.app/DATA/bsc.json',
+        DATAJSON: 'https://monitoring-koin.vercel.app/DATA/erc.json',
+        GATE: {
+            address: '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe',
+            chainCEX: 'MATIC'
+        },
+        BINANCE: {
+            address: '0x290275e3db66394C52272398959845170E4DCb88',
+            chainCEX: 'MATIC'
+        },
+        ....
+    },
+    ...
+};
+
+const CONFIG_DEX = {
+    kyberswap: ({ chainName, tokenAddress, pairAddress }) =>
+        `https://kyberswap.com/swap/${chainName}/${tokenAddress}-to-${pairAddress}`,
+
+    matcha: ({ chainName, tokenAddress, pairAddress, chainCode }) =>
+        `https://matcha.xyz/tokens/${chainName}/${tokenAddress.toLowerCase()}?buyChain=${chainCode}&buyAddress=${pairAddress.toLowerCase()}`,
+    ...
+}
+
+3. handle error dan respon Call REST API berkala karena membandingkan harga real time antar market. karena semua info respon dari api ditampilkan keuser agar ui dan ux intuitif
+
+4. terakhir dan paling PENTING: APLIKASI INI ADALAH MULTI CHECKER PRICE CYPTO CEX & DEX, 
+SEHINGGA DATA YANG DIGUNAKAN UNTUK MEMBANDINGKAN BISA KOMBINASI MULTI MODAL (CEX & DEX)/TIAP MARKET MODALNYA BEDA.
+CHAIN KOIN, JADI BISA MEMBANDINGKAN BANYAK CHAIN BERSAMAAN. MULTI PAIR (BASE & QOUTE) BISA DINAMIS. 
+
+Buat aplikasi web Multi-Pair, Multi-Chain, Multi-CEX, Multi-DEX Crypto Price Arbitrage Monitor.
+
+Fitur utama:
+
+* Tampilan tabel matriks horizontal:
+
+Kolom kiri: daftar DEX (harga beli, harga jual).
+
+Kolom tengah: detail token (nama, simbol, chain, alamat kontrak).
+
+Kolom kanan: daftar CEX (harga beli, harga jual).
+
+Spread & PNL di bawah harga.
+CEX: orderbook depth (3 level harga & volume).
+
+DEX: API swap price per chain.
+
+* Dukungan multi-DEX (Odos, KyberSwap, Magpie, 0x, OKX DEX, +1 tambahan) dan multi-CEX (Binance, MEXC, Gate.io, dll).
+
+User bisa memilih hanya 1–4 DEX sekaligus dari total 6 DEX untuk menghindari limit REST API.
+
+* Dukungan multi-chain (Ethereum, BSC, Polygon, Base, Arbitrum) dengan mapping alamat kontrak per chain.
+
+Modal terpisah untuk CEX dan DEX → perhitungan PNL mempertimbangkan modal awal masing-masing platform.
+
+*Semua entitas (Chain, CEX, DEX, Token, Pair) dinamis:
+
+Dikonfigurasi di config.js (default).
+
+UI form otomatis mengikuti config.
+
+* lainnya :
+Bisa tambah/edit/hapus dari UI, tersimpan di localStorage.
+
+Import & Export CSV hanya untuk list token.
+
+CEX: orderbook depth (3 level harga & volume).
+
+DEX: API swap price per chain.
+
+
+
+Tampilkan info respons REST API: status HTTP, waktu respon, dan sumber data.
+
+*Konfigurasi jeda request:
+Jeda terpisah untuk setiap request ke CEX dan DEX.
+Nilai default bisa diubah dari UI, tersimpan di localStorage.
+Arbitrase dua arah berbasis USDT (kecuali jika pasangan sudah mengandung USDT, langsung gunakan harga asli).
+
+UI berbasis Bootstrap 5:
+
+Responsif
+
+Tema warna yang bisa dipilih user (misal light, dark, blue, green)
+
+Optimisasi performa: gunakan documentFragment atau virtual scroll untuk ribuan data.
+
+
+Teknologi:
+
+HTML, Bootstrap 5 (CDN)
+
+jQuery + Axios (CDN)
+
+LocalStorage untuk penyimpanan konfigurasi
+
+CSV parsing (PapaParse via CDN)
+
+Output akhir:
+
+index.html (UI + logika)
+
+style.css (custom styling + tema warna)
+
+config.js (default config Chain, CEX, DEX, Token, Pair, Modal, Gas Fee, Jeda Request)
+
+Komentar kode di setiap fungsi
+
+Contoh data default untuk 3 token, 3 DEX, 3 CEX, dan 2 chain
+
+Tambahan:
+
+Interval scan default 30 detik.
+
+Format angka dengan Intl.NumberFormat.
+
+Highlight spread positif (hijau) & negatif (merah).
+
+Notifikasi jika saldo wallet CEX/DEX kurang untuk eksekusi.
+
+Desain modular, fungsi terpisah untuk API fetcher, kalkulasi arbitrase, render UI, dan manajemen konfigurasi.
