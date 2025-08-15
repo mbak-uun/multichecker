@@ -1,0 +1,4030 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>???</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.6.22/css/uikit.min.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.6.22/js/uikit.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.70.0/lib/index.iife.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/uikit@3.17.11/dist/js/uikit-icons.min.js"></script> 
+    
+    <link id="favicon" rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/30/30279.png">
+
+    <script src="config.js"></script>
+    <style>
+                /* Override semua class UIkit text* agar mengikuti warna Bootstrap */
+    [class*="uk-text"] {
+        color: inherit !important; /* Default mengikuti Bootstrap */
+    }
+
+    /* Mapping warna Bootstrap */
+    .uk-text-primary    { color: var(--bs-primary) !important; }
+    .uk-text-secondary  { color: var(--bs-secondary) !important; }
+    .uk-text-success    { color: var(--bs-success) !important; }
+    .uk-text-danger     { color: var(--bs-danger) !important; }
+    .uk-text-warning    { color: var(--bs-warning) !important; }
+    .uk-text-info       { color: var(--bs-info) !important; }
+    .uk-text-light      { color: var(--bs-light) !important; }
+
+    /* Kalau Bootstrap < 5, bisa pakai kode warna manual */
+    :root {
+        --bs-primary:   #0d6efd;
+        --bs-secondary: #000204;
+        --bs-success:   #05a705;
+        --bs-danger:    #ea0c0c;
+        --bs-warning:   #f68f02;
+        --bs-info:      #0dcaf0;
+        --bs-light:     #f8f9fa;
+    }
+        .uk-container {
+            max-width: 100%;
+            padding-left: 8px;
+            padding-right: 8px;
+        }
+        .status-active { color: green; }
+        .status-inactive { color: red; }
+        .sort-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); }
+        /* Memaksa warna link untuk CEX */
+        .uk-link {
+            color: inherit !important;  /* Memastikan warna link mengikuti warna induk */
+        }
+        a {
+            text-decoration: none; /* Menghapus garis bawah */
+            color: inherit;        /* Menggunakan warna teks elemen induk */
+        }
+        /* Memaksa warna status aktif */
+        .status-active {
+            color: inherit !important;  /* Warna aktif mengikuti warna yang ditentukan */
+        }
+        img:hover {
+                opacity:1;
+                transform: scale(1.8); /* You can adjust the scale factor as needed */
+            }
+        img{
+            margin: 1.5px;
+        }    
+        #progress-container {
+            width: 100%;
+            background-color: #f3f3f3;
+            border-radius: 10px;
+            margin-top: 10px;
+            overflow: hidden; /* biar ujung bar tetap rapi saat animasi */
+        }
+
+        #progress-bar {
+            height: 14px;
+            width: 0%;
+            border-radius: 5px;
+            position: relative;
+
+            /* Warna dasar + pola strip diagonal */
+            background-color: #5c9513;
+            background-image: repeating-linear-gradient(
+                45deg,
+                rgba(255, 255, 255, 0.3) 0,
+                rgba(255, 255, 255, 0.3) 10px,
+                transparent 10px,
+                transparent 20px
+            );
+            background-size: 20px 20px;
+
+            /* Animasi strip bergerak */
+            animation: move-stripes 1s linear infinite;
+        }
+
+        #progress-bar span {
+            color: white;
+            text-align: center;
+            line-height: 14px;
+            display: block;
+            font-weight: bold;
+        } 
+
+        /* Tambahkan scroll untuk tabel */
+        .uk-overflow-auto {
+            overflow-x: auto; /* Scroll horizontal jika diperlukan */
+            max-height: 800px; /* Batasi tinggi untuk memunculkan scroll */
+            background-color: white; 
+        }
+
+        .uk-table tbody td {
+            font-size: 11.5px;
+            border-bottom: 1px solid #000000;
+            padding: 4px;
+            white-space: nowrap;
+        }
+        .uk-background{
+            background-color: #ececec !important; 
+            border-bottom: 1px solid #000000 !important;
+        }
+       
+        .merah{
+            font-weight: bold;
+            color: rgb(250, 249, 249) !important;
+            background-color:#eb6464!important;
+        }
+        .buy {
+            color:#05a705;
+        }
+        .sell {
+            color:#ea0c0c;
+        }
+        .ijo {
+            color: black !important;
+            font-weight: bolder;
+        }
+        .error{
+            color: #fafafa!important;
+            background-color: #f39999!important;
+        }
+        .errorrestapi{
+            background-color: #f6f2f1!important;
+        } 
+
+        body{
+            font-family: Arial, Helvetica, sans-serif;
+            padding: 1px;
+            /* background-image: linear-gradient(#cffad4, #fefefe, #f3f7f4); */
+            color: #0f0f0f;
+        }
+        .icon-wrapper {
+            display: inline-flex;          /* Menjadikan elemen inline fleksibel */
+            justify-content: center;       /* Pusatkan gambar secara horizontal */
+            align-items: center;           /* Pusatkan gambar secara vertikal */
+            margin: 10px;
+            transform: scale(1.6);              /* Tinggi ikon */
+            background-color: #f97aa8;     /* Warna latar belakang */
+            border-radius: 35%;            /* Membuat bentuk lingkaran */
+            cursor: pointer;               /* Ubah kursor menjadi tangan saat diklik */
+            transition: background-color 0.3s ease; /* Animasi untuk efek hover */
+        }
+        /* Warna link default (light mode) */
+        a, .uk-link {
+            color: inherit !important;
+            text-decoration: none;
+        }
+
+        /* Warna link dalam dark mode */
+        .dark-mode a,
+        .dark-mode .uk-link {
+            color: #4fc3f7 !important;  /* Warna biru muda, bisa diganti sesuai preferensi */
+        }
+        
+        .dark-mode .uk-background {
+            background-color: #797a7af5 !important;
+        }
+
+        body.dark-mode .uk-background-a {
+            background-color: #9b9c9bf5 !important;
+        } 
+        /* Mode gelap */
+        body.uk-dark #sinyal-container {
+            background-color: #605d5d !important;
+            color: #f0f0f0 !important;
+        }
+
+        /* CSS dark mode */
+        body {
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .dark-mode {
+            background-color: #121212 !important;
+            color: #5d0404 !important
+        }
+
+        .dark-mode .uk-table tbody td {
+            background-color: #1e1e1e ;
+            color: #f0f0f0 !important;
+            border-color: #444 !important;
+        }
+
+        .dark-mode .uk-overflow-auto {
+            background-color: #1a1a1a !important;
+        }
+
+        .dark-mode .uk-button {
+            background-color: #333 !important;
+            color: #fff !important;
+            border-color: #555 !important;
+        }
+
+        .dark-mode .icon-wrapper {
+            background-color: #333 !important;
+        }
+
+        .dark-mode .merah {
+            background-color: #b00020 !important;
+            color: #fff !important;
+        }
+
+        .dark-mode .buy {
+            color:#20be20 !important
+        }
+
+        .dark-mode .sell {
+            color: #ff6666 !important;
+        }
+        #darkModeToggle {
+            width: 17px;
+            height: 17px;
+            background-color: #f0f0f0;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            position: fixed;
+            top: 12px;
+            right: 12px;
+            z-index: 9999;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.15);
+            transition: background-color 0.3s ease;
+        }
+        .dark-mode #darkModeToggle {
+            background-color: #333;
+        }
+         .toggle-radio.active {
+            background-color: #1e87f0; /* uk-primary */
+            color: #fff;
+            font-weight: bold;
+        }
+         .header-card {
+            background: linear-gradient(to right, #e5ebc6, #ffffff);
+            padding: 6px 12px !important; /* lebih kecil agar rapat */
+            border: 1px solid black;
+        }
+
+        .header-card h3 {
+            font-size: 18px;
+            line-height: 1.2;
+            margin: 0;
+            color: #000;
+            font-weight: bold;
+        }
+        .uk-card,
+        .uk-card-default {
+            border-radius: 5px; /* bisa diganti 8px/16px sesuai selera */
+            overflow: hidden;    /* biar konten ikut rounded */
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08); /* optional, biar soft */
+        }
+
+        .uk-card img,
+        .uk-card-default img {
+            border-radius: 5px 5px 0 0; /* gambar di atas ikut rounded */
+        }
+         /* Baris ganjil */
+        .uk-table tbody tr:nth-child(odd) {
+            background-color: #ffffff !important; /* warna abu muda */
+        }
+
+        /* Baris genap */
+        .uk-table tbody tr:nth-child(even) {
+            background-color: #f3f5e3 !important; /* abu sedikit lebih gelap */
+        }
+
+        /* Opsional: hover effect */
+        .uk-table tbody tr:hover {
+            background-color: #f6f4d3 !important; /* abu hover */
+        }
+        .uk-icon {
+            /* width: 24px; */
+            /* height: 24px; */
+            vertical-align: middle;
+            stroke-width: 1;    
+            stroke: black;
+        }
+    </style>
+    <!-- <base href="/V1/"> -->
+</head>
+<body>
+<div class="uk-container uk-margin-small-top uk-background-a">
+ <!-- Card Bagian Header -->
+    <div class="uk-card uk-card-default uk-margin-small header-card uk-card-hover">
+        <div class="uk-grid-small uk-flex-middle" uk-grid>
+                
+                <!-- Kiri: Judul -->
+                <div class="uk-width-expand@s uk-width-1-1">
+                    <div class="uk-flex uk-flex-middle uk-flex-wrap">
+                        <h3 id="judul" class="uk-margin-remove" 
+                            style="font-size: 18px; line-height: 1.2; color: #000; font-weight: bold;">
+                            MONITORING [SNIPER] :: <label id="namachain"></label> 
+                            <img src="https://coopsugar.org/storage/2022/03/new.gif" width="24px" />
+                        </h3>
+                        <span class="uk-margin-small-left">[&nbsp;<b> 
+                            <span class="uk-text-danger uk-text-small" id="infoAPP">???</span> 
+                        </b>&nbsp;]</span>
+                    </div>
+                </div>
+
+                <!-- Kanan: Toolbar icon -->
+                <div class="uk-width-auto@s uk-width-1-1">
+                    <div class="uk-flex uk-flex-middle uk-flex-wrap uk-flex-right@s" style="gap: 6px;">                        
+                        
+                        <img class="icon" id="SettingConfig" title="CONFIG SCANNER" width="24px" src="https://cdn-icons-png.flaticon.com/512/1170/1170635.png" />
+                        <img class="icon" id="UpdateWalletCEX" title="UPDATE WALLET CEX" width="24px"
+                            src="https://images.freeimages.com/fic/images/icons/2770/ios_7_icons/512/wallet.png"  style="opacity:0.5; pointer-events:none; cursor:default;"  />
+                        <a href="modal.html" target="_blank"><img class="icon" title="MANAJEMEN ASSET" width="24px"
+                            src="https://cdn-icons-png.flaticon.com/512/1194/1194711.png" /></a>
+                        <a href="https://cors-anywhere.herokuapp.com/corsdemo" target="_blank"><img class="icon" title="BUKA AKSES" width="24px"
+                            src="https://cdn-icons-png.flaticon.com/512/9921/9921748.png" /></a>
+                        
+                        <a href="#" class="icon" onclick="downloadTokenScannerCSV()" title="DOWNLOAD DATA KOIN" >
+                            <img src="https://cdn-icons-png.flaticon.com/512/157/157921.png" width="24px" />
+                        </a>
+                        <label for="uploadJSON" title="IMPORT DATA KOIN" style="cursor:pointer;">
+                            <img src="https://cdn-icons-png.flaticon.com/512/219/219431.png" width="24px"  />
+                        </label>
+                        <input type="file" id="uploadJSON" accept=".csv,text/csv" style="display:none;" onchange="uploadTokenScannerCSV(event)">
+                        <img class="icon" id="reload" title="RESET PROSES" width="24px" src="https://cdn-icons-png.flaticon.com/512/585/585603.png" />
+                        <span id="chain-links-container"></span>
+                    </div>
+                    
+                </div>
+
+        </div>
+    </div>
+
+    <!-- Card Bagian Info & Konfigurasi Scanner -->
+    <div class="uk-card uk-card-default uk-padding-small uk-card-hover" 
+        id="scanner-config" 
+        style="border: 1px solid; background-color: #ececec;">
+
+        <div class="uk-grid-small uk-flex-middle" uk-grid>
+
+            <!-- Form Setting -->
+            <div class="uk-width-1-1">
+                <form id="FormScanner" class="uk-flex uk-flex-middle uk-flex-wrap uk-grid-small" uk-grid>
+
+                    <!-- Pilihan Chain -->
+                    <div id="chain-options" class="uk-form-controls uk-flex"></div>
+                    <span class="uk-text-secondary uk-text-bolder">&nbsp;|&nbsp;SCANNER:</span>
+
+                    <!-- Checkbox -->
+                    <label>
+                        <input class="uk-checkbox posisi-check" type="checkbox" value="Actionkiri" checked>
+                        <span class="uk-text-success uk-form-label">KIRI</span>
+                    </label>
+                    <label>
+                        <input class="uk-checkbox posisi-check" type="checkbox" value="ActionKanan" checked>
+                        <span class="uk-text-success uk-form-label">KANAN</span>
+                    </label>
+                    <label>
+                        <input class="uk-checkbox" id="strictFilter" type="checkbox" checked>
+                        <span class="uk-text-primary uk-form-label">WALLET CEX</span>
+                    </label>
+                    <label>
+                        <input class="uk-checkbox vol-check" id="checkVOL" type="checkbox">
+                        <span class="uk-text-danger uk-form-label">VOL CHECK</span>
+                    </label>
+
+                    <!-- Sort Buttons -->
+                    <div class="uk-button-group">
+                        <label class="uk-button uk-button-small uk-button-default toggle-radio sort-toggle active" data-sort="opt_A">
+                            <input class="uk-hidden" type="radio" name="toggle" value="opt_A" checked> A-Z
+                        </label>
+                        <label class="uk-button uk-button-small uk-button-default toggle-radio sort-toggle" data-sort="opt_B">
+                            <input class="uk-hidden" type="radio" name="toggle" value="opt_B"> Z-A
+                        </label>
+                    </div>
+
+                    <!-- Start/Stop Buttons -->
+                    <div class="uk-button-group">
+                        <button type="button" id="startSCAN" class="uk-button uk-button-secondary uk-button-small">START</button>
+                        <button type="button" id="stopSCAN" class="uk-button uk-button-danger uk-button-small">STOP</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="uk-width-1-1 uk-margin-remove-top">
+                <div id="progress-container">
+                    <div id="progress-bar">
+                        <span id="progress-text">0%</span>
+                    </div>
+                </div>
+                <div id="progress" class="uk-margin-remove" style="font-size: 12px; font-weight: bold; color: green;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bagian untuk menampilkan sinyal DEX -->
+    <div class="uk-text uk-text-small uk-margin-small-top" id="sinyal-container">
+            <!-- Sinyal DEX akan dimuat di sini -->
+    </div>
+    
+    <div class="uk-grid-small uk-flex uk-flex-middle  uk-margin-small-top" uk-grid>
+            <!-- Judul dan Jumlah Token -->
+            <div class="uk-width-expand">
+                <h4 class="uk-heading-line uk-margin-remove" id="daftar">
+                    <span style="font-size:medium; ">DAFTAR TOKEN PAIR :: (<span id="tokenCountALL" class="token-count">0</span>)</span>
+                    
+                </h4>
+            </div>
+           
+            <!-- Pencarian -->
+            <div class="uk-width-auto uk-flex uk-flex-middle"> 
+                 <input class="form-check-input me-1" type="checkbox" id="autoScrollCheckbox">
+                <label class="form-check-label uk-text-warning" for="autoScrollCheckbox">Auto Scroll</label>
+
+                &nbsp;&nbsp;&nbsp;
+                <input type="text" id="searchInput" class="uk-input uk-form-small uk-form-primary uk-form-width-small" placeholder="Cari Koin...">
+            </div>
+    </div>
+
+    <div class="uk-overflow-auto uk-margin-small-top ">
+        <table class="uk-table uk-table-hover uk-table-small uk-table-striped" style="border-collapse: collapse; width: 100%;">
+            <thead style="background: #5c9514;">
+                <tr style="border-bottom: 1px solid black;">
+                    <th rowspan="2" class="uk-text-center uk-text-bolder" style=" color: white !important;">
+                        ORDERBOOK
+                    </th>
+                    <th colspan="4" class="uk-text-center uk-text-bolder" style=" color: white !important;">
+                        CEX → DEX
+                    </th>
+                    <th rowspan="2" class="uk-text-center uk-text-bolder" style="color: white !important;">
+                        DETAIL TOKEN
+                    </th>
+                    <th colspan="4" class="uk-text-center uk-text-bolder" style="color: white !important;">
+                        DEX → CEX
+                    </th>
+                    <th rowspan="2" class="uk-text-center uk-text-bolder" style="color: white !important;">
+                        ORDERBOOK
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="dataTableBody">
+                <!-- Baris-baris data akan ditambahkan secara dinamis -->
+            </tbody>
+        </table>
+        <!-- <div id="InfoAPP" style="text-align:center; font-weight:bold; color:red;">???</div>    
+        <div id="InfoStatus" style="text-align:center; font-weight:bold; color:red;"></div>     -->
+    </div>
+</div>
+    <!-- Modal UIKIT SETTING -->
+    <div id="modal-setting" class="uk-modal-full" uk-modal>
+    <div class="uk-modal-dialog">
+        <button class="uk-modal-close-full uk-close-large" type="button" uk-close></button>
+        <div class="uk-modal-header">
+        <h2 class="uk-modal-title">:: SETTING JEDA & SCANNER</h2>
+        </div>
+        <div class="uk-modal-body">
+        <form>
+            <div class="uk-grid-small" uk-grid>
+            <div class="uk-width-1-2">
+                <!-- Kolom pertama -->
+                <div class="uk-card uk-card-default uk-card-body">
+                <h3>JEDA CEX</h3>
+                <div id="cex-checkbox-group"></div>  <!-- <-- container CEX input + checkbox -->
+
+                <hr>
+
+                <h3>JEDA DEX</h3>
+                <div id="dex-checkbox-group"></div>  <!-- <-- container DEX input + checkbox -->
+                </div>
+            </div>
+            <div class="uk-width-1-2">
+                <!-- Kolom kedua -->
+                <div class="uk-card uk-card-default uk-card-body">
+                <h3 style="text-align: center; margin: 12px 0px; color: #1317e1;">:: SETINGAN SCANNER</h3>
+                <label for="user">NICK NAME:</label>
+                <input type="text" id="user" class="uk-input" required>
+
+                <div class="uk-flex uk-flex-middle uk-margin">
+                    <div style="flex:1;">
+                    <label for="jeda-time-group" class="uk-text-danger">KOIN/GRUP :</label>
+                    <label class="uk-form-label uk-text-success"><input class="uk-radio" type="radio" value="7" name="koin-group"> 7</label>
+                    <label class="uk-form-label uk-text-success"><input class="uk-radio" type="radio" value="6" name="koin-group"> 6</label>
+                    <label class="uk-form-label uk-text-success"><input class="uk-radio" type="radio" value="5" checked name="koin-group"> 5</label>
+                    <label class="uk-form-label uk-text-success"><input class="uk-radio" type="radio" value="4" name="koin-group"> 4</label>
+                    </div>
+
+                    <div style="flex:1; margin-left: 24px;">
+                    <label for="speedScan" class="uk-text-danger">WAKTU TUNGGU:</label>
+                    <label class="uk-form-label uk-text-success"><input class="uk-radio" type="radio" value="2" name="waktu-tunggu"> NORMAL</label>
+                    <label class="uk-form-label uk-text-success"><input class="uk-radio" type="radio" value="1.5" name="waktu-tunggu"> MEDIUM</label>
+                    <label class="uk-form-label uk-text-success"><input class="uk-radio" type="radio" value="1" name="waktu-tunggu"> FAST</label>
+                    </div>
+                </div>
+                <div>
+                    <label for="jeda-koin" class="uk-text-warning">FILTER PNL</label><br/>
+                    <input class="uk-input" type="number" id="inFilterPNL" value="0" name="filterpnl" >         
+                </div>
+
+                <div class="uk-flex uk-flex-middle uk-margin">
+                    <div style="flex:1; margin-right: 8px;">
+                    <label for="jeda-time-group" class="uk-text-danger">JEDA / GROUP {1500}</label><br>
+                    <input class="uk-input" id="jeda-time-group" type="number" value="1500" name="jeda-time-group">
+                    </div>
+                    <div style="flex:1;">
+                    <label for="jeda-koin" class="uk-text-primary">JEDA / KOIN {500}</label><br>
+                    <input class="uk-input" type="number" id="jeda-koin" value="500" name="jeda-koin">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="walletMeta" class="uk-text-danger">WALLET ADDRESS</label><br>
+                    <input class="uk-input" type="text" id="walletMeta" name="walletMeta">
+                </div>
+
+                <p class="uk-text-right uk-margin-top">
+                    <button class="uk-button uk-button-default uk-modal-close" type="button">Tutup</button>
+                    <button type="button" id="btn-save-setting" class="uk-button uk-button-primary">SIMPAN</button>
+                </p>
+                </div>
+            </div>
+            </div>
+        </form>
+        </div>
+    </div>
+    </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+<script>
+    window.addEventListener('storage', function (event) {
+       // console.log("📦 EVENT STORAGE TERDETEKSI:", event);
+
+        if (event.key === 'MONITORING_STATUS_RUN') {
+            const config = JSON.parse(event.newValue || '{}');
+
+            if (config.run === "NO") {
+                location.reload();
+            } else if (config.run === "YES") {
+                //console.log("▶️ Scan dimulai dari tab lain!");
+                $('#startSCAN').prop('disabled', true).text('Running...');
+            }
+        }
+    });
+    toastr.options = {
+        "timeOut": "2500",            // Durasi munculnya toastr dalam milidetik
+        "extendedTimeOut": "2000",    // Waktu tambahan saat toastr di-hover
+        "closeButton": true,          // Tampilkan tombol close (opsional)
+        "progressBar": true,          // Tampilkan progress bar (opsional)
+        "positionClass": "toast-top-right" // Posisi toastr (ubah sesuai kebutuhan)
+    };
+    
+    const storagePrefix = "MULTIALL_V1_";
+    let sortOrder = {};
+    const stablecoins = ["USDT", "DAI", "USDC", "FDUSD"];
+       
+    // Menggunakan fungsi untuk mendapatkan server CORS secara acak
+    var SavedSettingData = getFromLocalStorage('SETTING_SCANNER', {});
+    var DataTokens = getFromLocalStorage('TOKEN_SCANNER',[]);
+  
+    let filteredTokens = [];
+    let originalTokens = [];
+
+    function getFromLocalStorage(key, defaultValue) {
+        try {
+            const raw = localStorage.getItem(storagePrefix + key);
+            if (!raw) return defaultValue; // Kalau null langsung return default
+            return JSON.parse(raw);
+        } catch (e) {
+            console.error("Gagal parse localStorage:", e);
+            return defaultValue;
+        }
+    }
+
+    // Fungsi umum untuk menyimpan data ke localStorage
+    function saveToLocalStorage(key, value) {
+        try {
+            localStorage.setItem(storagePrefix + key, JSON.stringify(value));
+           // console.log("Data saved successfully:", key);
+        } catch (error) {
+            // Tambahkan log untuk memverifikasi jenis error
+            console.error("Error saat menyimpan data:", error);
+
+            if (error.name === "QuotaExceededError") {
+                // Tambahkan pengecekan ruang yang tersedia sebelum menyimpan
+                let usedSpace = new Blob(Object.values(localStorage)).size;
+                let totalSpace = 5 * 1024 * 1024; // Biasanya 5MB
+                console.error(`Used space: ${usedSpace} bytes / Total allowed: ${totalSpace} bytes`);
+
+                toastr.error("MEMORY BROWSER PENUH!!! Sisa ruang tidak mencukupi.");
+            } else {
+                toastr.error("Terjadi kesalahan tak terduga saat menyimpan data.");
+            }
+        }
+    }
+
+    // Fungsi untuk menghapus item dari localStorage
+    function removeFromLocalStorage(key) {
+        localStorage.removeItem(storagePrefix + key);
+       // console.log("Remove from localStorage:", key); // Debug log
+    }
+
+   // ============================
+    // DOWNLOAD CSV
+    // ============================
+    function downloadTokenScannerCSV() {
+        const tokenData = getFromLocalStorage("TOKEN_SCANNER", []);
+
+        // Header sesuai struktur
+        const headers = [
+            "id","no","symbol_in","symbol_out","chain",
+            "sc_in","des_in","sc_out","des_out",
+            "dataCexs","dataDexs","status","selectedCexs","selectedDexs"
+        ];
+
+        // Konversi setiap item
+        const rows = tokenData.map(token => [
+            token.id ?? "",
+            token.no ?? "",
+            token.symbol_in ?? "",
+            token.symbol_out ?? "",
+            token.chain ?? "",
+            token.sc_in ?? "",
+            token.des_in ?? "",
+            token.sc_out ?? "",
+            token.des_out ?? "",
+            JSON.stringify(token.dataCexs ?? {}),    // object → JSON string
+            JSON.stringify(token.dataDexs ?? {}),
+            token.status ? "true" : "false",         // boolean → string
+            (token.selectedCexs ?? []).join("|"),    // array → A|B|C
+            (token.selectedDexs ?? []).join("|")
+        ].map(v => `"${String(v).replace(/"/g, '""')}"`)); // escape CSV
+
+        // Gabungkan jadi CSV
+        const csvContent = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+
+        // Buat file download
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "KOIN_MULTIALL_SNIPER.csv";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        setLastAction("EXPORT DATA KOIN");
+    }
+
+    // ============================
+    // UPLOAD CSV
+    // ============================
+    function uploadTokenScannerCSV(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const csvText = e.target.result.trim();
+                const rows = csvText.split("\n");
+
+                // Ambil header
+                const headers = rows[0].split(",").map(h => h.trim());
+
+                // Parse tiap baris → object
+                const tokenData = rows.slice(1).map(row => {
+                    // Split CSV aman, mempertahankan koma dalam tanda kutip
+                    const values = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+
+                    let obj = {};
+                    headers.forEach((header, index) => {
+                        let val = values[index] ? values[index].trim() : "";
+
+                        // Hapus tanda kutip luar & ganti "" jadi "
+                        if (val.startsWith('"') && val.endsWith('"')) {
+                            val = val.slice(1, -1).replace(/""/g, '"');
+                        }
+
+                        // Parsing field sesuai tipe
+                        if (header === "dataCexs" || header === "dataDexs") {
+                            try { val = JSON.parse(val || "{}"); } catch { val = {}; }
+                        }
+                        else if (header === "selectedCexs" || header === "selectedDexs") {
+                            val = val ? val.split("|") : [];
+                        }
+                        else if (header === "no" || header === "des_in" || header === "des_out") {
+                            val = val ? Number(val) : null;
+                        }
+                        else if (header === "status") {
+                            val = (val === "true");
+                        }
+
+                        obj[header] = val;
+                    });
+
+                    return obj;
+                });
+
+                // Simpan ke localStorage
+                saveToLocalStorage("TOKEN_SCANNER", tokenData);
+                // Hitung jumlah token yang diimport
+                let jumlahToken = Array.isArray(tokenData) ? tokenData.length : 0;
+
+                // Tampilkan alert dengan Unicode
+                alert(`✅ BERHASIL IMPORT ${jumlahToken} TOKEN 📦`);
+                setLastAction("IMPORT DATA KOIN");
+                location.reload();
+
+            } catch (error) {
+                console.error("Error parsing CSV:", error);
+                toastr.error("Format file CSV tidak valid!");
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    // Get managed chains from settings
+    function getManagedChains() {
+        const settings = getFromLocalStorage('SETTING_SCANNER', {});
+        return settings.AllChains || Object.keys(CONFIG_CHAINS);
+    }
+
+    // Fungsi untuk mendapatkan data chain berdasarkan nama chain
+    function getChainData(chainName) {
+        if (!chainName) return null;
+        
+        const chainLower = chainName.toLowerCase();
+        const chainData = CONFIG_CHAINS[chainLower];
+        
+        const managedChains = getManagedChains();
+        if (!managedChains.includes(chainLower)) {
+            console.log(`Chain ${chainName} tidak termasuk dalam chain yang dikelola`);
+            return null;
+        }
+        
+        if (!chainData) {
+            console.log(`Chain dengan nama ${chainName} tidak ditemukan di CONFIG_CHAINS`);
+            return null;
+        }
+
+        return {
+            Kode_Chain: chainData.Kode_Chain || '',
+            Nama_Chain: chainData.Nama_Chain || '',
+            DEXS: chainData.DEXS || {},
+            PAIRDExS: chainData.PAIRDExS || {},
+            URL_Chain: chainData.URL_Chain || '', 
+            DATAJSON: chainData.DATAJSON || {},
+            BaseFEEDEX: chainData.BaseFEEDEX || '',
+            CEXCHAIN: chainData.WALLET_CEX || {},
+            ICON_CHAIN: chainData.ICON || '',
+            COLOR_CHAIN: chainData.WARNA || '#000',
+            SHORT_NAME: chainData.Nama_Pendek || '',
+            RPC: chainData.RPC || '' // ⬅ penting
+        };
+    }
+
+    function toggleDarkMode() {
+        const isDark = document.body.classList.toggle('dark-mode');    
+        document.body.classList.remove('uk-light', 'uk-dark');
+        document.body.classList.add(isDark ? 'uk-dark' : 'uk-light');
+
+        saveToLocalStorage("DARK_MODE", isDark);
+        updateDarkIcon(isDark);
+
+        toastr.info("UBAH MODE BERHASIL!!");
+        // Tunggu sebentar sebelum reload
+        setTimeout(() => {
+            location.reload();
+        }, 500);
+    }
+
+    function refreshTokensTable() {
+        // Ambil daftar chain yang diizinkan dari setting
+        const settingScanner = getFromLocalStorage('SETTING_SCANNER', {});
+        const allowedChains = (settingScanner.AllChains || []).map(c => c.toLowerCase());
+
+        // Ambil data mentah dari localStorage
+        const allTokens = getFromLocalStorage("TOKEN_SCANNER", []);
+
+        // Flatten data agar struktur konsisten
+        const flatTokens = flattenDataKoin(allTokens);
+
+        // Filter sesuai AllChains
+        const filteredByChain = flatTokens.filter(token =>
+            allowedChains.includes((token.chain || '').toLowerCase())
+        );
+
+        filteredTokens = [...filteredByChain];
+        originalTokens = [...filteredByChain];
+
+        updateTokenCount();
+        loadKointoTable(filteredTokens);
+
+        const uniqueKeys = new Set();
+                filteredTokens.forEach(item => {
+                    // buat key unik (cex|chain|symbol_in|symbol_out)
+                    const key = `${item.cex}|${item.chain}|${item.symbol_in}|${item.symbol_out}`;
+                    uniqueKeys.add(key);
+                });
+
+        $('#tokenCountALL').text(`TOTAL SEMUA: ${uniqueKeys.size} PAIR-TOKEN`);
+    }
+
+    function loadKointoTable(filteredData) {
+        loadSignalData();
+        const $tableBody = $('#dataTableBody');
+        $tableBody.empty();
+
+        if (!Array.isArray(filteredData) || filteredData.length === 0) {
+            $('#startSCAN').prop('disabled', true);
+            return;
+        }
+
+        const fragment = document.createDocumentFragment();
+        const maxSlots = 4;
+
+        filteredData.forEach((data, index) => {
+            const row = document.createElement('tr');
+
+            /** ========== ORDERBOOK kiri (CEX) ========== **/
+            const tdOrderbookLeft = document.createElement('td');
+            tdOrderbookLeft.textContent = data.cex;
+            const warnaCex = (CONFIG_CEX[data.cex] && CONFIG_CEX[data.cex].WARNA) || '#000';
+            tdOrderbookLeft.style.color = warnaCex;
+            tdOrderbookLeft.style.textAlign = 'center';
+            tdOrderbookLeft.style.verticalAlign = 'middle';
+            tdOrderbookLeft.innerHTML = `
+                    <span id="LEFT_${data.cex}_${data.symbol_in}_${data.symbol_out}_${data.chain.toUpperCase()}">
+                        <b>PRICE & VOL BUY <br>${data.cex}</b> 🔒
+                    </span>
+                `;
+            row.appendChild(tdOrderbookLeft);
+
+        /** ========== CEX → DEX (Kiri) ========== **/
+            for (let i = 0; i < maxSlots; i++) {
+                const td = document.createElement('td');
+                td.style.textAlign = 'center';
+                td.style.verticalAlign = 'middle';
+                if (data.dexs && data.dexs[i]) {
+                    const dexName = data.dexs[i].dex || '-';
+                    const modalLeft = data.dexs[i].left ?? 0;
+                    const idCELL = `${data.cex.toUpperCase()}_${dexName.toUpperCase()}_${data.symbol_in}_${data.symbol_out}_${(data.chain).toUpperCase()}`;
+                    td.id=idCELL;
+
+                   let innerHTML = `
+                        <strong class="uk-align-center" style="display:inline-block; margin:0;">[ ${dexName.toUpperCase()} ~ $${modalLeft} ]</strong><br>
+                        <span class="buy" id="BUY_${idCELL}" title="BUY_${idCELL}"></span><br>
+                        <span class="uk-text-primary uk-text-bolder" id="SWAP_${idCELL}"> 🔒 </span><br>
+                        <span class="sell" id="SELL_${idCELL}" title="SELL_${idCELL}"></span><br>
+                        <hr class="uk-divider-small uk-margin-remove">
+                        <span class="uk-text-primary" id="RESULT_${idCELL}"></span>
+                    `;
+
+                    td.innerHTML = innerHTML;
+                } else {
+                    td.textContent = '-';
+                }
+                row.appendChild(td);
+            }
+
+
+            /** ========== DETAIL INFO ========== **/
+            const chainLower = data.chain?.toLowerCase();
+            const chainConfig = CONFIG_CHAINS[chainLower] || { URL_Chain: '', WARNA: '#000', Kode_Chain: '', Nama_Chain: '' };
+            const warnaChain = chainConfig.WARNA || '#000';
+            function createHoverLink(url, text, className = '') {
+                return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="hover-link ${className}" title="${url}">${text}</a>`;
+            }
+            const urlScIn = chainConfig.URL_Chain ? `${chainConfig.URL_Chain}/token/${data.sc_in}` : '#';
+            const urlScOut = chainConfig.URL_Chain ? `${chainConfig.URL_Chain}/token/${data.sc_out}` : '#';
+            const urlsCEX = GeturlExchanger(data.cex, data.symbol_in, data.symbol_out);
+
+            const withdrawToken = urlsCEX.withdrawTokenUrl
+                ? createHoverLink(urlsCEX.withdrawTokenUrl, 'WD')
+                : `<b style="color:red; font-weight:bold;">WX</b>`;
+            const depositToken = urlsCEX.depositTokenUrl
+                ? createHoverLink(urlsCEX.depositTokenUrl, 'DP')
+                : `<b style="color:red; font-weight:bold;">DX</b>`;
+            const withdrawPair = urlsCEX.withdrawPairUrl
+                ? createHoverLink(urlsCEX.withdrawPairUrl, 'WD')
+                : `<b style="color:red; font-weight:bold;">WX</b>`;
+            const depositPair = urlsCEX.depositPairUrl
+                ? createHoverLink(urlsCEX.depositPairUrl, 'DP')
+                : `<b style="color:red; font-weight:bold;">DX</b>`;
+
+            const chainData = getChainData(data.chain);
+            const walletObj = chainData?.CEXCHAIN?.[data.cex] || {};
+            const linkStokToken = Object.entries(walletObj)
+                .filter(([key, val]) => key.toLowerCase().includes('address') && val && val !== '#')
+                .map(([key, val], idx) => createHoverLink(`${chainConfig.URL_Chain}/token/${data.sc_in}?a=${val}`, `#${idx + 1} `))
+                .join('');
+            const linkStokPair = Object.entries(walletObj)
+                .filter(([key, val]) => key.toLowerCase().includes('address') && val && val !== '#')
+                .map(([key, val], idx) => createHoverLink(`${chainConfig.URL_Chain}/token/${data.sc_out}?a=${val}`, `#${idx + 1} `))
+                .join('');
+
+            const linkToken = createHoverLink(urlsCEX.tradeToken, data.symbol_in.toUpperCase());
+            const linkPair = createHoverLink(urlsCEX.tradePair, data.symbol_out.toUpperCase());
+            const linkSCtoken = createHoverLink(urlScIn, '[SC]', 'uk-text-primary');
+            const linkSCpair = createHoverLink(urlScOut, '[SC]', 'uk-text-primary');
+
+            const linkOKDEX = createHoverLink(
+                `https://www.okx.com/web3/dex-swap?inputChain=${chainConfig.Kode_Chain}&inputCurrency=${data.sc_in}&outputChain=${chainConfig.Kode_Chain}&outputCurrency=${data.sc_out}`,
+                '#OKX',
+                'uk-text-secondary'
+            );
+            const linkUNIDEX = createHoverLink(
+                `https://app.unidex.exchange/?chain=${chainConfig.Nama_Chain}&from=${data.sc_in}&to=${data.sc_out}`,
+                '#UND',
+                'uk-text-secondary'
+            );
+            const linkDEFIL = createHoverLink(
+                `https://swap.defillama.com/?chain=${chainConfig.Nama_Chain}&from=${data.sc_in}&to=${data.sc_out}`,
+                '#DFL',
+                'uk-text-primary'
+            );
+            const linkLiFi = createHoverLink(
+                `https://jumper.exchange/?fromChain=${chainConfig.Kode_Chain}&fromToken=${data.sc_in}&toChain=${chainConfig.Kode_Chain}&toToken=${data.sc_out}`,
+                '#LFX',
+                'uk-text-warning'
+            );
+
+            const tdDetail = document.createElement('td');
+            tdDetail.className = 'uk-text-center uk-background uk-text-nowrap';
+            tdDetail.style.textAlign = 'center';
+            tdDetail.style.border='1px solid black';
+            const chainShort = (data.chain || '').substring(0,3).toUpperCase();
+            tdDetail.innerHTML = `
+                [${index + 1}] <span style="color: ${warnaCex}; font-weight:bolder;">${data.cex} </span> on <span style="color: ${warnaChain}; font-weight:bolder;">${chainShort} </span><br/>
+                <span class="uk-text-danger uk-text-bolder">${linkToken} VS ${linkPair}</span>
+                <span id="DelMulti-${index}"  data-id="${data.id}" data-cex="${data.cex}" data-coin="${data.symbol_in}"  data-index="${index + 1}" title="HAPUS KOIN" uk-icon="icon: trash; ratio: 0.6"   class="uk-text-secondary uk-text-bolder"  style="cursor:pointer"></span> <br/>
+                <span class="uk-text-primary uk-text-bolder">${withdrawToken} ~ ${depositToken}</span> | 
+                <span class="uk-text-primary uk-text-bolder">${withdrawPair} ~ ${depositPair}</span><br/>
+                <span class="uk-text-primary uk-text-bolder">${data.symbol_in}</span> ${linkSCtoken} : ${linkStokToken} <br/>
+                <span class="uk-text-primary uk-text-bolder">${data.symbol_out}</span> ${linkSCpair} : ${linkStokPair}<br/>
+                ${linkUNIDEX} ${linkOKDEX} ${linkDEFIL} ${linkLiFi}
+            `;
+            row.appendChild(tdDetail);
+
+        /** ========== DEX → CEX (Kanan) ========== **/
+            for (let i = 0; i < maxSlots; i++) {
+                const td = document.createElement('td');
+                td.style.textAlign = 'center';
+                td.style.verticalAlign = 'middle';
+                if (data.dexs && data.dexs[i]) {
+                    const dexName = data.dexs[i].dex || '-';
+                    const modalRight = data.dexs[i].right ?? 0;
+                    const idCELL = `${data.cex}_${dexName.toUpperCase()}_${data.symbol_out}_${data.symbol_in}_${data.chain.toUpperCase()}`;
+                    td.id = idCELL;
+
+                   let innerHTML = `
+                        <strong class="uk-align-center" style="display:inline-block; margin:0; padding:0;">[ ${dexName.toUpperCase()} ~ $${modalRight} ]</strong><br>
+                        <span class="buy" id="BUY_${idCELL}" title="BUY_${idCELL}"> </span><br>
+                        <span class="uk-text-primary uk-text-bolder" id="SWAP_${idCELL}"> 🔒 </span><br>
+                        <span class="sell" id="SELL_${idCELL}" title="SELL_${idCELL}"> </span><br>
+                        <hr class="uk-divider-small uk-margin-remove">
+                        <span class="uk-text-primary" id="RESULT_${idCELL}"> </span>
+                    `;
+
+                    td.innerHTML = innerHTML;
+                } else {
+                    td.textContent = '-';
+                }
+                row.appendChild(td);
+            }
+
+
+            /** ========== ORDERBOOK kanan (CEX) ========== **/
+            const tdOrderbookRight = document.createElement('td');
+            tdOrderbookRight.textContent = data.cex;
+            tdOrderbookRight.style.color = warnaCex;
+            tdOrderbookRight.style.textAlign = 'center';
+            tdOrderbookRight.style.verticalAlign = 'middle';
+            tdOrderbookRight.innerHTML = `
+                    <span id="RIGHT_${data.cex}_${data.symbol_in}_${data.symbol_out}_${data.chain.toUpperCase()}">
+                       <b> PRICE & VOL SELL <br>${data.cex}</b> 🔒
+                    </span>
+                `;
+            row.appendChild(tdOrderbookRight);
+
+            fragment.appendChild(row);
+        });
+
+        $tableBody.append(fragment);
+    }
+
+    function createHoverLink(url, text, className = '') {
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="hover-link ${className}" title="${url}">${text}</a>`;
+    }
+    
+    function deleteCexFromToken(id, cex) {
+        let tokens = getFromLocalStorage('TOKEN_SCANNER', null);
+
+        if (!tokens || !Array.isArray(tokens)) {
+            console.warn("Data TOKEN_SCANNER tidak valid, batal hapus.");
+            return;
+        }
+
+        let updatedTokens = tokens.map(token => {
+            if (String(token.id) === String(id)) {
+                token.selectedCexs = (token.selectedCexs || []).filter(c => c.toUpperCase() !== cex.toUpperCase());
+
+                if (token.dataCexs) {
+                    for (let key in token.dataCexs) {
+                        if (key.toUpperCase() === cex.toUpperCase()) {
+                            delete token.dataCexs[key];
+                        }
+                    }
+                }
+            }
+            return token;
+        });
+
+        saveToLocalStorage('TOKEN_SCANNER', updatedTokens);
+        refreshTokensTable();
+    }
+
+    function updateTokenCount() {
+        $("#tokenCount").text(`(${filteredTokens.length})`);
+      //  console.warn("Tokens data", filteredTokens);
+    }
+
+    function updateDarkIcon(isDark) {
+        const icon = document.querySelector('#darkModeToggle span');
+        if (icon) {
+            icon.setAttribute("uk-icon", isDark ? "icon: sun; ratio: 1.4" : "icon: moon; ratio: 1.4");
+            UIkit.icon(icon).$emit('update'); // refresh ikon
+        }
+    }
+    // Mapping konfigurasi untuk setiap exchange
+    const exchangeConfig = {
+        GATE: {
+            url: coins => `https://api.gateio.ws/api/v4/spot/order_book?limit=5&currency_pair=${coins.symbol}_USDT`,
+            processData: data => processOrderBook(data)
+        },
+        BINANCE: {
+            url: coins => `https://api.binance.me/api/v3/depth?limit=4&symbol=${coins.symbol}USDT`,
+            processData: data => processOrderBook(data)
+        },
+        MEXC: {
+            url: coins => `https://api.mexc.com/api/v3/depth?symbol=${coins.symbol}USDT&limit=5`,
+            processData: data => processOrderBook(data)
+        },
+        
+        INDODAX: {
+            url: coins => `https://indodax.com/api/depth/${(coins.symbol).toLowerCase()}idr`,
+
+            processData: data => {
+                // Cek kalau data buy/sell tidak ada
+                if (!data?.buy || !data?.sell) {
+                    console.error('Invalid INDODAX response structure:', data);
+                    return { priceBuy: [], priceSell: [] };
+                }
+
+                // Proses data BUY: langsung ambil 3 data teratas dari API (tidak di-sort)
+                const priceBuy = data.buy
+                    .slice(0, 3)
+                    .map(([price, volume]) => {
+                        const priceFloat = parseFloat(price);
+                        const volumeFloat = parseFloat(volume);
+                        return {
+                            price: convertIDRtoUSDT(priceFloat),
+                            volume: convertIDRtoUSDT(priceFloat * volumeFloat)
+                        };
+                    });
+
+                // Proses data SELL: sort harga dari besar ke kecil, baru ambil 3 data teratas
+                const priceSell = data.sell
+                    .slice(0, 3)
+                    .map(([price, volume]) => {
+                        const priceFloat = parseFloat(price);
+                        const volumeFloat = parseFloat(volume);
+                        return {
+                            price: convertIDRtoUSDT(priceFloat),
+                            volume: convertIDRtoUSDT(priceFloat * volumeFloat)
+                        };
+                    });
+
+                // Return hasil BUY dan SELL
+                return { priceSell ,priceBuy};
+            }
+        }
+    };   
+    
+    function convertIDRtoUSDT(idrAmount) {
+        const rateUSDT = getFromLocalStorage("PRICE_RATE_USDT", 0);
+        if (!rateUSDT || rateUSDT === 0) return 0;
+        return parseFloat((idrAmount / rateUSDT).toFixed(8));
+    }
+
+    async function feeGasGwei() {
+        const settingScanner = getFromLocalStorage('SETTING_SCANNER', {});
+        const allChains = settingScanner.AllChains || [];
+        const Web3 = window.Web3;
+
+        if (!allChains.length) {
+            console.warn("Tidak ada chain yang dipilih di SETTING_SCANNER.AllChains");
+            return;
+        }
+
+        // 🔍 Ambil semua data chain dari config
+        const chainInfos = allChains
+            .map(name => {
+                const chainData = getChainData(name);
+                if (!chainData || !chainData.BaseFEEDEX || !chainData.RPC) return null;
+
+                return {
+                    ...chainData,
+                    rpc: chainData.RPC,
+                    symbol: chainData.BaseFEEDEX.replace("USDT", ""),
+                    gasLimit: chainData.gasLimit || 21000
+                };
+            })
+            .filter(c => c && c.rpc && c.symbol);
+
+        const uniqueSymbols = [...new Set(chainInfos.map(c => c.BaseFEEDEX.toUpperCase()))];
+        if (!uniqueSymbols.length) {
+            console.warn("Tidak ada simbol token gas yang valid untuk Binance API");
+            return;
+        }
+
+        // 🔗 Ambil harga token gas dari Binance
+        let tokenPrices = {};
+        try {
+            const binanceURL = `https://api-gcp.binance.com/api/v3/ticker/price?symbols=${encodeURIComponent(JSON.stringify(uniqueSymbols))}`;
+            const response = await $.getJSON(binanceURL);
+            response.forEach(item => {
+                const symbol = item.symbol.replace('USDT', '');
+                tokenPrices[symbol] = parseFloat(item.price);
+            });
+        } catch (err) {
+            console.error("Gagal ambil harga token gas dari Binance:", err);
+            return;
+        }
+
+        // 📦 Array untuk menyimpan semua hasil
+        const gasResults = [];
+
+        // 🔥 Hitung gas fee per chain
+        for (const chainData of chainInfos) {
+            let tokenPrice = tokenPrices[chainData.symbol.toUpperCase()];
+            if (!tokenPrice) {
+                console.warn(`Harga token untuk ${chainData.Nama_Chain} tidak ditemukan`);
+                continue;
+            }
+
+            try {
+                const web3 = new Web3(new Web3.providers.HttpProvider(chainData.rpc));
+                const block = await web3.eth.getBlock("pending");
+
+                let baseFee;
+                if (block?.baseFeePerGas !== undefined) {
+                    baseFee = Number(block.baseFeePerGas);
+                } else {
+                    baseFee = Number(await web3.eth.getGasPrice());
+                }
+
+                const gwei = (baseFee / 1e9) * 2; // buffer *2
+                const gasUSD = (gwei * chainData.gasLimit * tokenPrice) / 1e9;
+
+                gasResults.push({
+                    chain: chainData.Nama_Chain,
+                    key: chainData.key || chainData.symbol,
+                    symbol: chainData.symbol,
+                    tokenPrice,
+                    gwei,
+                    gasUSD
+                });
+
+                console.log(`🟢 ${chainData.Nama_Chain} | Gwei: ${gwei.toFixed(2)} | Token: ${chainData.symbol} | Price: $${tokenPrice} | Fee ≈ $${gasUSD.toFixed(4)}`);
+
+            } catch (err) {
+                console.error(`❌ Gagal ambil data gas untuk ${chainData.Nama_Chain}:`, err);
+            }
+        }
+
+        // 💾 Simpan array hasil ke localStorage
+        saveToLocalStorage("ALL_GAS_FEES", gasResults);
+    }
+
+    // Fungsi untuk menonaktifkan semua input di dalam form
+    function form_off() {
+        $('input, select, textarea, button').prop('disabled', true); 
+    }
+
+    // Fungsi untuk mengaktifkan semua input di dalam form
+    function form_on() {
+        $('input, select, button').prop('disabled', false);
+    }
+
+    function flattenDataKoin(dataTokens) {
+        // Pastikan bentuknya array
+        if (!Array.isArray(dataTokens)) {
+            try {
+                dataTokens = JSON.parse(dataTokens || '[]');
+            } catch {
+                dataTokens = [];
+            }
+        }
+        let flatResult = [];
+        let counter = 1;
+
+        dataTokens.forEach(item => {
+            if (!item.status) return;
+
+            // Loop per CEX yang dipilih
+            (item.selectedCexs || []).forEach(cex => {
+                const cexInfo = item.dataCexs?.[cex] || {};
+
+                // Bentuk array DEX
+                const dexArray = (item.selectedDexs || []).map(dex => ({
+                    dex: dex,
+                    left: item.dataDexs?.[dex]?.left || 0,
+                    right: item.dataDexs?.[dex]?.right || 0
+                }));
+
+                flatResult.push({
+                    no: counter++,
+                    id: item.id,
+                    cex: cex,
+                    feeWDToken: parseFloat(cexInfo.feeWDToken) || 0,
+                    feeWDPair: parseFloat(cexInfo.feeWDPair) || 0,
+                    depositToken: !!cexInfo.depositToken,
+                    withdrawToken: !!cexInfo.withdrawToken,
+                    depositPair: !!cexInfo.depositPair,
+                    withdrawPair: !!cexInfo.withdrawPair,
+                    chain: item.chain,
+                    symbol_in: item.symbol_in,
+                    sc_in: item.sc_in,
+                    des_in: item.des_in,
+                    symbol_out: item.symbol_out,
+                    sc_out: item.sc_out,
+                    des_out: item.des_out,
+                    status: item.status,
+                    dexs: dexArray
+                });
+            });
+        });
+
+        return flatResult;
+    }
+
+    function scanner_form_off() {
+        const $form = $("#FormScanner");
+
+        // Disable semua input, checkbox, radio, dan tombol di dalam form
+        $form.find("input, button, select, textarea")
+            .prop("disabled", true)        // nonaktifkan
+            .css("opacity", "0.5")         // tampilkan efek redup
+            .css("pointer-events", "none"); // cegah klik
+
+        // Tambahkan kelas untuk efek visual (opsional)
+        $form.addClass("uk-disabled");
+    }
+
+    function scanner_form_on() {
+        const $form = $("#FormScanner");
+        $form.find("input, button, select, textarea")
+            .prop("disabled", false)
+            .css("opacity", "")
+            .css("pointer-events", "");
+        $form.removeClass("uk-disabled");
+    }
+
+    function cekDataAwal() {
+       // console.log("LOAD DATA SETTTING",SavedSettingData);
+       // 
+        var info = true; // Variabel status info
+        let errorMessages = []; // Array untuk menyimpan pesan error
+
+        // Validasi data dan push error ke array
+        if (!DataTokens.length) {
+           // form_off();
+           // $("#LoadDataBtn").addClass("icon-wrapper");
+           // errorMessages.push('<b>SILAKAN PILIH TOKEN-PAIR TERLEBIH DAHULU !!</b>');
+            toastr.error("Tidak ada data token yang tersedia");
+            scanner_form_off();
+            info = false;
+
+        } else if (!getFromLocalStorage('SETTING_SCANNER')) {
+            errorMessages.push('CEK, SETTINGAN APLIKASI {USERNAME,WALLET ADDRESS,JEDA}!');
+            $("#SettingConfig").addClass("icon-wrapper");
+            form_off();
+            info = false;
+        } else {
+            console.info('⏳ Memulai proses Memuat DATA KOIN');
+            console.time('⏱️ Waktu eksekusi Memuat DATA KOIN');
+
+            const settingScanner = getFromLocalStorage('SETTING_SCANNER', {});
+            const allowedChains = (settingScanner.AllChains || []).map(c => c.toLowerCase());
+
+            //console.log("LOAD DATA KOIN BEFORE FLAT", DataTokens);
+
+            const flatTokens = flattenDataKoin(DataTokens);
+           // console.log("LOAD DATA KOIN AFTER FLAT", flatTokens);
+
+            const filteredByChain = flatTokens.filter(token =>
+                allowedChains.includes((token.chain || '').toLowerCase())
+            );
+
+            loadKointoTable(filteredByChain);
+            console.timeEnd('⏱️ Waktu eksekusi Memuat DATA KOIN');
+            console.info('✅ Proses Memuat DATA KOIN selesai.');
+           // console.log("LOAD DATA KOIN AFTER FILTER", filteredByChain);
+            // // Generate CHAIN filter dari CONFIG_CHAINS
+            generateInputCheckbox(CONFIG_CHAINS, "chain-options", "C", "CHAIN: ", "uk-form-label uk-text-primary", 'chain');
+        }
+
+        // Update link dengan parameter chains dari SETTING_SCANNER
+        var link = $('a[href="multipair.html"]');
+        var href = link.attr('href');
+        const managedChains = getManagedChains();
+        if (managedChains.length > 0) {
+            const chainParam = managedChains.join(',');
+            link.attr('href', href + "?chains=" + encodeURIComponent(chainParam));
+        }
+
+        // Tampilkan semua pesan error ke #infoAPP
+        if (!info) {
+            $("#infoAPP").show().html(errorMessages.join("<br/>")); // Gabungkan semua pesan error
+        }
+
+        // Proses aksi terakhir jika kondisi terpenuhi
+        var dataACTION = getFromLocalStorage('HISTORY');
+        if (dataACTION && dataACTION.time) {
+            $("#infoAPP").show().text(`${dataACTION.action} at ${dataACTION.time}`);
+        }else{
+            $("#infoAPP").text("?");
+        }
+    }
+
+    function hexToRgba(hex, alpha) {
+        var r = parseInt(hex.slice(1, 3), 16);
+        var g = parseInt(hex.slice(3, 5), 16);
+        var b = parseInt(hex.slice(5, 7), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    function formatPrice(price) {
+        if (price >= 1) {
+            return price.toFixed(3) + '$'; // Jika >= 1, tampilkan 2 angka desimal
+        }
+
+        let strPrice = price.toFixed(20).replace(/0+$/, ''); // Paksa format desimal, hapus nol di akhir
+        let match = strPrice.match(/0\.(0*)(\d+)/); // Ambil nol setelah koma dan angka signifikan
+
+        if (match) {
+            let zeroCount = match[1].length; // Hitung jumlah nol setelah koma
+            let significant = match[2].substring(0, 4); // Ambil 5 digit signifikan pertama
+
+            // Jika angka signifikan kurang dari 5 digit, tambahkan nol di akhir
+            significant = significant.padEnd(4, '0');
+
+            if (zeroCount >= 2) {
+                return `0.{${zeroCount}}${significant}$`; // Format dengan {N} jika nol >= 2
+            } else {
+                return `0.${match[1]}${significant}$`; // Format biasa jika nol < 2
+            }
+        }
+
+        return price.toFixed(6) + '$'; // Fallback jika format tidak dikenali
+    }
+
+    function getCexData(token) {
+        try {
+            if (!token || typeof token !== 'object') return null;
+            if (!token.modalCexs || typeof token.modalCexs !== 'object') return null;
+            if (!token.cex || typeof token.cex !== 'string') return null;
+            
+            const upperCex = token.cex.toUpperCase();
+            return token.modalCexs[upperCex] || null;
+        } catch (error) {
+            console.error('Error in getCexData:', error);
+            return null;
+        }
+    }
+
+    // Fungsi untuk mendapatkan warna CEX
+    function getWarnaCEX(cex) {
+        // Early return if cex is invalid
+        if (!cex || typeof cex !== 'string') {
+            console.warn('Parameter CEX kosong atau tidak valid:', cex);
+            return 'black';
+        }
+
+        try {
+            const upperCex = cex.toUpperCase();
+            
+            // Cek di CONFIG_CEX terlebih dahulu
+            if (CONFIG_CEX && CONFIG_CEX[upperCex] && CONFIG_CEX[upperCex].WARNA) {
+                return CONFIG_CEX[upperCex].WARNA;
+            }
+
+            // Jika tidak ada di CONFIG_CEX, ambil dari TOKEN_SCANNER
+            const tokens = getFromLocalStorage('TOKEN_SCANNER', []);
+            const tokenWithCex = tokens.find(t => t.cex && t.cex.toUpperCase() === upperCex);
+            
+            if (tokenWithCex?.modalCexs?.[upperCex]) {
+                const cexData = tokenWithCex.modalCexs[upperCex];
+                if (cexData.withdrawToken && cexData.depositToken) {
+                    return '#008000'; // Hijau jika withdraw dan deposit aktif
+                } else if (!cexData.withdrawToken && !cexData.depositToken) {
+                    return '#FF0000'; // Merah jika keduanya nonaktif
+                } else {
+                    return '#FFA500'; // Orange jika salah satu aktif
+                }
+            }
+
+            return 'black'; // Warna default
+        } catch (error) {
+            console.error('Error dalam getWarnaCEX:', error);
+            return 'black';
+        }
+    }
+
+    function generateInputCheckbox(items, containerId, idPrefix, labelText, style, type = 'cex') {
+        if (type !== 'cex' && type !== 'chain') return;
+
+        const $container = $(`#${containerId}`);
+        $container.empty();
+
+        // 🔹 Ambil data setting lama dari localStorage
+        let settingData = getFromLocalStorage('SETTING_SCANNER') || {};
+        let selectedChains = settingData.AllChains || [];
+
+        // Label judul
+        const label = `
+            <b>
+                <span class="uk-text-secondary uk-text-medium">
+                    ${labelText}
+                </span>
+            </b>
+        `;
+        $container.append(label);
+
+        let itemsArr = [];
+        if (type === 'cex') {
+            itemsArr = Object.keys(items || {});
+        } else if (type === 'chain') {
+            itemsArr = Object.keys(items || {});
+        }
+
+        const checkboxWrapper = $('<div style="display: flex; flex-wrap: wrap; gap: 10px;"></div>');
+
+        itemsArr.forEach(item => {
+            const checkboxId = `${idPrefix}${item.toUpperCase()}`;
+            let labelTextShow = (type === 'chain') ? item.substring(0, 3).toUpperCase() : item.toUpperCase();
+
+            // 🔹 Kalau chain → centang sesuai settingData.AllChains
+            const isChecked = (type === 'chain')
+                ? selectedChains.includes(item.toLowerCase())
+                : true;
+
+            const checkbox = $(`
+                <label class="${style || ''}" for="${checkboxId}">
+                    <input type="checkbox" id="${checkboxId}" value="${item}" ${isChecked ? 'checked' : ''}>
+                    ${labelTextShow}
+                </label>
+            `);
+
+            // 🔹 Event update AllChains dengan validasi minimal 1
+            checkbox.find('input').on('change', function () {
+                const val = $(this).val().toLowerCase();
+
+                if (type === 'chain') {
+                    if (this.checked) {
+                        // Tambah ke daftar
+                        if (!selectedChains.includes(val)) {
+                            selectedChains.push(val);
+                        }
+                        toastr.info(`CHAIN ${item.toUpperCase()} DITAMBAH`);
+                    } else {
+                        // Cek kalau mau hapus terakhir → batalin
+                        if (selectedChains.length <= 1) {
+                            toastr.warning("Minimal harus ada 1 chain yang dipilih!");
+                            $(this).prop('checked', true); // balikin ke checked
+                            return;
+                        }
+                        // Hapus dari daftar
+                        selectedChains = selectedChains.filter(c => c !== val);
+                        toastr.info(`CHAIN ${item.toUpperCase()} DIHAPUS`);
+                    }
+
+                    // Simpan perubahan hanya ke AllChains
+                    settingData.AllChains = selectedChains;
+                    saveToLocalStorage('SETTING_SCANNER', settingData);
+                }
+                refreshTokensTable(selectedChains);
+            });
+
+            checkboxWrapper.append(checkbox);
+        });
+
+        $container.append(checkboxWrapper);
+    }
+    
+    function loadSignalData() {
+        const dexList = Object.keys(CONFIG_DEXS || {});
+        const appSettings = getFromLocalStorage('SETTING_SCANNER', {});
+
+        let sinyalContainer = document.getElementById('sinyal-container');
+        sinyalContainer.innerHTML = '';
+
+        sinyalContainer.setAttribute('uk-grid', '');
+        sinyalContainer.classList.add('uk-grid-small', 'uk-child-width-1-2@s', 'uk-child-width-1-3@m', 'uk-child-width-1-6@xl');
+
+        dexList.forEach((dex, index) => {
+            let gridItem = document.createElement('div');
+
+            let card = document.createElement('div');
+            card.classList.add('uk-card', 'uk-card-default', 'uk-card-hover');
+            card.style.borderRadius = '5px';
+            card.style.overflow = 'hidden';
+            card.style.border = '1px solid black';
+            card.style.paddingBottom = '10px';
+            card.style.marginTop = '10px';
+
+            let cardHeader = document.createElement('div');
+            cardHeader.classList.add('uk-card-header', 'uk-padding-remove-vertical', 'uk-padding-small');
+            cardHeader.style.backgroundColor = '#e5ebc6';
+            cardHeader.style.height = '30px';
+            cardHeader.style.display = 'flex';
+            cardHeader.style.alignItems = 'center';
+            cardHeader.style.justifyContent = 'space-between';
+            cardHeader.style.borderBottom = '1px solid black';
+
+            let bodyId = `body-${dex.toLowerCase()}-${index}`;
+            cardHeader.innerHTML = `
+                <div class="uk-flex uk-flex-middle" style="gap:8px;">
+                    <span class="uk-text-bold" style="color:black !important; font-size:14px;">
+                        ${dex.toUpperCase()}
+                    </span>
+                </div>
+                <a class="uk-icon-link uk-text-danger uk-text-bolder" 
+                uk-icon="chevron-up" 
+                uk-toggle="target: #${bodyId}"></a>
+            `;
+
+            let cardBody = document.createElement('div');
+            cardBody.classList.add('uk-card-body', 'uk-padding-remove', 'uk-margin-small-left', );
+            cardBody.id = bodyId;
+
+            let signalSpan = document.createElement('div');
+            signalSpan.setAttribute('id', `sinyal${dex.toLowerCase()}`);
+            signalSpan.style.fontSize = '13.5px';
+
+            cardBody.appendChild(signalSpan);
+            card.appendChild(cardHeader);
+            card.appendChild(cardBody);
+            gridItem.appendChild(card);
+            sinyalContainer.appendChild(gridItem);
+        });
+
+        // Re-render UIkit grid
+        UIkit.update(sinyalContainer);
+    }
+
+    function createLink(url, text, className = '') {
+        return url
+            ? `<a href="${url}" target="_blank" class="${className}"><b>${text}</b></a>`
+            : `<b>${text}</b>`;
+    }
+    
+    //generate url cex
+    function GeturlExchanger(cex, NameToken, NamePair) {
+        // Check for undefined or null values
+        if (!NameToken || !NamePair) {
+            console.warn('Missing token names in GeturlExchanger:', { cex, NameToken, NamePair });
+            return {
+                tradeToken: '#',
+                tradePair: '#',
+                withdrawUrl: '#',
+                depositUrl: '#'
+            };
+        }
+
+        // Konversi nama token dan pasangan ke uppercase
+        const token = NameToken.toString().toUpperCase();
+        const pair = NamePair.toString().toUpperCase();
+
+        let baseUrlTradeToken = token === "USDT" ? "#" : null;
+        let baseUrlTradePair = pair === "USDT" ? "#" : null;
+        let baseUrlWithdraw = null;
+        let baseUrlDeposit = null;
+
+        // Menentukan URL berdasarkan nilai cex
+        if (cex === "GATE") {
+            if (baseUrlTradeToken !== "#") baseUrlTradeToken = `https://www.gate.com/trade/${token}_USDT`;
+            if (baseUrlTradePair !== "#") baseUrlTradePair = `https://www.gate.com/trade/${pair}_USDT`;
+            baseUrlWithdraw = `https://www.gate.com/myaccount/withdraw/${token}`;
+            baseUrlDeposit = `https://www.gate.com/myaccount/deposit/${pair}`;
+        } else if (cex === "BINANCE") {
+            if (baseUrlTradeToken !== "#") baseUrlTradeToken = `https://www.binance.com/en/trade/${token}_USDT`;
+            if (baseUrlTradePair !== "#") baseUrlTradePair = `https://www.binance.com/en/trade/${pair}_USDT`;
+            baseUrlWithdraw = `https://www.binance.com/en/my/wallet/account/main/withdrawal/crypto/${token}`;
+            baseUrlDeposit = `https://www.binance.com/en/my/wallet/account/main/deposit/crypto/${pair}`;
+        } else if (cex === "KUCOIN") {
+            if (baseUrlTradeToken !== "#") baseUrlTradeToken = `https://www.kucoin.com/trade/${token}-USDT`;
+            if (baseUrlTradePair !== "#") baseUrlTradePair = `https://www.kucoin.com/trade/${pair}-USDT`;
+            baseUrlWithdraw = `https://www.kucoin.com/assets/withdraw/${token}`;
+            baseUrlDeposit = `https://www.kucoin.com/assets/coin/${pair}`;
+        } else if (cex === "BITGET") {
+            if (baseUrlTradeToken !== "#") baseUrlTradeToken = `https://www.bitget.com/spot/${token}USDT`;
+            if (baseUrlTradePair !== "#") baseUrlTradePair = `https://www.bitget.com/spot/${pair}USDT`;
+            baseUrlWithdraw = `https://www.bitget.com/asset/withdraw`;
+            baseUrlDeposit = `https://www.bitget.com/asset/recharge`;
+        } else if (cex === "BYBIT") {
+            if (baseUrlTradeToken !== "#") baseUrlTradeToken = `https://www.bybit.com/en/trade/spot/${token}/USDT`;
+            if (baseUrlTradePair !== "#") baseUrlTradePair = `https://www.bybit.com/en/trade/spot/${pair}/USDT`;
+            baseUrlWithdraw = "https://www.bybit.com/user/assets/withdraw";
+            baseUrlDeposit = "https://www.bybit.com/user/assets/deposit";
+        } else if (cex === "MEXC") {
+            if (baseUrlTradeToken !== "#") baseUrlTradeToken = `https://www.mexc.com/exchange/${token}_USDT?_from=search`;
+            if (baseUrlTradePair !== "#") baseUrlTradePair = `https://www.mexc.com/exchange/${pair}_USDT?_from=search`;
+            baseUrlWithdraw = `https://www.mexc.com/assets/withdraw/${token}`;
+            baseUrlDeposit = `https://www.mexc.com/assets/deposit/${pair}`;
+        } else if (cex === "OKX") {
+            if (baseUrlTradeToken !== "#") baseUrlTradeToken = `https://www.okx.com/trade-spot/${token}-usdt`;
+            if (baseUrlTradePair !== "#") baseUrlTradePair = `https://www.okx.com/trade-spot/${pair}-usdt`;
+            baseUrlWithdraw = `https://www.okx.com/balance/withdrawal/${token}-chain`;
+            baseUrlDeposit = `https://www.okx.com/balance/recharge/${pair}`;
+        }
+        else if (cex === "BITMART") {
+            if (baseUrlTradeToken !== "#") baseUrlTradeToken = `https://www.bitmart.com/trade/en-US?symbol=${token}_USDT&type=spot`;
+            if (baseUrlTradePair !== "#") baseUrlTradePair = `https://www.bitmart.com/trade/en-US?symbol=${pair}_USDT&type=spot`;
+            baseUrlWithdraw = `https://www.bitmart.com/asset-withdrawal/en-US`;
+            baseUrlDeposit = `https://www.bitmart.com/asset-deposit/en-US`;
+        }
+        else if (cex === "INDODAX") {
+            if (baseUrlTradeToken !== "#") baseUrlTradeToken = `https://indodax.com/market/${token}IDR`;
+            if (baseUrlTradePair !== "#") baseUrlTradePair = `https://indodax.com/market/${pair}IDR`;
+            baseUrlWithdraw = `https://indodax.com/finance/${token}#kirim`;
+            baseUrlDeposit = `https://indodax.com/finance/${token}`;
+        }
+
+        // Kembalikan objek URL
+        return {
+            tradeToken: baseUrlTradeToken,
+            tradePair: baseUrlTradePair,
+            withdrawUrl: baseUrlWithdraw,
+            depositUrl: baseUrlDeposit
+        };
+    }
+
+    // Fungsi untuk mengurutkan tabel
+    function sortTable(columnIndex) {
+        const rows = $('#dataTableBody tr').get();
+
+        rows.sort(function(a, b) {
+            const keyA = $(a).children('td').eq(columnIndex).text().toUpperCase();
+            const keyB = $(b).children('td').eq(columnIndex).text().toUpperCase();
+
+            if (sortOrder[columnIndex] === undefined) {
+                sortOrder[columnIndex] = true; // Default ke urutan naik
+            }
+
+            if (keyA < keyB) return sortOrder[columnIndex] ? -1 : 1;
+            if (keyA > keyB) return sortOrder[columnIndex] ? 1 : -1;
+            return 0;
+        });
+
+        // Kosongkan tabel dan tambahkan kembali baris yang sudah diurutkan
+        $('#dataTableBody').empty().append(rows);
+
+        // Update kolom No agar tetap berurutan
+        $('#dataTableBody tr').each((index, row) => {
+            $(row).children('td').first().text(index + 1); // Set nomor berurutan
+        });
+
+        // Toggle urutan untuk kolom yang sama
+        sortOrder[columnIndex] = !sortOrder[columnIndex];
+        updateSortIcons();
+    }
+
+    // Memperbarui ikon urutan
+    function updateSortIcons() {
+        $('.sort-icon').html(''); // Reset semua ikon
+        for (let index in sortOrder) {
+            const icon = sortOrder[index] ? '▲' : '▼';
+            $('#sortIcon' + index).html(icon);
+        }
+    }
+
+    function processOrderBook(data) {
+        const priceBuy = data.bids.slice(0, 3).map(([price, volume]) => ({
+            price: parseFloat(price),
+            volume: parseFloat(volume) * parseFloat(price) // Volume dalam USD
+        })).reverse(); // Membalik urutan priceBuy
+
+        const priceSell = data.asks.slice(0, 3).map(([price, volume]) => ({
+            price: parseFloat(price),
+            volume: parseFloat(volume) * parseFloat(price) // Volume dalam USD
+        })).reverse(); // Membalik urutan priceSell
+
+        return { priceBuy, priceSell };
+    }
+
+    function getRateUSDT() {
+        let ratePrice = {}; // Inisialisasi objek harga
+
+        // Ambil harga USDT/IDR dari API Indodax
+        $.getJSON('https://indodax.com/api/ticker/usdtidr')
+            .done(function (responseIndodax) {
+                if (responseIndodax?.ticker?.last) {
+                    ratePrice["idr"] = parseFloat(responseIndodax.ticker.last);
+
+                    // Simpan harga USDT ke IDR ke localStorage
+                    saveToLocalStorage('PRICE_RATE_USDT', ratePrice.idr);
+                    console.log("RATE USDT/IDR: " + ratePrice.idr);
+                    // $("#rateUSDT").text("RATE USDT/IDR: " + ratePrice.idr);
+                } else {
+                    console.warn("Data USDT/IDR dari Indodax tidak valid:", responseIndodax);
+                }
+            })
+            .fail(function (error) {
+                console.error("Error fetching USDT/IDR price:", error);
+                toastr.error('KONEKSI INDODAX KENA LIMIT!');
+            });
+    }
+
+    // list api OKXDEX sell_BINANCE_USDT_buy_0x_BAL
+    const apiKeysOKXDEX = [
+        {
+            ApiKeyOKX: "28bc65f0-8cd1-4ecb-9b53-14d84a75814b",
+            secretKeyOKX: "E8C92510E44400D8A709FBF140AABEC1",
+            PassphraseOKX: "Regi!#007"
+        },
+        {
+            ApiKeyOKX: "04f923ec-98f2-4e60-bed3-b8f2d419c773",
+            secretKeyOKX: "3D7D0BD3D985C8147F70592DF6BE3C48",
+            PassphraseOKX: "Regi!#007"
+        },
+        {
+            ApiKeyOKX: "cf214e57-8af2-42bf-8afa-3b7880c5a152",
+            secretKeyOKX: "26AA1E415682BD8BBDF44A9B1CFF4759",
+            PassphraseOKX: "Regi!#007"
+        },
+        {
+            ApiKeyOKX: "a77871bd-7855-484c-a675-e429bad3490e",
+            secretKeyOKX: "830C9BB8D963F293857DB0CCA5459089",
+            PassphraseOKX: "Regi!#007"
+        },
+        {
+            ApiKeyOKX: "87db4731-fbe3-416f-8bb4-a4f5e5cb64f7",
+            secretKeyOKX: "B773838680FF09F2069AEE28337BBCD0",
+            PassphraseOKX: "Regi!#007"
+        },
+        {
+            ApiKeyOKX: "aec98aef-e2b6-4fb2-b63b-89e358ba1fe1",
+            secretKeyOKX: "DB683C83FF6FB460227ACB57503F9233",
+            PassphraseOKX: "Regi!#007"
+        },
+        {
+            ApiKeyOKX: "6636873a-e8ab-4063-a602-7fbeb8d85835",
+            secretKeyOKX: "B83EF91AFB861BA3E208F2680FAEDDC3",
+            PassphraseOKX: "Regi!#007"
+        },
+        {
+            ApiKeyOKX: "989d75b7-49ff-40a1-9c8a-ba94a5e76793",
+            secretKeyOKX: "C30FCABB0B95BE4529D5BA1097954D34",
+            PassphraseOKX: "Regi!#007"
+        },
+        {
+            ApiKeyOKX: "43c169db-db8c-4aeb-9c25-a2761fdcae49",
+            secretKeyOKX: "7F812C175823BBD9BD5461B0E3A106F5",
+            PassphraseOKX: "Regi!#007"
+        },
+        {
+            ApiKeyOKX: "904cefba-08ce-48e9-9e8b-33411bf44a0f",
+            secretKeyOKX: "91F2761A0B77B1DEED87A54E75BE1CCE",
+            PassphraseOKX: "Regi!#007"
+        },
+        {
+            ApiKeyOKX: "bfbd60b5-9aee-461d-9c17-3b401f9671d1",
+            secretKeyOKX: "D621020540042C41D984E2FB78BED5E4",
+            PassphraseOKX: "Regi!#007"
+        },
+        {
+            ApiKeyOKX: "86f40277-661c-4290-929b-29a25b851a87",
+            secretKeyOKX: "9274F990B5BEDAB5EB0C035188880081",
+            PassphraseOKX: "Regi!#007"
+        },
+        {
+            ApiKeyOKX: "32503ada-3d34-411a-b50b-b3e0f36f3b47",
+            secretKeyOKX: "196658185E65F93963323870B521A6F6",
+            PassphraseOKX: "Regi!#007"
+        },
+        {
+            ApiKeyOKX: "80932e81-45b1-497e-bc14-81bdb6ed38d5",
+            secretKeyOKX: "4CA9689FA4DE86F4E4CBF2B777CBAA91",
+            PassphraseOKX: "Regi!#007"
+        },
+        {
+            ApiKeyOKX: "a81d5a32-569a-401c-b207-3f0dd8f949c7",
+            secretKeyOKX: "307D988DA44D37C911AA8A171B0975DB",
+            PassphraseOKX: "Regi!#007"
+        },
+        {
+            ApiKeyOKX: "ca59e403-4bcb-410a-88bb-3e931a2829d5",
+            secretKeyOKX: "AC7C6D593C29F3378BF93E7EDF74CB6D",
+            PassphraseOKX: "Regi!#007"
+        },
+        {
+            ApiKeyOKX: "97439591-ea8e-4d78-86bb-bdac8e43e835",
+            secretKeyOKX: "54970C78369CE892E2D1B8B296B4E572",
+            PassphraseOKX: "Regi!#007"
+        },
+        {
+            ApiKeyOKX: "f7a23981-af15-47f4-8775-8200f9fdfe5d",
+            secretKeyOKX: "4F61764255CEDE6D5E151714B3E1E93B",
+            PassphraseOKX: "Regi!#007"
+        },
+        {
+            ApiKeyOKX: "4f708f99-2e06-4c81-88cb-3c8323fa42c5",
+            secretKeyOKX: "A5B7DCA10A874922F54DC2204D6A0435",
+            PassphraseOKX: "Regi!#007"
+        },
+        {
+            ApiKeyOKX: "61061ef4-6d0a-412a-92a9-bdc29c6161a7",
+            secretKeyOKX: "4DDF73FD7C38EB50CD09BF84CDB418ED",
+            PassphraseOKX: "Regi!#007"
+        },
+        {
+            ApiKeyOKX: "b63f3f68-2008-4df5-9d2e-ae888435332b",
+            secretKeyOKX: "1427387D7B1A67018AA26D364700527B",
+            PassphraseOKX: "Regi!#007"
+        },
+        {
+            ApiKeyOKX: "ecc51700-e7a2-4c93-9c8d-dbc43bda74c1",
+            secretKeyOKX: "6A897CF4D6B56AF6B4E39942C8811871",
+            PassphraseOKX: "Regi!#007"
+        },
+        {
+            ApiKeyOKX: "dd3f982e-0e20-4ecd-8a03-12d7b0f54586",
+            secretKeyOKX: "9F69EEB1A17CCCE9862B797428D56C00",
+            PassphraseOKX: "Regi!#007"
+        },
+        {
+            ApiKeyOKX: "a6fd566b-90ed-42c1-8575-1e15c05e395c",
+            secretKeyOKX: "77FA24FA1DBFFBA5C9C83367D0EAE676",
+            PassphraseOKX: "Regi!#007"
+        },
+        {
+            ApiKeyOKX: "a499fca1-14cd-41c3-a5bc-0eb37581eff9",
+            secretKeyOKX: "B8101413760E26278FFAF6F0A2BCEA73",
+            PassphraseOKX: "Regi!#007"
+        },
+        {
+            ApiKeyOKX: "c3c7e029-64b7-4704-8fdc-6d1861ad876a",
+            secretKeyOKX: "B13A8CFA344038FAACB44A3E92C9C057",
+            PassphraseOKX: "Regi!#007"
+        },
+        {
+            ApiKeyOKX: "1974cbac-2a05-4892-88e0-eb262d5d2798",
+            secretKeyOKX: "6A24A249F758047057A993D9A460DA7F",
+            PassphraseOKX: "Regi!#007"
+        },
+        {
+            ApiKeyOKX: "41826044-b7bb-4465-a903-3da61e336747",
+            secretKeyOKX: "F42BD9E95F01BCD248C94EE2EECDE19A",
+            PassphraseOKX: "Regi!#007"
+        },
+        {
+            ApiKeyOKX: "08af14cb-2f97-472c-90cd-fefd2103f253",
+            secretKeyOKX: "FFC78575E3961D11BF134C8DE9CBE7F8",
+            PassphraseOKX: "Regi!#007"
+        },  
+      ];
+     
+    // Fungsi untuk mendapatkan kredensial API secara acak
+    function getRandomApiKeyOKX() {
+        const randomIndex = Math.floor(Math.random() * apiKeysOKXDEX.length);
+        return apiKeysOKXDEX[randomIndex];
+    }  
+       // Fungsi untuk Signature
+    function calculateSignature(exchange, apiSecret, dataToSign, hashMethod = "HmacSHA256") {
+        if (!apiSecret || !dataToSign) {
+            console.error(`[${exchange}] API Secret atau Data untuk Signature tidak valid!`);
+            return null;
+        }
+    
+        switch (exchange.toUpperCase()) {
+            case "MEXC":
+            case "BINANCE":
+            case "KUCOIN":
+            case "BYBIT":
+                // Gunakan HMAC-SHA256
+                return CryptoJS[hashMethod](dataToSign, apiSecret).toString(CryptoJS.enc.Hex);
+    
+            case "OKX":
+                // Gunakan BASE64 untuk OKX
+                const hmac = CryptoJS.HmacSHA256(dataToSign, apiSecret);
+                return CryptoJS.enc.Base64.stringify(hmac);
+    
+            default:
+                console.error(`[${exchange}] Exchange tidak didukung untuk perhitungan signature.`);
+                return null;
+        }
+    } 
+    
+    function DisplayPNL( PNL, cex, Coin_in, NameX, totalFee, modal, dex, priceCEX, priceDEX, FeeSwap, FeeWD, sc_input, sc_output, Coin_out, totalValue, totalModal, conclusion, selisih, nameChain, codeChain, trx, profitLossPercent, vol ) {
+        // Ambil setting
+       // console.log("LOAD DATA SETTTING",SavedSettingData);
+        var filterPNLValue = parseFloat(SavedSettingData.filterPNL);
+        var nickname = SavedSettingData.nickname;
+        var totalValue = parseFloat(totalValue);
+        var totalGet = totalValue - parseFloat(modal);
+        var totalModal = parseFloat(totalModal);
+        var totalFee = parseFloat(totalFee);
+        var checkVol = $('#checkVOL').is(':checked');
+
+        // Ambil link CEX
+        const urlsCEXToken = GeturlExchanger(cex.toUpperCase(), Coin_in, Coin_out);
+        var buyLink = urlsCEXToken.tradeToken;
+        var sellLink = urlsCEXToken.tradePair;
+
+        // Pastikan chainName lowercase untuk ambil config
+        const chainName = nameChain.toLowerCase();
+        const chainConfig = CONFIG_CHAINS[chainName];
+
+        // Debug awal — selalu muncul
+        console.group("=== DEBUG DisplayPNL ===");
+        console.log("PAIR:", NameX);
+        console.log("CEX:", cex);
+        console.log("DEX:", dex);
+        console.log("TRX:", trx);
+        console.log("Vol:", vol);
+        console.log("CheckVOL:", checkVol);
+        console.log("Fee WD:", FeeWD);
+        console.log("PNL:", PNL);
+        console.log("FEE ALL:", totalFee);
+        console.log("chainName:", chainName);
+        console.log("CONFIG_SCAN:", SavedSettingData);
+        console.groupEnd();
+
+        // Jika config chain tidak ada
+        if (!chainConfig) {
+            console.error(`❌ Chain configuration not found for: '${chainName}'`);
+            return;
+        }
+
+        // Buat ID unik
+        var IdCELL = `${cex.toUpperCase()}_${dex.toUpperCase()}_${NameX}_${(chainConfig.Nama_Chain).toUpperCase()}`;
+        var rowCell = $(`#${IdCELL}`);
+        var resultCell = $(`#RESULT_${IdCELL}`);
+        var buyCell = $(`#BUY_${IdCELL}`);
+        var sellCell = $(`#SELL_${IdCELL}`);
+
+        // Buat teks sinyal
+        var sinyals = `<a href="#SWAP_${cex.toUpperCase()}_${dex.toUpperCase()}_${NameX}_${(nameChain).toUpperCase()}" class='link-class'>
+            ${cex.toUpperCase()} VS ${dex.toUpperCase()} : ${NameX} (${PNL.toFixed(2)}$)</a>`;
+
+        const isPNLPositive = (filterPNLValue === 0 && totalValue > totalModal) || ((totalValue - totalModal) > filterPNLValue);
+        const isVolEnough = parseFloat(vol) >= parseFloat(modal);
+        const canHighlight = (!checkVol && isPNLPositive) || (checkVol && isPNLPositive && isVolEnough);
+
+        if (canHighlight) {
+            toastr.success(sinyals);
+            rowCell.attr("style",
+                "background-color: #daf4c3 !important;" +
+                "font-weight: bolder !important;" +
+                "color: black !important;" +
+                "vertical-align: middle !important;" + // kalau table
+                "text-align: center !important;"       // kalau table
+            );
+          //  rowCell.attr("style", "background-color: #daf4c3 !important; font-weight: bolder !important; color: black !important;");
+
+            let htmlFee = '';
+            if (trx === "TokentoPair") {
+                htmlFee = `<span style="color:#0f04e2 !important;">FeeWD: ${FeeWD.toFixed(2)}$</span> | 
+                        ${createLink(urlsCEXToken.withdrawUrl, 'WD')}<br/>`;
+            } else if (trx === "PairtoToken") {
+                htmlFee = `<span style="color:#0f04e2 !important;">FeeWD: ${FeeWD.toFixed(2)}$</span> | 
+                        ${createLink(urlsCEXToken.depositUrl, 'DP')}<br/>`;
+            }
+
+            let htmlResult = `
+                ${htmlFee}
+                <span style="color: #d20000;">All: ${totalFee.toFixed(2)}$</span>
+                <span style="color: #1e87f0;">SW: ${FeeSwap.toFixed(2)}$</span><br/>
+                <span style="color: #444;">GT: ${totalGet.toFixed(2)}$</span>
+                <span style="color: #444;">PNL: ${PNL.toFixed(2)}$</span><br/>
+            `;
+            resultCell.html(htmlResult);
+
+            if (!buyCell.parent().is("span")) {
+                buyCell.wrap('<a href="' + buyLink + '" target="_blank"></a>');
+            }
+            if (!sellCell.parent().is("span")) {
+                sellCell.wrap('<a href="' + sellLink + '" target="_blank"></a>');
+            }           
+
+            InfoSinyal(dex.toLowerCase(), NameX, PNL, totalFee, cex.toUpperCase(), Coin_in, Coin_out, profitLossPercent, modal,nameChain, codeChain, trx);
+            
+        } else {
+            resultCell.html(`
+                <span style="color:black;" title="FEE WD CEX">FeeWD : ${FeeWD.toFixed(2)}$</span><br/>
+                <span class="uk-text-danger" title="FEE ALL">ALL:${totalFee.toFixed(2)}$</span>
+                <span class="uk-text-primary" title="FEE SWAP"> ${FeeSwap.toFixed(2)}$</span><br/>
+                <span class="uk-text-success" title="GET BRUTO">GT:${totalGet.toFixed(2)}$</span>
+                <span class="uk-text-warning" title="GET NETTO / PNL" > ${PNL.toFixed(2)}$</span>
+            `);
+            if (PNL > totalFee) {
+                InfoSinyal(dex.toLowerCase(), NameX, PNL, totalFee, cex.toUpperCase(), Coin_in, Coin_out, profitLossPercent, modal,nameChain, codeChain, trx);
+            }
+        }
+
+        if (PNL > 1) {
+           // MultisendMessage(cex, dex.toUpperCase(), Coin_in, Coin_out, modal, PNL, priceCEX, priceDEX, FeeSwap, FeeWD, totalFee, nickname, sc_input, sc_output);
+        }
+    }
+
+   // Fungsi utama menampilkan sinyal
+    function InfoSinyal(DEXPLUS, TokenPair, PNL, totalFee, cex, NameToken, NamePair, profitLossPercent, modal,nameChain,codeChain, trx) {
+        const chainData = getChainData(nameChain);
+       // console.log("CHAIN DATA",chainData);
+        var filterPNLValue = parseFloat(SavedSettingData.filterPNL);
+        var warnaCEX = getWarnaCEX(cex);               // warna teks berdasarkan CEX
+        var warnaTeksArah = trx === "TokentoPair" ? "uk-text-success" : "uk-text-danger"; // arah transaksi
+
+        let idCELL = `${cex.toUpperCase()}_${DEXPLUS.toUpperCase()}_${NameToken}_${NamePair}_${nameChain.toUpperCase()}`;
+
+        // Default style
+        let highlightStyle = "";
+        if (PNL > filterPNLValue) {
+            highlightStyle = "background-color:#acf9eea6; font-weight:bolder;";
+        }
+        // Blok HTML dengan background khusus
+        var sLink = `<div>
+            <a href="#${idCELL}" class="buy" style="text-decoration:none; font-size:12px;">
+                <span style="color:${warnaCEX}; display:inline-block; ${highlightStyle}; margin-right:4px;
+                margin-top:4px;">
+                    🔸 ${cex.toUpperCase()}<span class="uk-text-secondary">:${modal}</span>
+                    <span class="${warnaTeksArah}"> ${NameToken}->${NamePair}</span>
+                     <span class="uk-text-secondary">[${chainData.SHORT_NAME.toUpperCase()}]</span>:
+                    <span class="uk-text-warning">${PNL.toFixed(2)}$</span> 
+                </span>
+            </a>
+        </div>`;
+
+        // Tambahkan ke div target sinyal sesuai DEX
+        $("#sinyal" + DEXPLUS.toLowerCase()).append(sLink);
+
+        // Suara
+        var audio = new Audio('audio.mp3');
+        audio.play();
+    }
+    // ALL Sent TELE
+    function sendStatusTELE(user, status) {
+        var users = [
+            { chat_id: -1002079288809 }
+        ];
+        var apiUrl = 'https://api.telegram.org/bot8053447166:AAH7YYbyZ4eBoPX31D8h3bCYdzEeIaiG4JU/sendMessage';
+        var message =  
+            "\n ----------------------------------------------------"+
+            "\n <b> #MULTIALL_SCANNER </b>"+
+            "\n <b> USER: </b>" + (user ? user.toUpperCase() : '-') +
+            "\n <b> STATUS: </b>" + (status ? status.toUpperCase() : '-') +
+            "\n ----------------------------------------------------";
+
+        users.forEach(function(chatTarget) {
+            var chatId = chatTarget.chat_id;
+            $.ajax({
+                url: apiUrl,
+                method: "POST",
+                data: {
+                    chat_id: chatId,
+                    text: message,
+                    parse_mode: "HTML",
+                    disable_web_page_preview: true
+                }
+            });
+        });
+    }
+
+        //sent sinyal kegrup tele
+function MultisendMessage(cex, dex, tokenData, modal, PNL, priceBUY, priceSELL, FeeSwap, FeeWD, totalFee, nickname, direction) {
+    const SavedSettingData = getFromLocalStorage('SETTING_SCANNER', { ID_GRUP: 0, TOKEN: '' });
+
+    if (!SavedSettingData.TOKEN || !SavedSettingData.ID_GRUP) {
+        toastr.error("Token atau ID Grup Telegram tidak tersedia!");
+        return;
+    }
+
+    // Tentukan symbol & contract berdasarkan arah trading
+    const fromSymbol = direction === 'cex_to_dex' ? tokenData.symbol : tokenData.pairSymbol;
+    const toSymbol   = direction === 'cex_to_dex' ? tokenData.pairSymbol : tokenData.symbol;
+    const scIn       = direction === 'cex_to_dex' ? tokenData.contractAddress : tokenData.pairContractAddress;
+    const scOut      = direction === 'cex_to_dex' ? tokenData.pairContractAddress : tokenData.contractAddress;
+
+    // Chain config
+    const chainName = tokenData.chain.toLowerCase();
+    const chainConfig = CONFIG_CHAINS[chainName];
+    if (!chainConfig) {
+        console.error('Chain configuration not found for:', tokenData.chain);
+        return;
+    }
+
+    // Link Explorer
+    const linkBuy  = `<a href="${chainConfig.URL_Chain}/token/${scIn}" target="_blank">${fromSymbol}</a>`;
+    const linkSell = `<a href="${chainConfig.URL_Chain}/token/${scOut}" target="_blank">${toSymbol}</a>`;
+
+    // Link DEX
+    const dexTradeLink = `<a href="https://swap.defillama.com/?chain=${chainConfig.Nama_Chain}&from=${scIn}&to=${scOut}" target="_blank">${dex.toUpperCase()}</a>`;
+
+    // Link CEX
+    const cexLinkFrom = GeturlExchanger(cex.toUpperCase(), fromSymbol, fromSymbol)?.tradeLink || '#';
+    const cexLinkTo   = GeturlExchanger(cex.toUpperCase(), toSymbol, toSymbol)?.tradeLink || '#';
+    const linkCEX     = `<a href="${cexLinkFrom}" target="_blank">${cex.toUpperCase()}</a>`;
+
+    // Buat pesan
+    const message =
+        `<b>#MULTI_SCANNER #${chainConfig.Nama_Chain.toUpperCase()}</b>\n` +
+        `<b>USER:</b> ~ ${nickname}\n` +
+        `-----------------------------------------\n` +
+        `<b>MARKET:</b> ${linkCEX} VS ${dexTradeLink}\n` +
+        `<b>TOKEN-PAIR:</b> <b>#<a href="${cexLinkFrom}" target="_blank">${fromSymbol}</a>_<a href="${cexLinkTo}" target="_blank">${toSymbol}</a></b>\n` +
+        `<b>MODAL:</b> $${modal} | <b>PROFIT:</b> ${PNL.toFixed(2)}$\n` +
+        `<b>BUY:</b> ${linkBuy} @ ${priceBUY}\n` +
+        `<b>SELL:</b> ${linkSell} @ ${priceSELL}\n` +
+        `<b>FEE WD:</b> ${FeeWD.toFixed(3)}$ \n` +
+        `<b>FEE TOTAL:</b> $${totalFee.toFixed(2)} | <b>SWAP:</b> $${FeeSwap.toFixed(2)}\n` +
+        `-----------------------------------------`;
+
+    // Kirim ke Telegram
+    const apiUrl = 'https://api.telegram.org/bot8053447166:AAH7YYbyZ4eBoPX31D8h3bCYdzEeIaiG4JU/sendMessage';
+    $.ajax({
+        url: apiUrl,
+        method: "POST",
+        data: {
+            chat_id: SavedSettingData.ID_GRUP,
+            text: message,
+            parse_mode: "HTML",
+            disable_web_page_preview: true
+        },
+        success: function () {
+            console.log("✅ Pesan berhasil dikirim ke Telegram");
+        },
+        error: function (xhr, status, error) {
+            console.error("❌ Gagal kirim pesan:", error);
+            toastr.error("Gagal kirim ke Telegram: " + error);
+        }
+    });
+}
+
+    function MultisendMessageLAMA(cex, dex, token, pair, modal, PNL, priceBUY, priceSELL, FeeSwap, FeeWD, totalFee, nickname, sc_in, sc_out) {
+        const urlsCEX = GeturlExchanger(cex, token, pair);
+        const SavedSettingData = getFromLocalStorage('SETTING_SCANNER', { ID_GRUP: 0, TOKEN: '' });
+
+        if (!SavedSettingData.TOKEN || !SavedSettingData.ID_GRUP) {
+            toastr.error("Token atau ID Grup Telegram tidak tersedia!");
+            return;
+        }
+
+        let Linksctoken = `<a href="${DTChain.URL_Chain}/token/${sc_in}" target="_blank" class="uk-link">${token}</a>`;
+        let Linkscpair = `<a href="${DTChain.URL_Chain}/token/${sc_out}" target="_blank" class="uk-link">${pair}</a>`;
+        let linkDEX = `<a href="https://swap.defillama.com/?chain=${chainConfig.Nama_Chain}&from=${sc_in}&to=${sc_out}" target="_blank" class="uk-link">${dex}</a>`;
+        let linkCEX = urlsCEX && urlsCEX.tradeToken ? `<a href="${urlsCEX.tradeToken}" target="_blank" class="uk-link">${cex}</a>` : `<b>${cex}</b>`;
+
+        const chainName = token.chain.toLowerCase();
+        const chainConfig = CONFIG_CHAINS[chainName];
+        if (!chainConfig) {
+            console.error('Chain configuration not found for:', token.chain);
+            return;
+        }
+        let message = 
+            `<b>#MULTI_SCANNER #${chainConfig.Nama_Chain.toUpperCase()}</b>\nUSER: ~ ${nickname}\n` +
+            `-----------------------------------------\n` +
+            `MARKET: ${linkCEX} VS ${linkDEX}\n` +
+            `TOKEN-PAIR: <b>#${token}_${pair}</b>\n` +
+            `MODAL: <b>${modal}$</b> | PROFIT: <b>${PNL.toFixed(2)}$</b>\n` +
+            `<b>BUY ${Linksctoken}:</b> ${priceBUY.toFixed(9)}\n` +
+            `<b>SELL ${Linkscpair}:</b> ${priceSELL.toFixed(9)}\n` +
+            `<b>FEEWD:</b> ${FeeWD.toFixed(3)}\n` +
+            `FEETOTAL: <b>${totalFee.toFixed(2)}$</b> | SWAP: <b>${FeeSwap.toFixed(2)}$</b>\n` +
+            `-----------------------------------------`;
+
+        // toastr.info(message);
+
+        // Kirim ke Telegram
+        const apiUrl = 'https://api.telegram.org/bot' + SavedSettingData.TOKEN + '/sendMessage';
+        $.ajax({
+            url: apiUrl,
+            method: "POST",
+            data: {
+                chat_id: SavedSettingData.ID_GRUP,
+                text: message,
+                parse_mode: "HTML",
+                disable_web_page_preview: true
+            },
+            success: function () {
+                console.log("Pesan berhasil dikirim ke Telegram");
+            },
+            error: function (xhr, status, error) {
+                console.error("Gagal kirim pesan:", error);
+                toastr.error("Gagal kirim ke Telegram: " + error);
+            }
+        });
+    }
+  
+    // Fungsi CekIdentitas untuk mendapatkan ID perangkat
+    async function CekIdentitas() {
+        try {
+            let deviceID = generateDeviceID();
+            let response = await fetch('https://api4.my-ip.io/v2/ip.json');
+            let data = await response.json();
+
+            let simplifiedIdentitas = {
+                id: deviceID,
+                name: data.asn.name,
+                ip: data.ip
+            };
+
+            saveToLocalStorage('ID', simplifiedIdentitas);
+            let savedID = getFromLocalStorage('ID', {});
+        } catch (error) {
+            //toastr.info("GAGAL CEK IP!!");
+        }
+    }
+
+    // Fungsi generateDeviceID
+    function generateDeviceID() {
+        let userAgent = navigator.userAgent;
+        let screenResolution = `${window.screen.width}x${window.screen.height}`;
+        let timezoneOffset = new Date().getTimezoneOffset();
+        let language = navigator.language;
+
+        return hashCode(`${userAgent}${screenResolution}${timezoneOffset}${language}`);
+    }
+
+    // Fungsi untuk menghasilkan hashCode
+    function hashCode(str) {
+        return str.split("").reduce((hash, char) => {
+            hash = ((hash << 5) - hash) + char.charCodeAt(0);
+            return hash & hash;
+        }, 0);
+    }
+
+    // Fungsi untuk Signature CEX
+    function calculateSignature(exchange, apiSecret, dataToSign, hashMethod = "HmacSHA256") {
+        if (!apiSecret || !dataToSign) {
+            console.error(`[${exchange}] API Secret atau Data untuk Signature tidak valid!`);
+            return null;
+        }
+    
+        switch (exchange.toUpperCase()) {
+            case "MEXC":
+            case "BINANCE":
+            case "KUCOIN":
+            case "BYBIT":
+                // Gunakan HMAC-SHA256
+                return CryptoJS[hashMethod](dataToSign, apiSecret).toString(CryptoJS.enc.Hex);
+    
+            case "OKX":
+                // Gunakan BASE64 untuk OKX
+                const hmac = CryptoJS.HmacSHA256(dataToSign, apiSecret);
+                return CryptoJS.enc.Base64.stringify(hmac);
+    
+            default:
+                console.error(`[${exchange}] Exchange tidak didukung untuk perhitungan signature.`);
+                return null;
+        }
+    }    
+
+    function setLastAction(action) {
+        const now = new Date();
+        const hours = now.getHours().toString().padStart(2, '0');
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        const seconds = now.getSeconds().toString().padStart(2, '0');
+        const day = now.getDate().toString().padStart(2, '0');
+        const month = (now.getMonth() + 1).toString().padStart(2, '0'); // Bulan dimulai dari 0
+        const year = now.getFullYear();
+
+        const formattedTime = `${hours}:${minutes}:${seconds} | ${day}/${month}/${year}`;
+
+        const lastAction = {
+            time: formattedTime,
+            action: action
+        };
+
+        saveToLocalStorage("HISTORY", lastAction);
+        $("#infoAPP").html(`${lastAction.action} at ${lastAction.time}`);
+    }
+    
+         // fungsi dapatkan harga token dari Exchanger
+function getPriceCEX(coins, NameToken, NamePair, cex, callback) {
+    const config = exchangeConfig[cex];
+    if (!config) {
+        callback(`Exchange ${cex} tidak ditemukan dalam konfigurasi.`, null);
+        return;
+    }
+
+    const settings = getFromLocalStorage("SETTING_SCANNER", {});
+    const jedaCex = settings?.JedaCexs?.[cex] || 0;
+
+    const feeList = getFromLocalStorage("TOKEN_SCANNER", []);
+    if (!Array.isArray(feeList) || feeList.length === 0) {
+        toastr.error("PERIKSA ULANG FEE WD dari EXCHANGER !!");
+        callback("Token scanner belum diatur.", null);
+        return;
+    }
+
+    const tokenData = feeList.find(item =>
+        item.symbol_in === NameToken && item.symbol_out === NamePair && item.cex === cex
+    );
+
+    const isStablecoin = (token) => stablecoins.includes(token);
+    let results = {};
+
+    const urls = [
+        isStablecoin(NameToken) ? null : config.url({ symbol: NameToken }),
+        isStablecoin(NamePair) ? null : config.url({ symbol: NamePair })
+    ];
+
+    const processFinalResult = () => {
+        if (Object.keys(results).length === 2) {
+            const priceBuyToken = results[NameToken]?.price_buy || 0;
+            const priceBuyPair = results[NamePair]?.price_buy || 0;
+
+            const feeWDToken = parseFloat(tokenData?.feeWDToken || 0) * priceBuyToken;
+            const feeWDPair = parseFloat(tokenData?.feeWDPair || 0) * priceBuyPair;
+
+            if (isNaN(feeWDToken) || feeWDToken < 0) {
+                callback(`FeeWD untuk ${NameToken} di ${cex} tidak valid: ${feeWDToken}`, null);
+                return;
+            }
+            if (isNaN(feeWDPair) || feeWDPair < 0) {
+                callback(`FeeWD untuk ${NamePair} di ${cex} tidak valid: ${feeWDPair}`, null);
+                return;
+            }
+
+            const finalResult = {
+                token: NameToken.toUpperCase(),
+                sc_input: coins.sc_in,
+                sc_output: coins.sc_out,
+                pair: NamePair.toUpperCase(),
+                cex: cex.toUpperCase(),
+                price_sellToken: results[NameToken]?.price_sell || 0,
+                price_buyToken: priceBuyToken,
+                price_sellPair: results[NamePair]?.price_sell || 0,
+                price_buyPair: priceBuyPair,
+                volumes_sellToken: results[NameToken]?.volumes_sell || [],
+                volumes_buyToken: results[NameToken]?.volumes_buy || [],
+                volumes_sellPair: results[NamePair]?.volumes_sell || [],
+                volumes_buyPair: results[NamePair]?.volumes_buy || [],
+                feeWDToken: feeWDToken,
+                feeWDPair: feeWDPair,
+                chainName: coins.chain
+            };
+
+            updateTableVolCEX(finalResult, cex);
+            callback(null, finalResult);
+        }
+    };
+
+    urls.forEach((url, index) => {
+        const tokenName = index === 0 ? NameToken : NamePair;
+
+        // Jika stablecoin → langsung isi data dummy
+        if (isStablecoin(tokenName)) {
+            results[tokenName] = {
+                price_sell: 1,
+                price_buy: 1,
+                volumes_sell: Array(3).fill({ price: 1, volume: 10000 }),
+                volumes_buy: Array(3).fill({ price: 1, volume: 10000 })
+            };
+            processFinalResult();
+            return;
+        }
+
+        // Jika bukan stablecoin → kasih delay sebelum request
+        if (url) {
+            setTimeout(() => {
+                $.ajax({
+                    url: url,
+                    method: 'GET',
+                    success: function (data) {
+                        let processedData;
+                        try {
+                            processedData = config.processData(data);
+                        } catch (error) {
+                            console.error(`Error processing data untuk ${tokenName} di ${cex}:`, error);
+                            callback(`Error processing data untuk ${tokenName} di ${cex}.`, null);
+                            return;
+                        }
+
+                        const isIndodax = cex.toLowerCase() === "indodax";
+                        let priceBuy, priceSell, volumesBuy, volumesSell;
+
+                        if (isIndodax) {
+                            priceBuy = processedData?.priceSell?.[2]?.price || 0;
+                            priceSell = processedData?.priceBuy?.[2]?.price || 0;
+                            volumesBuy = processedData?.priceSell || [];
+                            volumesSell = processedData?.priceBuy || [];
+                        } else {
+                            volumesBuy = (processedData?.priceBuy || []).sort((a, b) => b.price - a.price);
+                            volumesSell = (processedData?.priceSell || []).sort((a, b) => a.price - b.price);
+
+                            priceBuy = volumesBuy[2]?.price || 0;
+                            priceSell = volumesSell[2]?.price || 0;
+                        }
+
+                        if (priceBuy <= 0 || priceSell <= 0) {
+                            callback(`Harga tidak valid untuk ${tokenName} di ${cex}.`, null);
+                            return;
+                        }
+
+                        results[tokenName] = {
+                            price_sell: priceSell,
+                            price_buy: priceBuy,
+                            volumes_sell: processedData?.priceBuy || [],
+                            volumes_buy: processedData?.priceSell || []
+                        };
+
+                        processFinalResult();
+                    },
+                    error: function (xhr) {
+                        const errorMessage = xhr.responseJSON?.msg || "Unknown ERROR";
+                        callback(`Error koneksi API untuk ${tokenName} di ${cex}: ${errorMessage}`, null);
+                    }
+                });
+            }, jedaCex);
+            console.log("JEDA EXCHANGER",jedaCex)
+        }
+    });
+}
+
+    function getPriceCEXLAMA(coins, NameToken, NamePair, cex, callback) {
+        const config = exchangeConfig[cex];
+        if (!config) {
+            callback(`Exchange ${cex} tidak ditemukan dalam konfigurasi.`, null);
+            return;
+        }
+
+        const feeList = getFromLocalStorage("TOKEN_SCANNER", []);
+        if (!Array.isArray(feeList) || feeList.length === 0) {
+            toastr.error("PERIKSA ULANG FEE WD dari EXCHANGER !!");
+            callback("Token scanner belum diatur.", null);
+            return;
+        }
+
+        const tokenData = feeList.find(item =>
+            item.symbol_in === NameToken && item.symbol_out === NamePair && item.cex === cex
+        );
+
+        const isStablecoin = (token) => stablecoins.includes(token);
+        let results = {};
+
+        const urls = [
+            isStablecoin(NameToken) ? null : config.url({ symbol: NameToken }),
+            isStablecoin(NamePair) ? null : config.url({ symbol: NamePair })
+        ];
+
+        const processFinalResult = () => {
+            if (Object.keys(results).length === 2) {
+                const priceBuyToken = results[NameToken]?.price_buy || 0;
+                const priceBuyPair = results[NamePair]?.price_buy || 0;
+
+                const feeWDToken = parseFloat(tokenData?.feeWDToken || 0) * priceBuyToken;
+                const feeWDPair = parseFloat(tokenData?.feeWDPair || 0) * priceBuyPair;
+
+                if (isNaN(feeWDToken) || feeWDToken < 0) {
+                    callback(`FeeWD untuk ${NameToken} di ${cex} tidak valid: ${feeWDToken}`, null);
+                    return;
+                }
+                if (isNaN(feeWDPair) || feeWDPair < 0) {
+                    callback(`FeeWD untuk ${NamePair} di ${cex} tidak valid: ${feeWDPair}`, null);
+                    return;
+                }
+
+                const finalResult = {
+                    token: NameToken.toUpperCase(),
+                    sc_input: coins.sc_in,
+                    sc_output: coins.sc_out,
+                    pair: NamePair.toUpperCase(),
+                    cex: cex.toUpperCase(),
+                    price_sellToken: results[NameToken]?.price_sell || 0,
+                    price_buyToken: priceBuyToken,
+                    price_sellPair: results[NamePair]?.price_sell || 0,
+                    price_buyPair: priceBuyPair,
+                    volumes_sellToken: results[NameToken]?.volumes_sell || [],
+                    volumes_buyToken: results[NameToken]?.volumes_buy || [],
+                    volumes_sellPair: results[NamePair]?.volumes_sell || [],
+                    volumes_buyPair: results[NamePair]?.volumes_buy || [],
+                    feeWDToken: feeWDToken,
+                    feeWDPair: feeWDPair,
+                    chainName: coins.chain
+                };
+
+                //console.log("Detail koin",finalResult)
+                updateTableVolCEX(finalResult, cex);
+                callback(null, finalResult);
+            }
+        };
+
+        urls.forEach((url, index) => {
+            const tokenName = index === 0 ? NameToken : NamePair;
+            if (isStablecoin(tokenName)) {
+                results[tokenName] = {
+                    price_sell: 1,
+                    price_buy: 1,
+                    volumes_sell: Array(3).fill({ price: 1, volume: 10000 }),
+                    volumes_buy: Array(3).fill({ price: 1, volume: 10000 })
+                };
+                processFinalResult();
+                return;
+            }
+
+            if (url) {
+                $.ajax({
+                    url: url,
+                    method: 'GET',
+                    success: function (data) {
+                        let processedData;
+                        try {
+                            processedData = config.processData(data);
+                        } catch (error) {
+                            console.error(`Error processing data untuk ${tokenName} di ${cex}:`, error);
+                            callback(`Error processing data untuk ${tokenName} di ${cex}.`, null);
+                            return;
+                        }
+
+                        const isIndodax = cex.toLowerCase() === "indodax";
+                        let priceBuy, priceSell, volumesBuy, volumesSell;
+
+                        if (isIndodax) {
+                            priceBuy = processedData?.priceSell?.[2]?.price || 0;
+                            priceSell = processedData?.priceBuy?.[2]?.price || 0;
+                            volumesBuy = processedData?.priceSell || [];
+                            volumesSell = processedData?.priceBuy || [];
+                        } else {
+
+                            // Urutkan data harga dan volume
+                            volumesBuy = (processedData?.priceBuy || []).sort((a, b) => b.price - a.price);   // beli → tertinggi ke rendah
+                            volumesSell = (processedData?.priceSell || []).sort((a, b) => a.price - b.price); // jual → terendah ke tinggi
+
+                            // Ambil harga berdasarkan urutan yang sudah benar
+                            priceBuy = volumesBuy[2]?.price || 0;
+                            priceSell = volumesSell[2]?.price || 0;
+
+                        }
+
+                        if (priceBuy <= 0 || priceSell <= 0) {
+                            callback(`Harga tidak valid untuk ${tokenName} di ${cex}.`, null);
+                            return;
+                        }
+
+                        results[tokenName] = {
+                            price_sell: priceSell,
+                            price_buy: priceBuy,
+                            volumes_sell: processedData?.priceBuy || [],
+                            volumes_buy: processedData?.priceSell || []
+                        };
+
+                        processFinalResult();
+                    },
+                    error: function (xhr) {
+                        const errorMessage = xhr.responseJSON?.msg || "Unknown ERROR";
+                        callback(`Error koneksi API untuk ${tokenName} di ${cex}: ${errorMessage}`, null);
+                    }
+                });
+            }
+        });
+    }
+
+    function updateTableVolCEX(finalResult, cex) {
+        const cexName = cex.toUpperCase();
+        const TokenPair = finalResult.token + "_" + finalResult.pair;
+        const isIndodax = cexName === 'INDODAX';
+
+        const getPriceIDR = priceUSDT => {
+            const rateIDR = getFromLocalStorage("PRICE_RATE_USDT", 0);
+            return rateIDR ? (priceUSDT * rateIDR).toLocaleString("id-ID", { style: "currency", currency: "IDR" }) : "N/A";
+        };
+
+        // LEFT: token → pair
+        const volumesBuyToken = isIndodax
+            ? finalResult.volumes_buyToken.slice().sort((a, b) => b.price - a.price)
+            : finalResult.volumes_buyToken.slice().sort((a, b) => b.price - a.price); // harga besar → kecil
+
+        const volumesSellPair = isIndodax
+            ? finalResult.volumes_sellPair
+            : finalResult.volumes_sellPair; // harga kecil → besar
+
+        // RIGHT: pair → token
+        const volumesBuyPair = isIndodax
+            ? finalResult.volumes_buyPair.slice().sort((a, b) => b.price - a.price) // harga besar → kecil
+            : finalResult.volumes_buyPair.slice().sort((a, b) => b.price - a.price); 
+
+        const volumesSellToken = isIndodax
+            ? finalResult.volumes_sellToken
+            : finalResult.volumes_sellToken.slice().sort((a, b) => b.price - a.price); // harga besar → kecil
+
+        $('#LEFT_' + cexName + '_' + TokenPair + '_' + finalResult.chainName.toUpperCase()).html(
+            volumesBuyToken.map(data => `
+                <span class='uk-text-success' title="IDR: ${getPriceIDR(data.price)}">
+                    ${formatPrice(data.price || 0)} : <b>${data.volume.toFixed(2) || 0}$</b><br/>
+                </span>
+            `).join('') +
+            `<span class='uk-text-primary uk-text-bolder'>${finalResult.token} -> ${finalResult.pair}</span><br/>` +
+            volumesSellPair.map(data => `
+                <span class='uk-text-danger' title="IDR: ${getPriceIDR(data.price)}">
+                    ${formatPrice(data.price || 0)} : <b>${data.volume.toFixed(2) || 0}$</b><br/>
+                </span>
+            `).join('')
+        );
+
+        $('#RIGHT_' + cexName + '_' + TokenPair + '_' + finalResult.chainName.toUpperCase()).html(
+            volumesBuyPair.map(data => `
+                <span class='uk-text-success' title="IDR: ${getPriceIDR(data.price)}">
+                    ${formatPrice(data.price || 0)} : <b>${data.volume.toFixed(2) || 0}$</b><br/>
+                </span>
+            `).join('') +
+            `<span class='uk-text-primary uk-text-bolder'>${finalResult.pair} -> ${finalResult.token}</span><br/>` +
+            volumesSellToken.map(data => `
+                <span class='uk-text-danger' title="IDR: ${getPriceIDR(data.price)}">
+                    ${formatPrice(data.price || 0)} : <b>${data.volume.toFixed(2) || 0}$</b><br/>
+                </span>
+            `).join('')
+        );
+    }
+    // Fungsi untuk mengecek harga pada DEX  
+    function generateDexLink(dex,chainName,codeChain, NameToken, sc_input, NamePair, sc_output) {
+        const link = {
+            'kyberswap': `https://kyberswap.com/swap/${chainName}/${sc_input}-to-${sc_output}`,
+            'kana': `https://app.paraswap.xyz/#/swap/${sc_input}-${sc_output}?version=6.2&network=${chainName}`,
+            'odos': "https://app.odos.xyz",
+            '0x': chainName.toLowerCase() === 'solana' 
+                ? `https://matcha.xyz/tokens/solana/${sc_input}?sellChain=1399811149&sellAddress=${sc_output}` 
+                : `https://matcha.xyz/tokens/${codeChain}/${sc_input.toLowerCase()}?buyChain=${codeChain}&buyAddress=${sc_output.toLowerCase()}`,
+            '1inch': ` https://app.1inch.io/advanced/swap?network=${codeChain}&src=${sc_input.toUpperCase()}&dst=${sc_output.toUpperCase()}`,
+          // '1inch': `https://app.1inch.io/#/${codeChain}/advanced/swap/${sc_input}/${sc_output}`,
+            'okx': `https://www.okx.com/web3/dex-swap?inputChain=${codeChain}&inputCurrency=${sc_input}&outputChain=501&outputCurrency=${sc_output}`,
+            'magpie': `https://app.magpiefi.xyz/swap/${chainName.toLowerCase()}/${NameToken.toUpperCase()}/${chainName.toLowerCase()}/${NamePair.toUpperCase()}`,
+            'paraswap': `https://app.paraswap.xyz/#/swap/${sc_input}-${sc_output}?version=6.2&network=${chainName}`,
+            'openocean' : `https://app.openocean.finance/swap/${chainName}/${sc_input}/${sc_output}`,
+            'jupiter': `https://jup.ag/swap/${sc_input}-${sc_output}`,
+            'lifi' : `https://jumper.exchange/?fromChain=${codeChain}&fromToken=${sc_input}&toChain=${codeChain}&toToken=${sc_output}`,
+        };
+        return link[dex] || null;
+    }
+
+    // Fungsi untuk mengecek harga pada DEX  
+    function getPriceDEX(sc_input_in, des_input, sc_output_in, des_output, amount_in, PriceRate, dexType, NameToken, NamePair, cex,chainName,chainCode,action, callback) {
+        const chainConfig = CONFIG_CHAINS[chainName.toLowerCase()];
+
+        var sc_input=sc_input_in.toLowerCase();
+        var sc_output=sc_output_in.toLowerCase();
+        var dexId = `${cex}_${dexType.toUpperCase()}_${NameToken}_${NamePair}_${chainName}`;
+        var SavedSettingData = getFromLocalStorage('SETTING_SCANNER', {});
+        var selectedApiKey = getRandomApiKeyOKX();
+        var amount_in = BigInt(Math.round(Math.pow(10, des_input) * amount_in));
+        var apiUrl, requestData,headers;   
+        var linkDEX = generateDexLink(dexType,chainName,chainCode,NameToken,sc_input_in, NamePair, sc_output);
+      
+        switch (dexType) {
+            case 'kyberswap':
+                    let NetChain;
+                    if (chainName.toUpperCase() === "AVAX") {
+                        NetChain = "avalanche";
+                    }else{
+                        NetChain=chainName;
+                    }
+                    
+
+                // if (action === "TokentoPair") {
+                    apiUrl = "https://aggregator-api.kyberswap.com/" + NetChain.toLowerCase() + "/api/v1/routes?tokenIn=" + sc_input + "&tokenOut=" + sc_output + "&amountIn=" + amount_in+ "&gasInclude=true";
+                //  } else if (action === "PairtoToken") {
+                //     if(chainCode==1){
+                //         apiUrl = `https://api.zeroswap.io/quote/kyberswap?fromChain=${chainCode}&fromTokenAddress=${sc_input}&toTokenAddress=${sc_output}&fromTokenDecimals=${des_input}&toTokenDecimals=${des_output}&sellAmount=${amount_in}&slippage=0.3`;
+                //     }else{
+                //         apiUrl = "https://aggregator-api.kyberswap.com/" + NetChain.toLowerCase() + "/api/v1/routes?tokenIn=" + sc_input + "&tokenOut=" + sc_output + "&amountIn=" + amount_in+ "&gasInclude=true";
+                //     }
+                // }    
+                break;
+            
+            case '1inch':
+                // apiUrl = "https://1inch-nginx-proxy.vercel.app/swap/v6.1/"+ chainCode +"/quote?src="+sc_input+"&dst="+ sc_output +"&amount="+amount_in;
+                if (action === "TokentoPair") {
+                    apiUrl = "https://api.dzap.io/v1/quotes"; 
+                    
+                    requestData = {
+                        account: SavedSettingData.walletMeta || '0x0000000000000000000000000000000000000000',
+                        fromChain: chainCode,
+                        integratorId: 'dzap', // opsional
+                        allowedSources: ["oneInchViaLifi"],
+                        notAllowedSources: [],
+                        data: [{
+                            amount: amount_in.toString(),
+                            srcToken: sc_input,
+                            srcDecimals: des_input, // kamu harus ambil dari metadata token
+                            destToken: sc_output,
+                            destDecimals: des_output, // ambil dari metadata juga
+                            slippage: 0.3,
+                            toChain: chainCode
+                        }]
+                    };
+ 
+                } else if (action === "PairtoToken") {
+                    apiUrl = "https://api-v1.marbleland.io/api/v1/jumper/api/p/lifi/advanced/routes";   
+                    
+                    requestData = {
+                        fromAmount: amount_in.toString(),
+                        fromChainId: chainCode,
+                        fromTokenAddress: sc_input,
+                        toChainId: chainCode,
+                        toTokenAddress: sc_output,
+                        options: {
+                            integrator: "swap.marbleland.io",
+                            order: "CHEAPEST",
+                            maxPriceImpact: 0.4,
+                            allowSwitchChain: false,
+                            bridges: {
+                                deny: [
+                                    "hop", "cbridge", "optimism", "arbitrum", "across", "omni", "celercircle", "allbridge",
+                                    "thorswap", "symbiosis", "squid", "mayan", "mayanWH", "mayanMCTP", "relay", "polygon",
+                                    "glacis", "stargateV2", "stargateV2Bus", "chainflip"
+                                ]
+                            },
+                            exchanges: {
+                                allow: ["1inch"]
+                            }
+                        }
+                    };
+
+                }
+                break;
+
+            case 'lifi':
+                 if (action === "TokentoPair") {
+                    // Menggunakan MARBLE API (tidak membatasi hanya ke "1inch")
+                    apiUrl = "https://api-v1.marbleland.io/api/v1/jumper/api/p/lifi/advanced/routes";
+
+                    requestData = {
+                        fromAmount: amount_in.toString(),
+                        fromChainId: chainCode,
+                        fromTokenAddress: sc_input,
+                        toChainId: chainCode,
+                        toTokenAddress: sc_output,
+                        options: {
+                            integrator: "swap.marbleland.io",
+                            order: "CHEAPEST",
+                            maxPriceImpact: 0.4,
+                            allowSwitchChain: false,
+                            bridges: {
+                                deny: [
+                                    "hop", "cbridge", "optimism", "arbitrum", "across", "omni", "celercircle", "allbridge",
+                                    "thorswap", "symbiosis", "squid", "mayan", "mayanWH", "mayanMCTP", "relay", "polygon",
+                                    "glacis", "stargateV2", "stargateV2Bus", "chainflip"
+                                ]
+                            },
+                            // Tidak ada exchanges.allow → biarkan Marble memilih semua DEX terbaik
+                            // Jika ingin eksplisit: hapus properti 'exchanges' atau biarkan kosong
+                        }
+                    };
+                }else if (action === "PairtoToken") {
+                    // Menggunakan DZAP API (tidak membatasi ke "1inch" saja)
+                    apiUrl = "https://api.dzap.io/v1/quotes";
+                    
+                    requestData = {
+                        account: SavedSettingData.walletMeta || '0x0000000000000000000000000000000000000000',
+                        fromChain: chainCode,
+                        integratorId: 'dzap',
+                        allowedSources: [ // biarkan semua source aktif (tanpa dibatasi hanya "1inch")
+                            "bebop", "enso", "iceCreamSwap", "izumi", "kyberSwap", "lifi", "magpie",
+                            "odos", "okx", "oneInchViaLifi", "openOcean", "paraSwap", "sushiswap",
+                            "synapse", "uniswap", "unizen", "vaporDex", "woodSwap", "xyFinance",
+                            "zerox", "orbiter", "relayLink", "mayanFinance", "jupiter"
+                        ],
+                        notAllowedSources: [],
+                        data: [{
+                            amount: amount_in.toString(),
+                            srcToken: sc_input,
+                            srcDecimals: des_input,  // ← ambil dari metadata token
+                            destToken: sc_output,
+                            destDecimals: des_output, // ← ambil dari metadata token
+                            slippage: 0.3,
+                            toChain: chainCode
+                        }]
+                    };
+                    
+                } 
+
+                break;
+
+            case 'odos':
+                 if (action === "TokentoPair") {
+                    apiUrl = "https://ethmainnet.server.hinkal.pro/OdosSwapData";
+                    requestData = {
+                        chainId: chainCode,
+                        compact: true,
+                        disableRFQs: true,
+                        userAddr: SavedSettingData.walletMeta,
+                        inputTokens: [{ amount: amount_in.toString(), tokenAddress: sc_input }],
+                        outputTokens: [{ proportion: 1, tokenAddress: sc_output }],
+                        slippageLimitPercent: 0.3,
+                    }; 
+                 } else if (action === "PairtoToken") {
+                    // apiUrl = "https://bzvwrjfhuefn.up.railway.app/swap";               
+                   //  var amount_in = BigInt(Math.round(Number(amount_in)));
+                    
+                    // var requestData = {
+                    //     "chainId": chainCode,
+                    //     "aggregatorSlug": 'odos',
+                    //     "sender": SavedSettingData.walletMeta,
+                    //     "inToken": {
+                    //         "chainId": chainCode,
+                    //         "type": "TOKEN",
+                    //         "address": sc_input.toLowerCase(),
+                    //         "decimals": parseFloat(des_input)
+                    //     },
+                    //     "outToken": {
+                    //         "chainId": chainCode,
+                    //         "type": "TOKEN",
+                    //         "address": sc_output.toLowerCase(),
+                    //         "decimals": parseFloat(des_output)
+                    //     },
+                    //     "amountInWei": String(amount_in),
+                    //     "slippageBps": "100",
+                    //     "gasPriceGwei": Number(getFromLocalStorage('gasGWEI', 0)),
+                    // };
+                    
+                    apiUrl = "https://api.odos.xyz/sor/quote/v2";               
+                    requestData = {
+                        chainId: chainCode,
+                        compact: true,
+                        disableRFQs: true,
+                        userAddr: SavedSettingData.walletMeta,
+                        inputTokens: [{ amount: amount_in.toString(), tokenAddress: sc_input }],
+                        outputTokens: [{ proportion: 1, tokenAddress: sc_output }],
+                        slippageLimitPercent: 0.3,
+                    };         
+                    
+                 }
+                 break;
+
+            case '0x':           
+                if(chainName.toLowerCase() === 'solana'){
+                    apiUrl = "https://matcha.xyz/api/swap/quote/solana?sellTokenAddress="+sc_input_in+"&buyTokenAddress="+sc_output_in+"&sellAmount="+amount_in+"&dynamicSlippage=true&slippageBps=50&userPublicKey=Eo6CpSc1ViboPva7NZ1YuxUnDCgqnFDXzcDMDAF6YJ1L";
+                }else{
+                    apiUrl = "https://matcha.xyz/api/swap/price?chainId=" + chainCode +"&buyToken=" + sc_output + "&sellToken=" + sc_input + "&sellAmount=" + amount_in ;
+                }
+                break;
+                
+            case 'okx':
+                var timestamp = new Date().toISOString();
+                var method = "GET";
+
+                var path = "/api/v5/dex/aggregator/quote";
+                var queryParams = `amount=${amount_in}` +
+                                `&chainIndex=${chainCode}` +
+                                `&fromTokenAddress=${sc_input_in}` +
+                                `&toTokenAddress=${sc_output_in}`;
+
+                var dataToSign = timestamp + method + path + "?" + queryParams;
+                var signature = calculateSignature("OKX", selectedApiKey.secretKeyOKX, dataToSign, "BASE64");
+
+                apiUrl = `https://web3.okx.com${path}?${queryParams}`;
+                break;
+
+
+            case 'jupiter':
+                apiUrl = "https://quote-api.jup.ag/v6/quote?inputMint=" + sc_input_in + "&outputMint=" + sc_output_in + "&amount=" + amount_in;
+                headers = {}; // Tidak memerlukan header khusus
+                break; 
+            
+
+            default:
+                console.error("Unsupported DEX type");
+                return;
+        }
+
+            // Siapkan URL dan data sebelumnya (misalnya: apiUrl, requestData, signature, timestamp, selectedApiKey)
+        $.ajax({
+            url: apiUrl,
+            method: ['odos', '1inch', 'lifi'].includes(dexType) ? 'POST' : 'GET',
+
+            headers: Object.assign(
+                {},
+                headers || {},
+                dexType === 'okx' ? {
+                    "OK-ACCESS-KEY": selectedApiKey.ApiKeyOKX,
+                    "OK-ACCESS-SIGN": signature,
+                    "OK-ACCESS-PASSPHRASE": selectedApiKey.PassphraseOKX,
+                    "OK-ACCESS-TIMESTAMP": timestamp,
+                    "Content-Type": "application/json"
+                } : {}
+            ),
+
+            data: ['odos', '1inch', 'lifi'].includes(dexType)
+                ? JSON.stringify(requestData)  // Untuk DEX POST seperti ODOS, 1inch, dll
+                : undefined, // Untuk GET seperti OKX
+            contentType: ['odos', '1inch', 'lifi'].includes(dexType)
+                ? 'application/json'
+                : undefined,
+          //  timeout: parseInt(SavedSettingData.waktuTunggu) * 1000, // Ambil waktu tunggu dari localStorage atau default ke 0
+            success: function (response, xhr) {
+                //console.log("RESPONSE DEX: ",response)
+                var amount_out = null, FeeSwap = null; // Default kosong
+                try {
+                    
+                    switch (dexType) {
+                            case 'kyberswap':
+                                dexTitle = "KYBESWAP";
+                               // if (action === "TokentoPair") {
+                                    amount_out = response.data.routeSummary.amountOut / Math.pow(10, des_output);
+                                    FeeSwap = parseFloat(response.data.routeSummary.gasUsd) || getFeeSwap(chainConfig.Nama_Chain);
+                                // } else if (action === "PairtoToken") {
+                                //     if (chainCode == 1) {
+                                //         const estimation = response.quote.estimation;
+                                //         amount_out = parseFloat(estimation.buyAmount) / Math.pow(10, des_output);
+                                //         FeeSwap = getFeeSwap(chainConfig.Nama_Chain);
+                                //     } else {
+                                //         amount_out = response.data.routeSummary.amountOut / Math.pow(10, des_output);
+                                //         FeeSwap = parseFloat(response.data.routeSummary.gasUsd) || getFeeSwap(chainConfig.Nama_Chain);
+                                //     }
+                                // }
+                                break;
+
+                            case 'odos':
+                                dexTitle = "ODOS";
+                                if (action === "TokentoPair") {
+                                    amount_out = parseFloat(response.odosResponse.outValues[0]) / PriceRate;
+                                    FeeSwap = response.odosResponse.gasEstimateValue || getFeeSwap(chainConfig.Nama_Chain);
+                                } else if (action === "PairtoToken") {
+                                    amount_out = parseFloat(response.outAmounts) / Math.pow(10, des_output);
+                                    FeeSwap = response.gasEstimateValue || getFeeSwap(chainConfig.Nama_Chain);
+                                }
+                                break;
+
+                            case '1inch':
+                                dexTitle = "1INCH";
+                                if (action === "TokentoPair") {
+                                    const key = Object.keys(response)[0];
+                                    const quoteData = response[key]?.quoteRates?.oneInchViaLifi;
+                                    if (quoteData) {
+                                        amount_out = parseFloat(quoteData.destAmount / Math.pow(10, des_output));
+                                        FeeSwap = parseFloat(quoteData.fee?.gasFee?.[0]?.amountUSD) || getFeeSwap(chainConfig.Nama_Chain);
+                                    }
+                                } else if (action === "PairtoToken") {
+                                    const quoteData = response.routes?.[0];
+                                    if (quoteData) {
+                                        amount_out = parseFloat(quoteData.toAmount / Math.pow(10, des_output));
+                                        FeeSwap = parseFloat(quoteData.gasCostUSD) || getFeeSwap(chainConfig.Nama_Chain);
+                                    }
+                                }
+                                break;
+
+                            case '0x':
+                                amount_out = response.buyAmount / Math.pow(10, des_output);
+                                dexTitle = "0X";
+                                FeeSwap = getFeeSwap(chainConfig.Nama_Chain);
+                                break;
+
+                            case 'okx':
+                                dexTitle = "0KX";
+                                amount_out = response.data[0].toTokenAmount / Math.pow(10, des_output);
+                                FeeSwap = getFeeSwap(chainConfig.Nama_Chain);
+                                break;
+
+                            case 'lifi':
+                                // LIFI TokentoPair
+                                if (action === "TokentoPair") {
+                                    const routes = response.routes || [];
+                                    let bestQuote = null;
+                                    let bestAmount = 0;
+                                    for (const route of routes) {
+                                        if (route?.toAmount) {
+                                            const amount = parseFloat(route.toAmount) / Math.pow(10, des_output);
+                                            if (amount > bestAmount) {
+                                                bestAmount = amount;
+                                                bestQuote = route;
+                                            }
+                                        }
+                                    }
+                                    if (bestQuote) {
+                                        amount_out = bestAmount;
+                                        FeeSwap = parseFloat(bestQuote.gasCostUSD) || getFeeSwap(chainConfig.Nama_Chain);
+                                        dexTitle = `${bestQuote.steps?.[0]?.tool || "unknown"} via LIFI`;
+                                    }
+                                } 
+                                // LIFI PairtoToken
+                                else if (action === "PairtoToken") {
+                                    const key = Object.keys(response)[0];
+                                    const quoteSources = response[key]?.quoteRates;
+                                    let bestQuote = null;
+                                    let bestAmount = 0;
+                                    for (const data of Object.values(quoteSources || {})) {
+                                        if (data?.destAmount) {
+                                            const amount = parseFloat(data.destAmount) / Math.pow(10, des_output);
+                                            if (amount > bestAmount) {
+                                                bestAmount = amount;
+                                                bestQuote = data;
+                                            }
+                                        }
+                                    }
+                                    if (bestQuote) {
+                                        amount_out = bestAmount;
+                                        FeeSwap = parseFloat(bestQuote?.fee?.gasFee?.[0]?.amountUSD) || getFeeSwap(chainConfig.Nama_Chain);
+                                        dexTitle = `${response[key]?.recommendedSource || "unknown"} via DZAP`;
+                                    }
+                                }
+                                break;
+
+                            default:
+                                throw new Error(`DEX type ${dexType} not supported.`);
+                        }
+
+                        const result = {
+                            dexTitle: dexTitle,
+                            sc_input: sc_input,
+                            des_input: des_input,
+                            sc_output: sc_output,
+                            des_output: des_output,
+                            FeeSwap: FeeSwap,
+                            amount_out: amount_out,
+                            apiUrl: apiUrl,
+                        };
+
+                        callback(null, result);
+                    } catch (error) {
+                        callback({
+                            statusCode: 500,
+                            pesanDEX: `Error DEX : ${error.message}`,
+                            color: "#f39999",
+                            DEX: dexType.toUpperCase(),
+                        }, null);
+                    }
+            },
+            
+            error: function (xhr) {
+                var alertMessage = "Terjadi kesalahan";
+                var warna = "#f39999";
+                switch (xhr.status) {
+                    case 0:  
+                        if(dexType=='kyberswap' || dexType =='odos' ||  dexType == '0x'){
+                            alertMessage = "KENA LIMIT";
+                        }
+                            else{
+                            alertMessage = "NULL RESPONSE";
+                        }
+                        break;                        
+                    case 400:
+                        try { 
+                            var errorResponse = JSON.parse(xhr.responseText);
+                            if (
+                                (errorResponse.description && errorResponse.description.toLowerCase().includes("insufficient liquidity")) || 
+                                (errorResponse.error && errorResponse.error.toLowerCase().includes("no routes found with enough liquidity"))
+                            ) {
+                                alertMessage = "NO LP (No Liquidity Provider)";
+                                warna = "#f39999";
+                            } else {
+                                alertMessage = errorResponse.detail || errorResponse.description || errorResponse.error || "KONEKSI BURUK";
+                            }
+                        } catch (e) {
+                            alertMessage = "KONEKSI LAMBAT"; // Jika parsing gagal
+                        }
+                    break;
+                    case 401:
+                        alertMessage = "API SALAH";
+                        break;
+                    case 403:
+                        alertMessage = "AKSES DIBLOK";
+                        warna = "#fff";
+                        break;
+                    case 404:
+                        alertMessage = "Permintaan tidak ditemukan";
+                        break ;
+                    case 429:
+                            warna = "#f39999";
+                            alertMessage = "AKSES KENA LIMIT";
+                        break;
+                    case 500:
+                        try {
+                            var errorResponse = JSON.parse(xhr.responseText);
+                            if (errorResponse.msg && errorResponse.msg.toLowerCase().includes("too many requests")) {
+                                alertMessage = "AKSES KENA LIMIT (500 Too Many Requests)";
+                                warna = "#f39999";
+                            } else {
+                                alertMessage = errorResponse.detail || "GAGAL DAPATKAN DATA";
+                            }
+                        } catch (e) {
+                            alertMessage = "GAGAL DAPATKAN DATA";
+                        }
+                        break;
+                    case 503:
+                        alertMessage = "Layanan tidak tersedia";
+                        break;
+                    case 502:
+                        alertMessage = "Respons tidak valid";
+                        break;
+                    default:
+                        warna = "#f39999";
+                        alertMessage = "Status: " + xhr.status;
+                }
+                $(`#SWAP_${dexId}`).html(`<a href="${linkDEX}" title="${dexType.toUpperCase()}: ${alertMessage}" target="_blank" class="uk-text-danger"><i class="bi bi-x-circle"></i> ${dexType.toUpperCase()} </a>`);
+
+                callback({ 
+                    statusCode: xhr.status, 
+                    pesanDEX:`${dexType.toUpperCase()}: ${alertMessage}`,
+                    color: warna, 
+                    DEX: dexType.toUpperCase(),
+                    dexURL: linkDEX 
+                }, null);
+            }, 
+        });
+    }
+    
+    function getFeeSwap(chainName) {
+        const allGasData = getFromLocalStorage("ALL_GAS_FEES");
+
+        // cari data gas untuk chain yang sesuai
+        const gasInfo = allGasData.find(g => g.chain.toLowerCase() === chainName.toLowerCase());
+        if (!gasInfo) {
+            console.error(`❌ Gas data not found for chain: ${chainName}`);
+            return 0;
+        }
+
+        // ambil GASLIMIT dari CONFIG_CHAINS
+        const chainConfig = CONFIG_CHAINS[chainName.toLowerCase()];
+        if (!chainConfig) {
+            console.error(`❌ Chain config not found for: ${chainName}`);
+            return 0;
+        }
+
+        const gasLimit = parseFloat(chainConfig.GASLIMIT || 250000); // default kalau tidak ada
+        const feeSwap = ((parseFloat(gasInfo.gwei) * gasLimit) / Math.pow(10, 9)) * parseFloat(gasInfo.tokenPrice);
+
+        return feeSwap;
+    }
+
+    // Fungsi untuk mengecek harga pada SWOOP
+    function getPriceSWOOP(sc_input, des_input, sc_output, des_output, amount_in, PriceRate,  dexType, NameToken, NamePair, cex,nameChain,codeChain,action, callback) {
+        const chainName = nameChain.toLowerCase();
+        const chainConfig = CONFIG_CHAINS[chainName];
+        var SavedSettingData = getFromLocalStorage('SETTING_SCANNER', {});
+        var dexId = `${cex}_${dexType.toUpperCase()}_${NameToken}_${NamePair}_${(chainConfig.Nama_Chain).toUpperCase()}`;
+       // var amount_in = Math.pow(10, des_input) * amount_in;
+        var amount_in = BigInt(Math.round(Number(amount_in)));
+        var dexURL = generateDexLink(dexType,chainName,codeChain,NameToken,sc_input, NamePair, sc_output);
+        
+        var payload = {
+            "chainId": codeChain,
+            "aggregatorSlug": dexType.toLowerCase(),
+            "sender": SavedSettingData.walletMeta,
+            "inToken": {
+                "chainId": codeChain,
+                "type": "TOKEN",
+                "address": sc_input.toLowerCase(),
+                "decimals": parseFloat(des_input)
+            },
+            "outToken": {
+                "chainId": codeChain,
+                "type": "TOKEN",
+                "address": sc_output.toLowerCase(),
+                "decimals": parseFloat(des_output)
+            },
+            "amountInWei": String(amount_in),
+            "slippageBps": "100",
+            "gasPriceGwei": Number(getFromLocalStorage('gasGWEI', 0)),
+        };
+    
+        $.ajax({
+            url:'https://bzvwrjfhuefn.up.railway.app/swap',
+
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(payload),
+            success: function (response) {
+                    var amount_out = parseFloat(response.amountOutWei) / Math.pow(10, des_output);
+                    
+                    const FeeSwap = getFeeSwap(chainConfig.Nama_Chain);
+                   // var FeeSwap = ((parseFloat(getFromLocalStorage('gasGWEI')) * 250000) / Math.pow(10, 9))*parseFloat(getFromLocalStorage('PRICEGAS'));
+                    const result = {
+                            dexTitle: dexType+" via SWOOP",
+                            sc_input: sc_input,
+                            des_input: des_input,
+                            sc_output: sc_output,
+                            des_output: des_output,
+                            FeeSwap: FeeSwap,
+                            dex: dexType,
+                            amount_out: amount_out,
+                        };
+                        callback(null, result);
+                    },
+            error: function (xhr) {
+                var alertMessage = "Terjadi kesalahan";
+                var warna = "#f39999";
+            
+                switch (xhr.status) {
+                    case 0:
+                        alertMessage = "NO RESPONSE";
+                        break;
+                    case 400:
+                        try {
+                            var errorResponse = JSON.parse(xhr.responseText);
+                            alertMessage = errorResponse.detail || errorResponse.description || "KONEKSI BURUK";
+                        } catch (e) {
+                            alertMessage = "KONEKSI LAMBAT"; // Jika parsing gagal
+                        }
+                        break;
+                    case 403:
+                        alertMessage = "AKSES DIBLOK";
+                        break;
+                    case 404:
+                        alertMessage = "Permintaan tidak ditemukan";
+                        break;
+                    case 429:
+                       alertMessage = "AKSES KENA LIMIT";
+                        break;
+                    case 500:
+                        try {
+                            var errorResponse = JSON.parse(xhr.responseText);
+                            alertMessage = errorResponse.message || "GAGAL DAPATKAN DATA";
+                        } catch (e) {
+                            alertMessage = "GAGAL DAPATKAN DATA"; // Jika parsing gagal
+                        }
+                        break;
+                    case 503:
+                        alertMessage = "Layanan tidak tersedia";
+                        break;
+                    case 502:
+                        alertMessage = "Respons tidak valid";
+                        break;
+                    default:
+                        warna = "#f39999";
+                        alertMessage = "Status: " + xhr.status;
+                }
+
+//                $(`#SWAP_${dexId}`).html(`<a href="${dexURL}" title="${dexType.toUpperCase()}: ${alertMessage}" target="_blank" class="uk-text-danger"><i class="bi bi-x-circle"></i> ${dexType.toUpperCase()} </a>`);
+
+                // Kirim callback untuk penanganan lebih lanjut
+                callback({ 
+                    statusCode: xhr.status, 
+                    pesanDEX: "SWOOP: "+alertMessage, 
+                    color: warna, 
+                    DEX: dexType.toUpperCase(), 
+                    dexURL: dexURL 
+                }, null);
+            }
+            
+        });
+    }
+
+    function ResultEksekusi(amount_out, FeeSwap, sc_input, sc_output, cex, Modal, amount_in, priceBuyToken_CEX, priceSellToken_CEX, priceBuyPair_CEX, priceSellPair_CEX, Name_in, Name_out, feeWD, dextype,nameChain,codeChain, trx, vol,DataDEX) {
+        // console.log("DataDEX",DataDEX);    
+        var NameX = Name_in + "_" + Name_out;
+            var FeeWD = parseFloat(feeWD);
+            var FeeTrade = parseFloat(0.0014 * Modal);
+    
+            FeeSwap = parseFloat(FeeSwap);    
+            Modal = parseFloat(Modal);
+            amount_in = parseFloat(amount_in);
+            amount_out = parseFloat(amount_out);
+            priceBuyToken_CEX = parseFloat(priceBuyToken_CEX);
+            priceSellPair_CEX = parseFloat(priceSellPair_CEX);
+
+            // Hitung harga rata-rata swap
+            var rateSellTokenDEX = (amount_out * priceSellPair_CEX) / amount_in;
+            var rateBuyPairDEX = (amount_in * priceBuyToken_CEX) / amount_out;
+            var rateTokentoPair = amount_out / amount_in;
+
+            // Hitung total nilai
+            var totalModal = Modal + FeeSwap + FeeWD + FeeTrade;
+            var totalFee = FeeSwap + FeeWD + FeeTrade;
+            // Hitung nilai output dalam USDT
+            var valueOutInUSDT = amount_out * priceSellPair_CEX; // Output DEX dalam USD via CEX
+            var valueInInUSDT = amount_out * priceBuyToken_CEX; // Input DEX dalam USD via CEX
+            
+            // let totalValue = 0;
+            // if (trx === "TokentoPair") {
+            //     totalValue = valueOutInUSDT; // Untuk transaksi TokentoPair
+            // } else if (trx === "PairtoToken") {
+            //     totalValue = amount_out*priceSellToken_CEX; // Untuk transaksi PairtoToken
+            // }
+            var totalValue = amount_out * priceSellPair_CEX; // Nilai akhir (USDT)
+                // console.warn("TOTAL VALUE",totalValue)
+                // console.log("TOKEN BUY:",priceBuyToken_CEX);
+                // console.log("TOKEN SELL:",priceSellToken_CEX);
+
+                // console.log("PAIR BUY:",priceBuyPair_CEX);
+                // console.log("PAIR SELL:",priceSellPair_CEX);
+            
+            var profitLoss = totalValue - totalModal;
+            var profitLossPercent = totalModal !== 0 ? (profitLoss / totalModal) * 100 : 0;
+
+            var filterPNLValue = parseFloat(SavedSettingData.filterPNL);
+            var conlusion = "NO SELISIH";
+            var selisih = false;
+
+            if (filterPNLValue === 0) {
+                if (totalValue > totalModal + totalFee) {
+                    conlusion = "GET SIGNAL";
+                    selisih = true;
+                }
+            } else {
+                if ((totalValue - totalModal) > filterPNLValue) {
+                    conlusion = "GET SIGNAL";
+                    selisih = true;
+                }
+            }
+
+            let IdCELL = `${cex.toUpperCase()}_${dextype.toUpperCase()}_${NameX}_${(nameChain).toUpperCase()}`;
+            // console.log("ID CELL:", IdCELL);
+            // console.log("INFO LINK DEX:",dextype,nameChain,codeChain,Name_in,sc_input, Name_out, sc_output);
+            var linkDEX = generateDexLink(dextype,nameChain,codeChain,Name_in,sc_input, Name_out, sc_output);   
+
+            if (!linkDEX) {
+                console.error(`DEX Type "${dextype}" tidak valid atau belum didukung.`);
+                return;
+            }
+
+            // Ambil rate IDR dari localStorage
+            const rateUSDTtoIDR = getFromLocalStorage("PRICE_RATE_USDT", 0);
+            const toIDR = usdt => rateUSDTtoIDR ? (usdt * rateUSDTtoIDR).toLocaleString("id-ID", {
+                style: "currency",
+                currency: "IDR"
+            }) : "N/A";
+
+            let titleInfo = `${DataDEX.dexTitle.toUpperCase()}: `;
+            let RateSwap = "";
+
+            if (stablecoins.includes(Name_in)) {
+                titleInfo += `(${Name_in}->${Name_out}) : ${formatPrice(rateBuyPairDEX)}`;
+                titleInfo += ` | ${toIDR(rateBuyPairDEX)}`;
+                RateSwap = `<label class="uk-text-success" title="${titleInfo}">${formatPrice(rateBuyPairDEX)}</label>`;
+            } else if (stablecoins.includes(Name_out)) {
+                titleInfo += ` (${Name_in}->${Name_out}) : ${formatPrice(rateTokentoPair)}`;
+                titleInfo += ` | ${toIDR(rateSellTokenDEX)}`;
+                RateSwap = `<label class="uk-text-danger" title="${titleInfo}">${formatPrice(rateTokentoPair)}</label>`;
+            } else {
+
+                 if (trx === "TokentoPair") {
+                     // Selain itu, ambil rate dari TOKEN (symbol_in)
+                    titleInfo += ` ${formatPrice(rateTokentoPair)} ${Name_in}/${Name_out}`;
+                    titleInfo += ` | ${toIDR(rateSellTokenDEX)}`;
+                    RateSwap = `<label class="uk-text-primary" title="${titleInfo}">${formatPrice(rateSellTokenDEX)}</label>`;                   
+                } else {
+                    // Khusus USDT saat PairtoToken → ambil rate dari PAIR (symbol_out)
+                    titleInfo += ` ${formatPrice(rateBuyPairDEX/priceBuyToken_CEX)} ${Name_in}/${Name_out}`;
+                    titleInfo += ` | ${toIDR(rateBuyPairDEX)}`;
+                    RateSwap = `<label class="uk-text-primary" title="${titleInfo}">${formatPrice(rateBuyPairDEX)}</label>`;
+                }
+                
+
+            }
+
+        if ($(`#SWAP_${IdCELL}`).length > 0) {
+            $(`#SWAP_${IdCELL}`).html(`<a href="${linkDEX}" target="_blank">${RateSwap}</a>`);
+        }
+
+        // Menampilkan PNL
+        // Panggil fungsi tampilan hasil
+       // console.log("INFO PNL",profitLoss, cex, Name_in, NameX, totalFee, Modal, dextype, priceBuyToken_CEX, rateSellTokenDEX, FeeSwap, FeeWD, sc_input, sc_output, Name_out, totalValue, totalModal, conlusion, selisih,nameChain,codeChain, trx, profitLossPercent); 
+        DisplayPNL(profitLoss, cex, Name_in, NameX, totalFee, Modal, dextype, priceBuyToken_CEX, rateSellTokenDEX, FeeSwap, FeeWD, sc_input, sc_output, Name_out, totalValue, totalModal, conlusion, selisih,nameChain,codeChain, trx, profitLossPercent,vol);
+    }
+
+    $(document).ready(function() {  
+        const config = JSON.parse(localStorage.getItem('MONITORING_STATUS_RUN') || '{}');
+        if (config.run === "YES") {
+            $('#startSCAN').prop('disabled', true).text('Running...');
+        } else {
+            $('#startSCAN').prop('disabled', false).text('Start');
+        }
+        // dark mode change    
+        const isDark = getFromLocalStorage("DARK_MODE", false);
+        if (isDark) {
+            $('body').addClass('dark-mode uk-dark').removeClass('uk-light');
+        } else {
+            $('body').removeClass('dark-mode uk-dark');
+        }
+            // Inisialisasi tabel token saat halaman siap
+        $('title').text("MULTI SCANNER");
+        $('#namachain').text("MULTI CHAIN");
+
+        $('#sinyal-container').css('color',"black");
+        $('h4#daftar').css({ 'color': 'white', 'background': `linear-gradient(to right, #5c9513, #ffffff)`, 'padding-left': '7px','border-radius': '5px' });
+
+        refreshTokensTable();
+
+       // console.log("DATA TOKEN FILTER",filteredTokens);
+
+        updateDarkIcon(isDark);
+
+        const managedChains = getManagedChains();
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const chain = urlParams.get('chain'); // Default ke 'eth' jika chain tidak ditemukan di URL
+
+        cekDataAwal();
+
+        $('.sort-toggle').off('click').on('click', function () {
+        
+            $('.sort-toggle').removeClass('active');
+            $(this).addClass('active');
+            const sortValue = $(this).data('sort');
+            if (sortValue === "opt_B") {
+                filteredTokens = [...originalTokens].reverse();
+                //toastr.info("SORTING TOKEN PAIR BERUBAH KE -Z");
+            } else {
+                filteredTokens = [...originalTokens];
+                //toastr.info("SORTING TOKEN PAIR BERUBAH KE -A");
+            }
+            loadKointoTable(filteredTokens, false); // Jangan munculkan toastr error/info dari loadKointoTable saat sorting
+        });
+
+        $('#btn-save-setting').on('click', function() {
+                // Ambil nilai dasar
+                const nickname = $('#user').val().trim();
+                let filterPNL = parseFloat($('#inFilterPNL').val());
+                const jedaTimeGroup = parseInt($('#jeda-time-group').val(), 10);
+                const jedaKoin = parseInt($('#jeda-koin').val(), 10);
+                const walletMeta = $('#walletMeta').val().trim();
+
+                // Radio button
+                const scanPerKoin = $('input[name="koin-group"]:checked').val();
+                const speedScan = $('input[name="waktu-tunggu"]:checked').val();
+
+                // Validasi input wajib
+                if (!nickname) {
+                    UIkit.notification({message: 'Nickname harus diisi!', status: 'danger'});
+                    return;
+                }
+                if (!jedaTimeGroup || jedaTimeGroup <= 0) {
+                    UIkit.notification({message: 'Jeda / Group harus lebih dari 0!', status: 'danger'});
+                    return;
+                }
+                if (!jedaKoin || jedaKoin <= 0) {
+                    UIkit.notification({message: 'Jeda / Koin harus lebih dari 0!', status: 'danger'});
+                    return;
+                }
+                if (!walletMeta) {
+                    UIkit.notification({message: 'Wallet Address harus diisi!', status: 'danger'});
+                    return;
+                }
+                if (!walletMeta.startsWith('0x')) {
+                    UIkit.notification({message: 'Wallet Address harus diawali dengan "0x"!', status: 'danger'});
+                    return;
+                }
+            
+                if (!scanPerKoin) {
+                    UIkit.notification({message: 'Pilih opsi KOIN / GRUP!', status: 'danger'});
+                    return;
+                }
+                if (!speedScan) {
+                    UIkit.notification({message: 'Pilih opsi WAKTU TUNGGU!', status: 'danger'});
+                    return;
+                }
+
+                // Ambil modal CEX dari input dengan class .cex-modal-input
+                let JedaCexs = {};
+                $('.cex-modal-input').each(function() {
+                    const cex = $(this).data('cex');
+                    const val = parseFloat($(this).val()) || 300;
+                    JedaCexs[cex] = val;
+                });
+
+                // Ambil modal DEX dari input dengan class .dex-modal-input
+                let JedaDexs = {};
+                $('.dex-modal-input').each(function() {
+                    const dex = $(this).data('dex');
+                    const val = parseFloat($(this).val()) || 500;
+                    JedaDexs[dex] = val;
+                });
+
+
+                // Buat objek settings, tambahkan AllChains dari CONFIG_CHAINS
+                const settingData = {
+                    nickname,
+                    jedaTimeGroup,
+                    jedaKoin,
+                    filterPNL: filterPNL,
+                    walletMeta,
+                    scanPerKoin: parseInt(scanPerKoin, 10),
+                    speedScan: parseFloat(speedScan),
+                    JedaCexs,
+                    JedaDexs,
+                    AllChains: Object.keys(CONFIG_CHAINS)
+                };
+
+                // Simpan ke localStorage
+                saveToLocalStorage('SETTING_SCANNER', settingData);
+                alert("✅ SETTING SCANNER BERHASIL");
+                location.reload();
+        });
+
+        // Event tombol hapus (kirim id & cex)
+        $(document).on('click', '[id^="DelMulti-"]', function () {
+            const id = $(this).data('id');   // ID token asli
+            const cex = $(this).data('cex'); // Nama CEX
+            const no = $(this).data('index');
+            const coin = $(this).data('coin');
+
+            if (confirm(`INGIN HAPUS KOIN ${coin.toUpperCase()} MARKET ${cex.toUpperCase()}?`)) {
+                deleteCexFromToken(id, cex);
+                toastr.success(`CEX ${cex} pada token #${no} berhasil dihapus`);
+            }
+        });
+                    
+        UIkit.util.on('#modal-setting', 'show', function () {
+            form_on();
+        });
+                               
+        // Create chain links langsung dari CONFIG_CHAINS
+        Object.keys(CONFIG_CHAINS).forEach(chainKey => {
+            const chainData = CONFIG_CHAINS[chainKey];
+            if (!chainData) return;
+
+            const linkHTML = `
+                <span class="chain-link">
+                    <a href="index.html?chain=${chainKey}" target="_blank">
+                        <img src="${chainData.ICON}" 
+                            alt="${chainData.Nama_Chain} icon" 
+                            width="24"
+                            title="${chainData.Nama_Chain}">
+                    </a>
+                </span>
+            `;
+            $('#chain-links-container').append(linkHTML);
+        });
+
+        $('#searchInput').on('input', function() {
+            const searchValue = $(this).val().toLowerCase();
+            $('#dataTableBody tr').filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(searchValue) > -1);
+            });
+        });
+
+        $('.posisi-check').on('change', function () {
+            const kiri = $('input[value="Actionkiri"]');
+            const kanan = $('input[value="ActionKanan"]');
+            
+            // Cek jumlah yang dicentang
+            const checkedCount = $('.posisi-check:checked').length;
+
+            if (checkedCount === 0) {
+                // Kembalikan checkbox ini ke posisi sebelumnya (ON)
+                $(this).prop('checked', true);
+                toastr.error("Minimal salah satu POSISI harus aktif!");
+                return;
+            }else{
+                $("#startSCAN").show();
+            }
+
+            const label = $(this).val() === 'Actionkiri' ? 'KIRI' : 'KANAN';
+            const status = $(this).is(':checked') ? 'AKTIF' : 'NONAKTIF';
+            toastr.info(`POSISI ${label} ${status}`);
+        });
+
+        $("#reload").click(function () {
+            const config = JSON.parse(localStorage.getItem('MONITORING_STATUS_RUN') || '{}');
+
+            if (config.run === "YES") {
+                const confirmReset = confirm("⚠️ APAKAH ANDA INGIN RESET PROSES? \n JIKA ADA PROSES SCANNING MAKA AKAN DIHENTIKAN?");
+                
+                if (confirmReset) {
+                    config.run = "NO"; // hentikan proses scan
+                    localStorage.setItem('MONITORING_STATUS_RUN', JSON.stringify(config));
+                    location.reload(); // reload halaman
+                } else {
+                    // User menolak, tidak lakukan apa-apa
+                    console.log("Reload dibatalkan oleh pengguna.");
+                }
+            } else {
+                // Tidak sedang scan, langsung reload
+                location.reload();
+            }
+        });     
+
+        $("#stopSCAN").click(function () {
+                // Ambil config dari localStorage terlebih dahulu
+                const config = JSON.parse(localStorage.getItem('MONITORING_STATUS_RUN') || '{}');
+
+                // Cek jika sedang berjalan
+                if (config.run === "YES") {
+                    // Ubah menjadi "NO"
+                    config.run = "NO";
+                    localStorage.setItem('MONITORING_STATUS_RUN', JSON.stringify(config));
+
+                    // Jalankan efek stop langsung
+                    clearInterval(window.autorunTimer);
+                    $('#startSCAN').prop('disabled', false).text('Start');
+
+                    alert("✅ SCAN BERHASIL DIHENTIKAN");
+                    location.reload();
+                } else {
+                    // Kalau memang sudah NO, tidak lakukan apa-apa
+                    alert("⚠️ SCAN SUDAH NONAKTIF");
+                }
+        });
+            
+        // Menampilkan form settingan
+        $("#SettingConfig").on("click", function () {
+            UIkit.modal("#modal-setting").show(); // Tampilkan modal
+
+            // Generate CEX checkbox + input
+            const cexList = Object.keys(CONFIG_CEX || {});
+            let cexHtml = '';
+            cexList.forEach(cex => {
+                cexHtml += `
+                <div class="uk-flex uk-flex-middle uk-margin-small-bottom">
+                    <label for="cex-${cex}" style="min-width:70px; display:inline-block; margin-left:5px;">${cex}</label>
+                    <input type="number" class="uk-input uk-form-small cex-modal-input" data-cex="${cex}" value="300" 
+                    style="width:80px; display:inline-block; margin-left:8px;" min="0">
+                </div>
+                `;
+            });
+            $('#cex-checkbox-group').html(cexHtml);
+
+            // Generate DEX checkbox + input
+            const dexList = Object.keys(CONFIG_DEXS || {});
+            let dexHtml = '';
+            dexList.forEach(dex => {
+                dexHtml += `
+                <div class="uk-flex uk-flex-middle uk-margin-small-bottom">
+                    <label for="dex-${dex}" style="min-width:70px; display:inline-block; margin-left:5px;">${dex.toUpperCase()}</label>
+                    <input type="number" class="uk-input uk-form-small dex-modal-input" data-dex="${dex}" value="700" 
+                    style="width:80px; display:inline-block; margin-left:8px;" min="0">
+                </div>
+                `;
+            });
+            $('#dex-checkbox-group').html(dexHtml);
+
+            function loadSettings() {
+                let appSettings = getFromLocalStorage('SETTING_SCANNER') || {};
+
+                $('#user').val(appSettings.nickname || '');
+                $('#jeda-time-group').val(appSettings.jedaTimeGroup || 500);
+                $('#jeda-koin').val(appSettings.jedaKoin || 500);
+                $('#walletMeta').val(appSettings.walletMeta || '');
+                $('#inFilterPNL').val(appSettings.filterPNL || 0);
+                $(`input[name="koin-group"][value="${appSettings.scanPerKoin || 5}"]`).prop('checked', true);
+                $(`input[name="waktu-tunggu"][value="${appSettings.speedScan || 2}"]`).prop('checked', true);
+
+                // Perbaiki di sini
+                const modalCexs = appSettings.JedaCexs || {};
+                $('.cex-modal-input').each(function() {
+                    const cex = $(this).data('cex');
+                    if (modalCexs[cex] !== undefined) {
+                        $(this).val(modalCexs[cex]);
+                    }
+                });
+
+                const modalDexs = appSettings.JedaDexs || {};
+                $('.dex-modal-input').each(function() {
+                    const dex = $(this).data('dex');
+                    if (modalDexs[dex] !== undefined) {
+                        $(this).val(modalDexs[dex]);
+                    }
+                });
+            }
+
+            loadSettings();
+        });
+
+            // Menampilkan form settingan
+        $("#SettingConfig").on("click", function () {
+        UIkit.modal("#modal-setting").show(); // Tampilkan modal
+
+        // Generate CEX checkbox + input
+        const cexList = Object.keys(CONFIG_CEX || {});
+        let cexHtml = '';
+        cexList.forEach(cex => {
+            cexHtml += `
+            <div class="uk-flex uk-flex-middle uk-margin-small-bottom">
+                <label for="cex-${cex}" style="min-width:70px; display:inline-block; margin-left:5px;">${cex}</label>
+                <input type="number" class="uk-input uk-form-small cex-modal-input" data-cex="${cex}" value="300" 
+                style="width:80px; display:inline-block; margin-left:8px;" min="0">
+            </div>
+            `;
+        });
+        $('#cex-checkbox-group').html(cexHtml);
+
+        // Generate DEX checkbox + input
+        const dexList = Object.keys(CONFIG_DEXS || {});
+        let dexHtml = '';
+        dexList.forEach(dex => {
+            dexHtml += `
+            <div class="uk-flex uk-flex-middle uk-margin-small-bottom">
+                <label for="dex-${dex}" style="min-width:70px; display:inline-block; margin-left:5px;">${dex.toUpperCase()}</label>
+                <input type="number" class="uk-input uk-form-small dex-modal-input" data-dex="${dex}" value="700" 
+                style="width:80px; display:inline-block; margin-left:8px;" min="0">
+            </div>
+            `;
+        });
+        $('#dex-checkbox-group').html(dexHtml);
+
+        function loadSettings() {
+            let appSettings = getFromLocalStorage('SETTING_SCANNER') || {};
+
+            $('#user').val(appSettings.nickname || '');
+            $('#jeda-time-group').val(appSettings.jedaTimeGroup || 500);
+            $('#jeda-koin').val(appSettings.jedaKoin || 500);
+            $('#walletMeta').val(appSettings.walletMeta || '');
+
+            $(`input[name="koin-group"][value="${appSettings.scanPerKoin || 5}"]`).prop('checked', true);
+            $(`input[name="waktu-tunggu"][value="${appSettings.speedScan || 2}"]`).prop('checked', true);
+
+            // Perbaiki di sini
+            const modalCexs = appSettings.JedaCexs || {};
+            $('.cex-modal-input').each(function() {
+                const cex = $(this).data('cex');
+                if (modalCexs[cex] !== undefined) {
+                    $(this).val(modalCexs[cex]);
+                }
+            });
+
+            const modalDexs = appSettings.JedaDexs || {};
+            $('.dex-modal-input').each(function() {
+                const dex = $(this).data('dex');
+                if (modalDexs[dex] !== undefined) {
+                    $(this).val(modalDexs[dex]);
+                }
+            });
+        }
+
+        loadSettings();
+    });
+
+        //scan dengan batas maksimum eksekusi pergrup (speedscan)
+       $("#startSCAN").click(function () {
+            var flatTokens = flattenDataKoin(DataTokens); // Definisikan di sini
+            
+            // if (flatTokens.length > 0) {
+            //     console.log("DATA KOIN", flatTokens);
+            // } else {
+            //     console.log("Tidak ada token yang ditemukan");
+            //     $('#startSCAN').prop('disabled', true);
+            //     return; // stop kalau tidak ada data
+                
+            // }
+
+            let config = { run: "YES" };
+            localStorage.setItem('MONITORING_STATUS_RUN', JSON.stringify(config));
+
+            $('#startSCAN').prop('disabled', true).text('Running...');
+           // cekDataAwal();
+            
+            $('#sinyal-container span[id^="sinyal"]').empty();
+            form_off();
+
+            $("#autoScrollCheckbox").show().prop('disabled', false);
+            $("#stopSCAN").show().prop('disabled', false);
+
+            $('#LoadDataBtn, #SettingModal, #MasterData,#UpdateWalletCEX, #chain-links-container,.sort-toggle')
+                .css('pointer-events', 'none')
+                .css('opacity', '0.4');
+
+            $('.statusCheckbox').css({ 'pointer-events': 'auto', 'opacity': '1' }).prop('disabled', false);
+
+            let ConfigScan = getFromLocalStorage('SETTING_SCANNER', {});
+            let scanPerKoin = parseInt(ConfigScan.scanPerKoin || 1);
+            let jedaKoin = parseInt(ConfigScan.jedaKoin || 500);
+            let jedaTimeGroup = parseInt(ConfigScan.jedaTimeGroup || 1000);
+            
+            sendStatusTELE(ConfigScan.nickname, 'ONLINE');
+            // Tidak perlu ambil dexList dari localStorage lagi karena sudah ada di data token
+            // let dexList = getFromLocalStorage("DEX_PILIH", []);
+
+            let speedScan = parseInt(getFromLocalStorage('SavedSettingData.speedScan', 500)) * 1000;
+            let SavedSettingData = getFromLocalStorage("SavedSettingData", {});
+
+            let maxConcurrentRequests = scanPerKoin;
+            let currentRequests = 0;
+            let requestQueue = [];
+
+            function delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+            function updateProgress(current, total, startTime, TokenPair) {
+                let duration = ((Date.now() - startTime) / 1000 / 60).toFixed(2);
+                let progressPercentage = Math.floor((current / total) * 100);
+                let progressText = `CHECKING - ${TokenPair} [${current}/${total}] :: Mulai: ${new Date(startTime).toLocaleTimeString()} ~ DURASI [${duration} Menit]`;
+
+                $('#progress-bar').css('width', progressPercentage + '%');
+                $('#progress-text').text(progressPercentage + '%');
+                $('#progress').text(progressText);
+            }
+
+            async function processRequest(token) {
+                currentRequests++;
+                try {
+                    let cex = token.cex.toUpperCase();
+                    let nameChain = token.chain.toUpperCase();
+                    let codeChain = CONFIG_CHAINS[token.chain.toLowerCase()]?.Kode_Chain;
+                    let symbolIn = token.symbol_in.toUpperCase();
+                    let symbolOut = token.symbol_out.toUpperCase();
+                    let sc_input = token.sc_in.toString();
+                    let sc_output = token.sc_out.toString();
+                    let des_input = token.des_in;
+                    let des_output = token.des_out;
+                    let NameToken = symbolIn;
+                    let NamePair = symbolOut;
+
+                    let TokenPair = `${symbolIn}_${symbolOut}`;
+                    let PairToken = `${symbolOut}_${symbolIn}`;
+                
+                    await new Promise((resolve, reject) => {
+                        let timeout = setTimeout(() => reject("Timeout"), speedScan);
+
+                        getPriceCEX(token, token.symbol_in, token.symbol_out, token.cex, (error, DataCEX) => {
+                            clearTimeout(timeout);
+                            
+                            if (error || !DataCEX) {
+                                toastr.error(`Cek ulang harga ${token.symbol_in}/${token.symbol_out} di ${token.cex}`);
+                                $('#' + token.cex + '_' + TokenPair + '_' + token.chain.toUpperCase()).css('background-color', '#949191');
+                                resolve();
+                                return;
+                            }
+
+                            let priceBuyTokenCEX = DataCEX.volumes_buyToken?.[0]?.price || 0;
+                            let priceSellTokenCEX = DataCEX.volumes_sellToken?.[0]?.price || 0;
+                            let priceBuyPairCEX = DataCEX.volumes_buyPair?.[0]?.price || 0;
+                            let priceSellPairCEX = DataCEX.volumes_sellPair?.[0]?.price || 0;
+
+                            let isInvalid = [priceBuyTokenCEX, priceSellTokenCEX, priceBuyPairCEX, priceSellPairCEX].some(p => !isFinite(p) || p <= 0);
+
+                            if (isInvalid) {
+                                toastr.error(`CEK MANUAL ${token.symbol_in} di ${token.cex}`);
+                                $('#' + token.cex + '_' + TokenPair + '_' + token.chain.toUpperCase()).css('background-color', '#949191');
+                                resolve();
+                                return;
+                            }
+
+                            if ($('#autoScrollCheckbox').is(':checked')) {
+                                let rowId = `${token.cex}_${symbolIn}_${symbolOut}_${token.chain.toUpperCase()}`;
+                                let targetRow = document.getElementById(rowId);
+                                if (targetRow) targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+
+                            const buyVolToken = DataCEX.volumes_buyToken.length > 0 
+                                ? DataCEX.volumes_buyToken.reduce((min, item) => item.price < min.price ? item : min).volume 
+                                : 1;
+
+                            const sellVolPair = DataCEX.volumes_sellToken.length > 0 
+                                ? DataCEX.volumes_sellToken.reduce((max, item) => item.price > max.price ? item : max).volume 
+                                : 1;
+
+                            // Gunakan data DEX dari token, bukan dari localStorage
+                            if (token.dexs && Array.isArray(token.dexs)) {
+                                token.dexs.forEach((dexData) => {
+                                    let dex = dexData.dex;
+                                    let modalKiri = dexData.left;    // Modal kiri dari data token
+                                    let modalKanan = dexData.right;  // Modal kanan dari data token
+                                    
+                                    let IdTokentoPair = `${cex}_${dex.toUpperCase()}_${TokenPair}_${token.chain.toUpperCase()}`;
+                                    let IdPairtoToken = `${cex}_${dex.toUpperCase()}_${PairToken}_${token.chain.toUpperCase()}`;
+                                    
+                                    let dextype = dex.toLowerCase();
+                                    
+                                    // Perhitungan untuk modal kiri dan kanan
+                                    var amount_in_token = parseFloat(modalKiri) / parseFloat(priceBuyTokenCEX);
+                                    var amount_in_pair = parseFloat(modalKanan) / parseFloat(priceBuyPairCEX);
+                                    
+                                    // dari KIRI
+                                    // token to pair
+                                    if ($(`#${IdTokentoPair}`).length && $('input[type="checkbox"][value="Actionkiri"]').is(':checked')) {
+                                        // console.log("aaa",sc_input, des_input, sc_output, des_output, amount_in_token, priceBuyPairCEX, dextype, NameToken, NamePair, cex,nameChain,codeChain,'TokentoPair');
+                                        getPriceDEX(sc_input, des_input, sc_output, des_output, amount_in_token, priceBuyPairCEX, dextype, NameToken, NamePair, cex,nameChain,codeChain,'TokentoPair', function (error, DataDEX) {
+                                        // console.log("aaa",sc_input, des_input, sc_output, des_output, amount_in_token, priceBuyPairCEX, dextype, NameToken, NamePair, cex,nameChain,codeChain,'TokentoPair');
+                                            if (error || !DataDEX) {
+                                                $(`#${IdTokentoPair}`).css('background-color', error.color);
+                                                $(`#SWAP_${IdTokentoPair}`).html(`<span class="uk-text-danger" title="${error.pesanDEX}">[ERROR]</span>`);
+                                                    
+                                                if ((error.statusCode == 500 && (dextype == "odos" ))){
+                                                // toastr.info(`KIRI!! ${TokenPair} ${dextype} PINDAH SERVER`);
+                                                    var amount_in = BigInt(Math.round(Math.pow(10, des_input) * amount_in_token));
+                                                    getPriceSWOOP(sc_input, des_input, sc_output, des_output, amount_in, priceBuyPairCEX, dextype, NameToken, NamePair, cex,nameChain,codeChain,'TokentoPair', function (altError, altDataDEX){  
+                                                        if (!altError) {
+                                                            $(`#${IdTokentoPair}`).css('background-color', '#fff35d42');
+                                                            $(`span#BUY_${IdTokentoPair}`).html(`<label title="${cex} BUY: USDT->${NameToken}"> ${formatPrice(priceBuyTokenCEX)}</label>`);
+                                                            $(`span#SELL_${IdTokentoPair}`).html(`<label title="${cex} SELL: ${NamePair}->USDT"> ${formatPrice(priceSellPairCEX)}</label>`);
+                                                                ResultEksekusi(altDataDEX.amount_out,altDataDEX.FeeSwap,sc_input, sc_output, cex, modalKiri, amount_in_token, priceBuyTokenCEX, priceSellTokenCEX, priceBuyPairCEX, priceSellPairCEX, NameToken, NamePair,DataCEX.feeWDToken, dextype,nameChain,codeChain,'TokentoPair',buyVolToken,altDataDEX);
+                                                            }
+                                                        else{
+                                                                $(`#${IdTokentoPair}`).css('background-color',altError.color);
+                                                                $(`#SWAP_${IdTokentoPair}`).html(`<span class="uk-text-danger" title="${altError.pesanDEX}">[ERROR]</span>`);
+                                                        }
+                                                    });
+                                                }
+
+                                                return;
+                                                } else {
+                                                    $(`span#BUY_${IdTokentoPair}`).html(`<label title="${cex} BUY: USDT->${NameToken}"> ${formatPrice(priceBuyTokenCEX)}</label>`);
+                                                    $(`span#SELL_${IdTokentoPair}`).html(`<label title="${cex} SELL: ${NamePair}->USDT"> ${formatPrice(priceSellPairCEX)}</label>`);
+                                                    
+                                                    ResultEksekusi(DataDEX.amount_out,DataDEX.FeeSwap,sc_input, sc_output, cex, modalKiri, amount_in_token, priceBuyTokenCEX, priceSellTokenCEX, priceBuyPairCEX, priceSellPairCEX, NameToken, NamePair,DataCEX.feeWDToken, dextype,nameChain,codeChain,'TokentoPair',buyVolToken,DataDEX);
+                                                }
+                                            });                     
+                                        }
+
+                                    // pair to token
+                                    // DARI KANAN
+                                    if ($(`#${IdPairtoToken}`).length && $('input[type="checkbox"][value="ActionKanan"]').is(':checked')) {
+                                        getPriceDEX( sc_output, des_output,sc_input, des_input, amount_in_pair, priceBuyPairCEX, dextype, NamePair, NameToken, cex,nameChain,codeChain,'PairtoToken', function (error, DataDEX) {
+                                            // console.log( sc_output, des_output,sc_input, des_input, amount_in_pair, priceBuyPairCEX, dextype, NamePair, NameToken, cex,'PairtoToken');
+                                            if (error || !DataDEX) {
+                                                $(`#${IdPairtoToken}`).css('background-color', error.color);
+                                                $(`#SWAP_${IdPairtoToken}`).html(` <span class="uk-text-danger" title="${error.pesanDEX}">[ERROR]</span>`);
+                                                    
+                                                if ((error.statusCode == 0 && (dextype == "odos"))) {
+                                                // toastr.info(`KANAN!! ${PairToken} ${dextype} PINDAH SERVER`);
+                                                    var amount_in = Math.pow(10, des_output) * amount_in_pair;
+                                                    getPriceSWOOP( sc_output, des_output,sc_input, des_input, amount_in, priceBuyPairCEX, dextype, NamePair, NameToken, cex,nameChain,codeChain,'PairtoToken', function (altError, altDataDEX){                                                                
+                                                        if (!altError) {
+                                                            $(`#${IdPairtoToken}`).css('background-color', '#fff35d42');
+                                                            $(`span#BUY_${IdPairtoToken}`).html(`<label title="${cex} BUY: USDT->${NamePair}"> ${formatPrice(priceBuyPairCEX)}</label>`);
+                                                            $(`span#SELL_${IdPairtoToken}`).html(`<label title="${cex} SELL: ${NameToken}->USDT"> ${formatPrice(priceSellTokenCEX)}</label>`);
+
+                                                            ResultEksekusi(altDataDEX.amount_out,altDataDEX.FeeSwap,sc_output, sc_input, cex, modalKanan, amount_in_pair,  priceBuyPairCEX, priceSellPairCEX, priceBuyTokenCEX, priceSellTokenCEX, NamePair,NameToken, DataCEX.feeWDPair, dextype,nameChain,codeChain,'PairtoToken',sellVolPair,altDataDEX);
+                                                        }else{
+                                                            $(`#${IdPairtoToken}`).css('background-color',altError.color);
+                                                            $(`#SWAP_${IdPairtoToken}`).html(` <span class="uk-text-danger" title="${altError.pesanDEX}">[ERROR]</span>`);
+                                                        }
+                                                    });
+                                                }  
+                                                
+                                                return;
+                                            } 
+                                            else {                                         
+                                                $(`span#BUY_${IdPairtoToken}`).html(`<label title="${cex} BUY: USDT->${NamePair}"> ${formatPrice(priceBuyPairCEX)}</label>`);
+                                                $(`span#SELL_${IdPairtoToken}`).html(`<label title="${cex} SELL: ${NameToken}->USDT"> ${formatPrice(priceSellTokenCEX)}</label>`);
+                                                ResultEksekusi(DataDEX.amount_out,DataDEX.FeeSwap,sc_output, sc_input, cex, modalKanan, amount_in_pair,  priceBuyPairCEX, priceSellPairCEX, priceBuyTokenCEX, priceSellTokenCEX, NamePair,NameToken, DataCEX.feeWDPair, dextype,nameChain,codeChain,'PairtoToken',sellVolPair,DataDEX);
+                                            }
+                                            
+                                        });
+                                    }
+                                    
+                                });
+                            }
+
+                            resolve();
+                        });
+                    });
+
+                    await delay(jedaKoin);
+                } catch (error) {
+                    console.error(`Kesalahan saat memproses ${token.symbol_in}_${token.symbol_out}:`, error);
+                } finally {
+                    currentRequests--;
+                    if (requestQueue.length > 0) {
+                        let nextRequest = requestQueue.shift();
+                        nextRequest();
+                    }
+                }
+            }
+
+            async function processTokens() {
+                let startTime = Date.now();
+                let totalTokens = flatTokens.length;
+                let currentProcessed = 0;
+
+                let tokenGroups = [];
+                for (let i = 0; i < flatTokens.length; i += scanPerKoin) {
+                    tokenGroups.push(flatTokens.slice(i, i + scanPerKoin));
+                }
+
+                for (let groupIndex = 0; groupIndex < tokenGroups.length; groupIndex++) {
+                    let groupTokens = tokenGroups[groupIndex];
+                    console.log(`Memproses grup ${groupIndex + 1} dari ${tokenGroups.length}`);
+                    
+                    feeGasGwei();
+                    getRateUSDT();
+
+                    for (let tokenIndex = 0; tokenIndex < groupTokens.length; tokenIndex++) {
+                        let token = groupTokens[tokenIndex];
+
+                        updateProgress(
+                            currentProcessed + tokenIndex + 1,
+                            totalTokens,
+                            startTime,
+                            `${token.symbol_in}_${token.symbol_out}`
+                        );
+
+                        if (currentRequests >= maxConcurrentRequests) {
+                            await new Promise(resolve => requestQueue.push(resolve));
+                        }
+
+                        await processRequest(token);
+                    }
+
+                    currentProcessed += groupTokens.length;
+                    console.log(`Grup ${groupIndex + 1} selesai diproses`);
+                    await delay(jedaTimeGroup);
+                }
+
+                updateProgress(totalTokens, totalTokens, startTime, "SELESAI");
+                form_on();
+                $("#stopSCAN").hide().prop("disabled", false);
+                config.run = "NO";
+                localStorage.setItem('MONITORING_STATUS_RUN', JSON.stringify(config));
+                $('#startSCAN').prop('disabled', false).text('Start');
+                $("#LoadDataBtn, #SettingModal, #MasterData,#UpdateWalletCEX,#chain-links-container,.sort-toggle")
+                    .css("pointer-events", "auto").css("opacity", "1");
+            }
+
+            processTokens();
+
+        });
+       
+    });
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/uikit@3.6.22/dist/js/uikit.min.js"></script>
+</body>
+</html>
