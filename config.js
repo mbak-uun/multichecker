@@ -43,7 +43,7 @@ const CONFIG_CHAINS = {
             //"magpie",
             //"paraswap",
             "okx",
-            "lifi"
+           // "lifi"
         ],
         WALLET_CEX: {
            GATE: {
@@ -104,7 +104,7 @@ const CONFIG_CHAINS = {
            // "magpie",
             //"paraswap",
             "okx",
-            "lifi"
+           // "lifi"
         ],
         WALLET_CEX: {
             GATE: {
@@ -160,7 +160,7 @@ const CONFIG_CHAINS = {
             "0x",
            // "magpie",
             "okx",
-            "lifi",
+           // "lifi",
             //"paraswap"
         ],
           WALLET_CEX: {
@@ -230,7 +230,7 @@ const CONFIG_CHAINS = {
             "odos",
             "kyberswap",
             "0x",
-            "lifi",
+           // "lifi",
             //"paraswap",
             "okx"
         ],
@@ -311,7 +311,7 @@ const CONFIG_CHAINS = {
             //"paraswap",
             //"magpie",
             "okx",
-            "lifi"          
+           // "lifi"          
         ],
         WALLET_CEX: {
             GATE: {
@@ -373,6 +373,14 @@ const CONFIG_DEXS = {
     '1inch': ({ chainCode, tokenAddress, pairAddress }) =>
         `https://app.1inch.io/advanced/swap?network=${chainCode}&src=${tokenAddress}&dst=${pairAddress}`,
 
-    lifi: ({ chainCode, tokenAddress, pairAddress }) =>
-        `https://jumper.exchange/?fromChain=${chainCode}&fromToken=${tokenAddress}&toChain=${chainCode}&toToken=${pairAddress}`,
+    // lifi: ({ chainCode, tokenAddress, pairAddress }) =>
+    //     `https://jumper.exchange/?fromChain=${chainCode}&fromToken=${tokenAddress}&toChain=${chainCode}&toToken=${pairAddress}`,
 };
+// expose ke global/window (aman juga kalau file di-load sebagai module)
+(() => {
+  const g = typeof window !== 'undefined' ? window : globalThis;
+  g.CONFIG_CEX    = CONFIG_CEX;
+  g.CONFIG_CHAINS = CONFIG_CHAINS;
+  g.CONFIG_DEXS   = CONFIG_DEXS;
+})();
+
