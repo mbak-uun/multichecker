@@ -5,7 +5,7 @@ const GasPriceUSD = {
     Polygon: 0
 };
 
-const CHAIN_CONFIG = {
+const CHAIN_CONFIG2 = {
     ethereum: {
         name: 'Ethereum',
         code: 1,
@@ -61,7 +61,7 @@ const CHAIN_CONFIG = {
     }
 };
 
-const CONFIG_CEX = {
+const CONFIG_CEX2 = {
     GATE: {
         ApiKey: "577bb104ebb7977925c0ba7a292a722e",
         ApiSecret: "48b2cd4b122f076d2ebf8833359dfeffd268c5a0ce276b4cbe6ba5aa52e7f7cc",
