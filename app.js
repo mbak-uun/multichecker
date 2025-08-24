@@ -32,7 +32,7 @@ function app() {
         maticPrice: '--',
         usdtIdrPrice: '--',
         infoStatus: '---',
-        statError: ''
+        statError: '',
 
         // Initialization
         init() {
