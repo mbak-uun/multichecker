@@ -604,7 +604,7 @@
 </style>
 
 </head>
-<body style="font-family: 10px;">
+<body style="font-family: 10px;" x-data="app()" x-init="init()">
 
     <nav class="navbar bg-utama py-2">
         <div class="container-fluid d-flex align-items-center justify-content-between py-1 px-2 bg-dark">
@@ -641,18 +641,20 @@
 
                 <!-- Tab: Price Monitoring -->
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link nav-icon-button text-white active" id="price-tab"
-                        data-bs-toggle="tab" data-bs-target="#priceMonitoring" type="button" role="tab"
-                        aria-controls="priceMonitoring" aria-selected="true" title="Price Monitoring">
+                    <button class="nav-link nav-icon-button text-white"
+                        :class="{ 'active': activeTab === 'priceMonitoring' }"
+                        x-on:click="activeTab = 'priceMonitoring'"
+                        type="button" title="Price Monitoring">
                         <i class="bi bi-crosshair"></i>
                     </button>
                 </li>
 
                 <!-- Tab: Token Management -->
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link nav-icon-button text-white" id="token-tab"
-                        data-bs-toggle="tab" data-bs-target="#tokenManagement" type="button" role="tab"
-                        aria-controls="tokenManagement" aria-selected="false" title="Manajemen Koin">
+                    <button class="nav-link nav-icon-button text-white"
+                        :class="{ 'active': activeTab === 'tokenManagement' }"
+                        x-on:click="activeTab = 'tokenManagement'"
+                        type="button" title="Manajemen Koin">
                         <i class="bi bi-coin"></i>
                     </button>
                 </li>
@@ -666,9 +668,10 @@
 
                 <!-- Tab: API Settings -->
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link nav-icon-button text-white" id="setting-tab"
-                        data-bs-toggle="tab" data-bs-target="#apiSettings" type="button" role="tab"
-                        aria-controls="apiSettings" aria-selected="false" title="Setting Aplikasi">
+                    <button class="nav-link nav-icon-button text-white"
+                        :class="{ 'active': activeTab === 'apiSettings' }"
+                        x-on:click="activeTab = 'apiSettings'"
+                        type="button" title="Setting Aplikasi">
                         <i class="bi bi-gear"></i>
                     </button>
                 </li>
@@ -676,18 +679,20 @@
 
                 <!-- Tab: Portfolio -->
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link nav-icon-button text-white" id="portfolio-tab"
-                        data-bs-toggle="tab" data-bs-target="#portfolioTab" type="button" role="tab"
-                        aria-controls="portfolioTab" aria-selected="false" title="Portfolio Asset">
+                    <button class="nav-link nav-icon-button text-white"
+                        :class="{ 'active': activeTab === 'portfolioTab' }"
+                        x-on:click="activeTab = 'portfolioTab'"
+                        type="button" title="Portfolio Asset">
                         <i class="bi bi-wallet"></i>
                     </button>
                 </li>
 
                  <!-- Tab: Memory -->
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link nav-icon-button text-white" id="memory-tab"
-                        data-bs-toggle="tab" data-bs-target="#memoryTab" type="button" role="tab"
-                        aria-controls="memoryTab" aria-selected="false" title="Memory Usage">
+                    <button class="nav-link nav-icon-button text-white"
+                        :class="{ 'active': activeTab === 'memoryTab' }"
+                        x-on:click="activeTab = 'memoryTab'"
+                         type="button" title="Memory Usage">
                         <i class="bi bi-sd-card"></i>
                     </button>
                 </li>
@@ -731,7 +736,7 @@
                  <!-- action -->
                 <div>
                     <span class="fw-bold text-dark badge bg-white ">ACTION:</span><br/>
-                    <span id="infostatus" class="text-white fw-bold fs-8">---</span>
+                    <span id="infostatus" class="text-white fw-bold fs-8" x-html="infoStatus"></span>
                 </div>
 
                 <hr class="my-1 bg-light"/>
@@ -740,7 +745,7 @@
 
                 <div>
                     <span class="fw-bold text-dark badge bg-white ">CONFIG:</span><br/>
-                    <span id="infoConfig" class="text-white fw-bold fs-8"></span>
+                    <span id="infoConfig" class="text-white fw-bold fs-8" x-html="infoConfigHtml"></span>
                 </div>
 
                 <hr class="my-1 bg-light"/>
@@ -748,8 +753,7 @@
                 <!-- Gas Token Prices -->
                  <div>
                     <span class="fw-bold text-dark badge bg-white ">GAS INFO:</span><br/>
-                        <div id="gasTokenPrices" class="small text-light">
-                            <!-- Akan diisi otomatis: ERC[6.2gwei | $0.15] | BSC[...] | ... -->
+                        <div id="gasTokenPrices" class="small text-light" x-html="gasPricesHtml">
                         </div>                
                     </div>
                         
@@ -757,17 +761,17 @@
 
                 <!-- Token Prices -->
                 <div id="TokenPrices">
-                    <small class="badge bg-white fw-bold text-danger">BTC: <span id="btcPrice">--</span> </small><br/>
-                    <small class="badge bg-white fw-bold text-warning">BNB: <span id="bnbPrice">--</span> </small><br/>
-                    <small class="badge bg-white fw-bold text-primary">ETH: <span id="ethPrice">--</span></small><br/>
-                    <small class="badge bg-white fw-bold text-info">MATIC: <span id="maticPrice">--</span></small><br/>
-                    <small class="badge bg-white fw-bold text-success">USDT/IDR: <span id="usdtIdrPrice">--</span></small>
+                    <small class="badge bg-white fw-bold text-danger">BTC: <span id="btcPrice" x-text="btcPrice"></span> </small><br/>
+                    <small class="badge bg-white fw-bold text-warning">BNB: <span id="bnbPrice" x-text="bnbPrice"></span> </small><br/>
+                    <small class="badge bg-white fw-bold text-primary">ETH: <span id="ethPrice" x-text="ethPrice"></span></small><br/>
+                    <small class="badge bg-white fw-bold text-info">MATIC: <span id="maticPrice" x-text="maticPrice"></span></small><br/>
+                    <small class="badge bg-white fw-bold text-success">USDT/IDR: <span id="usdtIdrPrice" x-text="usdtIdrPrice"></span></small>
                 </div>
 
                 <hr class="my-1 bg-light"/>
                 <!-- Status Info -->
                 <div id="errorLOG">
-                    <small id="statERROR" class="text-danger"></small>
+                    <small id="statERROR" class="text-danger" x-html="statError"></small>
                 </div>
             </div>
         </div>
@@ -791,7 +795,8 @@
         <!-- Tab Content -->
         <div class="tab-content">
             <!-- Price Monitoring Tab -->
-            <div class="tab-pane fade show active" id="priceMonitoring">
+            <template x-if="activeTab === 'priceMonitoring'">
+            <div id="priceMonitoring">
                  <!-- Wrapper Kontainer -->
                 <div id="mainBarSection"  class=" overflow-hidden ps-1 pe-1">
                     <!-- Bar + Tombol: satu baris di desktop, kolom di mobile -->
@@ -803,14 +808,14 @@
                             <div class="position-relative bg-white" style="height: 28px;">
                                 <!-- Progress bar -->
                                 <div class="progress h-100">
-                                    <div class="progress-bar progress-bar-striped progres" id="scanProgressBar" role="progressbar" style="width: 100%;">
+                                    <div class="progress-bar progress-bar-striped progres" id="scanProgressBar" role="progressbar" :style="`width: ${scanProgress}%;`">
                                         <!-- Ini tetap untuk label persen -->
-                                        <small class="text-white fw-bold " id="scanProgressPercent"></small>
+                                        <small class="text-white fw-bold " x-text="scanProgress > 0 ? `${scanProgress}%` : ''"></small>
                                     </div>
                                 </div>
                                 <!-- scanProgressText di tengah-tengah -->
                                 <div class="position-absolute top-50 start-50 translate-middle text-black fw-bold fs-9 text-center" style="white-space: nowrap;">
-                                    <small id="scanProgressText"></small>
+                                    <small id="scanProgressText" x-text="scanStatusText"></small>
                                 </div>
 
                             </div>
@@ -820,19 +825,19 @@
                         <div class="col-12 col-md-auto">
                             <div class="d-flex align-items-center justify-content-center gap-2 flex-wrap">
                              
-                                <small id="scanTimeInfo" class="text-primary fw-bold"></small>
+                                <small id="scanTimeInfo" class="text-primary fw-bold" x-text="scanTimeInfo"></small>
                                 <span id="autorunCountdown" class="ms-2 badge bg-danger text-light fs-9"></span>
 
-                                <button id="autorunBtn" class="btn btn-sm text-primary bg-white">
-                                    <i class="bi bi-repeat"></i>
+                                <button id="autorunBtn" class="btn btn-sm" :class="isAutorun ? 'btn-success' : 'btn-danger'" @click="isAutorun = !isAutorun">
+                                    <i class="bi bi-power"></i>
                                 </button>
-                                <button class="btn btn-sm text-white bg-secondary" id="sortByToken">
-                                     <i id="sortIcon" class="bi bi-sort-alpha-down"></i>
+                                <button class="btn btn-sm text-white bg-secondary" id="sortByToken" @click="toggleSort()">
+                                     <i id="sortIcon" :class="sortAscending ? 'bi-sort-alpha-down' : 'bi-sort-alpha-up'"></i>
                                 </button>
-                                <button class="btn btn-success btn-sm" id="CheckPrice">
+                                <button class="btn btn-success btn-sm" id="CheckPrice" @click="startPriceCheck()">
                                     <i class="bi bi-play-fill"></i> Start
                                 </button>
-                                <button class="btn btn-danger btn-sm d-none" id="StopScan">
+                                <button class="btn btn-danger btn-sm" id="StopScan" @click="stopPriceCheck()" x-show="isScanning">
                                     <i class="bi bi-stop-circle"></i> STOP
                                 </button>
                             </div>
@@ -853,27 +858,27 @@
                         <div class="text-success">📊 Total: <span id="totalTokensMonitoring" class="fw-bold">0</span> Coins</div> [
 
                         <label class="text-warning mb-0">
-                            <input type="checkbox" class="me-1 chainFilterCheckbox" value="BSC">
+                            <input type="checkbox" class="me-1 chainFilterCheckbox" value="BSC" x-model="monitoringSelectedChains">
                             BSC: <span id="bscCountMonitoring" class="fw-bold">0</span>
                         </label>
 
                         <label class="text-primary mb-0">
-                            <input type="checkbox" class="me-1 chainFilterCheckbox" value="Ethereum">
+                            <input type="checkbox" class="me-1 chainFilterCheckbox" value="Ethereum" x-model="monitoringSelectedChains">
                             ERC: <span id="ercCountMonitoring" class="fw-bold">0</span>
                         </label>
 
                         <label class="text-info mb-0">
-                            <input type="checkbox" class="me-1 chainFilterCheckbox" value="Polygon">
+                            <input type="checkbox" class="me-1 chainFilterCheckbox" value="Polygon" x-model="monitoringSelectedChains">
                             POLY: <span id="polyCountMonitoring" class="fw-bold">0</span>
                         </label>
 
                         <label class="text-secondary mb-0">
-                            <input type="checkbox" class="me-1 chainFilterCheckbox" value="Arbitrum">
+                            <input type="checkbox" class="me-1 chainFilterCheckbox" value="Arbitrum" x-model="monitoringSelectedChains">
                             ARB: <span id="arbCountMonitoring" class="fw-bold">0</span>
                         </label>
 
                         <label class="text-danger mb-0">
-                            <input type="checkbox" class="me-1 chainFilterCheckbox" value="Base">
+                            <input type="checkbox" class="me-1 chainFilterCheckbox" value="Base" x-model="monitoringSelectedChains">
                             BASE: <span id="baseCountMonitoring" class="fw-bold">0</span>
                         </label>
 
@@ -887,7 +892,7 @@
                                 <input class="form-check-input me-1" type="checkbox" id="autoScrollCheckbox">
                                 <label class="form-check-label text-danger fs-6" for="autoScrollCheckbox">Auto Scroll</label>
                             </div>
-                            <input type="text" id="monitoringSearch" class="form-control form-control-sm" placeholder="🔍 Cari Token..." style="width: 200px;">
+                            <input type="text" id="monitoringSearch" class="form-control form-control-sm" placeholder="🔍 Cari Token..." style="width: 200px;" x-model.debounce.300ms="monitoringSearchKeyword">
                         </div>                    
                     
                 </div>
@@ -913,7 +918,32 @@
                                     </tr>
                                 </thead>
                                 <tbody id="priceTableBody">
-                                    <!-- Dynamic Content -->
+                                    <template x-if="priceRows.length === 0">
+                                        <tr><td colspan="10" class="text-center text-danger py-5">DATA TIDAK DITEMUAKN / TIDAK ADA DAFTAR TOKEN</td></tr>
+                                    </template>
+                                    <template x-for="row in priceRows" :key="row.id">
+                                        <tr :class="`token-data-row text-center ${row.stripClass} fs-8 align-middle`">
+                                            <td x-html="row.orderbookLeftHtml"></td>
+                                            <template x-for="cell in row.cexToDexCells" :key="cell.id">
+                                                <td class="dex-price-cell text-center" x-html="cell.html"></td>
+                                            </template>
+                                            <template x-if="row.cexToDexCells.length < 4">
+                                                <template x-for="i in (4 - row.cexToDexCells.length)">
+                                                    <td class="dex-price-cell text-center">➖</td>
+                                                </template>
+                                            </template>
+                                            <td class="token-detail-cell" x-html="row.tokenDetailHtml"></td>
+                                            <template x-for="cell in row.dexToCexCells" :key="cell.id">
+                                                <td class="dex-price-cell text-center" x-html="cell.html"></td>
+                                            </template>
+                                            <template x-if="row.dexToCexCells.length < 4">
+                                                <template x-for="i in (4 - row.dexToCexCells.length)">
+                                                    <td class="dex-price-cell text-center">➖</td>
+                                                </template>
+                                            </template>
+                                            <td x-html="row.orderbookRightHtml"></td>
+                                        </tr>
+                                    </template>
                                 </tbody>
                             </table>
 
@@ -922,9 +952,11 @@
                 </div>
 
             </div>
+            </template>
 
             <!-- Token Management Tab -->
-            <div class="tab-pane fade" id="tokenManagement">
+            <template x-if="activeTab === 'tokenManagement'">
+            <div id="tokenManagement">
 
                 <div class="card mt-3">
                     <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
@@ -934,7 +966,7 @@
                         </h5>
                         <!-- Tombol Aksi -->
                         <div class="d-flex align-items-center flex-wrap gap-2">
-                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#tokenModal">
+                            <button class="btn btn-sm btn-outline-primary" @click="openTokenModal()">
                                 <i class="bi bi-plus-lg"></i> Add Tokens
                             </button>
 
@@ -951,7 +983,7 @@
                             <!-- Search -->
                             <div class="input-group input-group-sm" style="width: 200px;">
                                 <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                <input type="text" id="tokenSearch" class="form-control form-control-sm" placeholder="🔍 Cari Koin...">
+                                <input type="text" id="tokenSearch" class="form-control form-control-sm" placeholder="🔍 Cari Koin..." x-model.debounce.300ms="tokenSearchKeyword">
                             </div>
                         </div>
                     </div>
@@ -963,23 +995,23 @@
 
                             <!-- Checkbox Chain Filter -->
                             <label class="text-warning">
-                                <input type="checkbox" class="filter-chain-checkbox me-1" value="BSC" checked>
+                                <input type="checkbox" class="filter-chain-checkbox me-1" value="BSC" x-model="managementSelectedChains">
                                 BSC: <span id="bscCountManagement" class="fw-bold">0</span>
                             </label>
                             <label class="text-primary">
-                                <input type="checkbox" class="filter-chain-checkbox me-1" value="Ethereum" checked>
+                                <input type="checkbox" class="filter-chain-checkbox me-1" value="Ethereum" x-model="managementSelectedChains">
                                 ERC: <span id="ercCountManagement" class="fw-bold">0</span>
                             </label>
                             <label class="text-danger">
-                                <input type="checkbox" class="filter-chain-checkbox me-1" value="Base" checked>
+                                <input type="checkbox" class="filter-chain-checkbox me-1" value="Base" x-model="managementSelectedChains">
                                 BASE: <span id="baseCountManagement" class="fw-bold">0</span>
                             </label>
                             <label class="text-info">
-                                <input type="checkbox" class="filter-chain-checkbox me-1" value="Polygon" checked>
+                                <input type="checkbox" class="filter-chain-checkbox me-1" value="Polygon" x-model="managementSelectedChains">
                                 POLY: <span id="polyCountManagement" class="fw-bold">0</span>
                             </label>
                             <label class="text-secondary">
-                                <input type="checkbox" class="filter-chain-checkbox me-1" value="Arbitrum" checked>
+                                <input type="checkbox" class="filter-chain-checkbox me-1" value="Arbitrum" x-model="managementSelectedChains">
                                 ARB: <span id="arbCountManagement" class="fw-bold">0</span>
                             </label>
 
@@ -1007,25 +1039,135 @@
                                         <th>DEX</th>
                                     </tr>
                                 </thead>
-                                <tbody id="tokenTableBody"></tbody>
+                                <tbody id="tokenTableBody">
+                                    <template x-for="(token, index) in filteredTokens" :key="token.id">
+                                        <tr class="align-middle token-data-row">
+                                            <td x-text="index + 1"></td>
+                                            <td>
+                                                <div class="d-flex flex-column small text-muted" style="line-height: 1.2;">
+                                                    <div class="d-flex flex-column gap-1">
+                                                        <div class="d-flex align-items-center">
+                                                            <input type="text" class="form-control form-control-sm inline-edit me-1" x-model="token.symbol" style="width:100px;" />
+                                                            <input type="text" class="form-control form-control-sm inline-edit me-1" x-model="token.contractAddress" style="width:360px;" />
+                                                            <input type="text" class="form-control form-control-sm inline-edit me-1" x-model.number="token.decimals" style="width:60px;" />
+                                                            <button class="btn btn-outline-dark btn-save-inline btn-sm" @click.prevent="updateToken(token.id, token)" title="Simpan SC">
+                                                                <i class="bi bi-check-lg small"></i>
+                                                            </button>
+                                                        </div>
+                                                        <div class="d-flex align-items-center">
+                                                            <input type="text" class="form-control form-control-sm inline-edit me-1" x-model="token.pairSymbol" style="width:100px;" />
+                                                            <input type="text" class="form-control form-control-sm inline-edit me-1" x-model="token.pairContractAddress" style="width:360px;" />
+                                                            <input type="text" class="form-control form-control-sm inline-edit me-1" x-model.number="token.pairDecimals" style="width:60px;" />
+                                                            <button class="btn btn-outline-dark btn-save-inline btn-sm" @click.prevent="updateToken(token.id, token)" title="Simpan Pair SC">
+                                                                <i class="bi bi-check-lg small"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex flex-column gap-1">
+                                                    <div class="btn-group btn-group-sm" role="group">
+                                                        <span class="badge fw-bold small" :class="token.isActive ? 'text-success' : 'text-danger'" x-text="token.isActive ? 'ACTIVE' : 'INACTIVE'"></span>
+                                                        <button class="btn btn-sm px-2 py-0" :class="token.isActive ? 'btn-success' : 'btn-outline-secondary'" @click="toggleTokenStatus(token.id)" title="Toggle Status">
+                                                            <i class="bi bi-power small"></i>
+                                                        </button>
+                                                        <button class="btn btn-outline-danger btn-sm px-2 py-0" @click="deleteToken(token.id)" title="Delete">
+                                                            <i class="bi bi-trash small"></i>
+                                                        </button>
+                                                    </div>
+                                                    <div class="d-flex align-items-center gap-1">
+                                                        <select class="form-select form-select-sm" x-model="token.chain" style="width: 120px; height: 32px;">
+                                                            <template x-for="chainName in getChainList()" :key="chainName">
+                                                                <option :value="chainName" x-text="chainName"></option>
+                                                            </template>
+                                                        </select>
+                                                        <button class="btn btn-outline-dark btn-save-inline btn-sm" @click.prevent="updateToken(token.id, token)" title="Simpan Chain" style="height: 32px;">
+                                                            <i class="bi bi-check-lg small"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="input-group input-group-sm mb-1 d-flex align-items-center" style="width: 180px;">
+                                                    <span class="me-2 fs-7 fw-bold">CEX:</span>
+                                                    <input type="text" class="form-control form-control-sm" x-model.number="token.modalCexToDex" />
+                                                    <button class="btn btn-outline-dark btn-save-inline btn-sm" @click.prevent="updateToken(token.id, token)" title="Simpan">
+                                                        <i class="bi bi-check-lg small"></i>
+                                                    </button>
+                                                </div>
+                                                <div class="input-group input-group-sm d-flex align-items-center" style="width: 180px;">
+                                                    <span class="me-2 fs-7 fw-bold">DEX:</span>
+                                                    <input type="text" class="form-control form-control-sm" x-model.number="token.modalDexToCex" />
+                                                    <button class="btn btn-outline-dark btn-save-inline btn-sm" @click.prevent="updateToken(token.id, token)" title="Simpan">
+                                                        <i class="bi bi-check-lg small"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <template x-for="cexName in getCexList()" :key="cexName">
+                                                    <div>
+                                                        <label :class="getTextColorClassFromBadge(getBadgeColor(cexName, 'cex'))" style="cursor: pointer;">
+                                                            <input type="checkbox" class="me-1" :value="cexName" x-model="token.selectedCexs" />
+                                                            <span class="fw-bold fs-7" :class="getTextColorClassFromBadge(getBadgeColor(cexName, 'cex'))" x-text="cexName.toUpperCase() + ':'"></span>
+                                                        </label>
+                                                        <div x-show="token.selectedCexs.includes(cexName)" class="d-inline-flex align-items-center mt-1 fs-7">
+                                                            <span class="badge text-dark bg-white">
+                                                                <strong class="text-dark" x-text="token.symbol.toUpperCase()"></strong>
+                                                                <span x-html="`[${formatStatus(token.cexInfo?.[cexName]?.[token.symbol.toUpperCase()]?.wd, 'WD', 'WX')}|${formatStatus(token.cexInfo?.[cexName]?.[token.symbol.toUpperCase()]?.depo, 'DP', 'DX')}]`"></span>
+                                                                ⇄
+                                                                <strong class="text-dark" x-text="token.pairSymbol.toUpperCase()"></strong>
+                                                                <span x-html="`[${formatStatus(token.cexInfo?.[cexName]?.[token.pairSymbol.toUpperCase()]?.wd, 'WD', 'WX')}|${formatStatus(token.cexInfo?.[cexName]?.[token.pairSymbol.toUpperCase()]?.depo, 'DP', 'DX')}]`"></span>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </td>
+                                            <td>
+                                                <template x-for="(dexName, i) in getDexList()" :key="dexName">
+                                                    <span>
+                                                        <label class="me-2 fs-7 fw-bold" :class="getTextColorClassFromBadge(getBadgeColor(dexName, 'dex'))" style="cursor: pointer;">
+                                                            <input type="checkbox" class="me-1" :value="dexName" x-model="token.selectedDexs" />
+                                                            <span x-text="dexName.toUpperCase()"></span>
+                                                        </label>
+                                                        <br x-show="(i + 1) % 3 === 0" />
+                                                    </span>
+                                                </template>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <template x-if="filteredTokens.length === 0">
+                                        <tr>
+                                            <td colspan="7" class="text-center py-4 text-muted">
+                                                Data yang dicari Tidak Ditemukan
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
             </div>
+            </template>
             
             <!-- Portfolio Tab -->
-            <div class="tab-pane fade" id="portfolioTab">
+            <template x-if="activeTab === 'portfolioTab'">
+            <div id="portfolioTab">
                 <iframe src="aset.html" style="width: 100%; height: 900px; border: none;"></iframe>
             </div>
+            </template>
 
             <!-- Memory Tab -->
-            <div class="tab-pane fade" id="memoryTab">
+            <template x-if="activeTab === 'memoryTab'">
+            <div id="memoryTab">
                 <iframe src="memory.html" style="width: 100%; height: 900px; border: none;"></iframe>
             </div>
+            </template>
            
             <!-- API Settings Tab -->
-            <div class="tab-pane fade" id="apiSettings">
+            <template x-if="activeTab === 'apiSettings'">
+            <div id="apiSettings">
                 <div class="row justify-content-center">
                     <div class="col-md-6">
                         <div class="card mt-4 shadow-sm rounded-3">
@@ -1040,42 +1182,42 @@
                                 <form id="settingsForm">
                                     <div class="mb-3">
                                         <label for="UserName" class="form-label">User Name</label>
-                                        <input type="text" class="form-control" id="UserName" required>
+                                        <input type="text" class="form-control" id="UserName" x-model="settings.UserName" required>
                                         <small class="form-text text-muted">Masukkan nama pengguna Anda.</small>
                                     </div>
 
                                     <div class="mb-3">
                                         <label for="tokensPerBatch" class="form-label">Jumlah Anggota Grup [3-7]</label>
-                                        <input type="number" class="form-control" id="tokensPerBatch" min="3" max="7" required>
+                                        <input type="number" class="form-control" id="tokensPerBatch" x-model.number="settings.tokensPerBatch" min="3" max="7" required>
                                         <small class="form-text text-muted">Jumlah anggota per batch grup.</small>
                                     </div>
 
                                     <div class="mb-3">
                                         <label for="delayBetweenGrup" class="form-label">Jeda Antar Grup (ms) [300-5000]</label>
-                                        <input type="number" class="form-control" id="delayBetweenGrup" min="300" max="5000" required>
+                                        <input type="number" class="form-control" id="delayBetweenGrup" x-model.number="settings.delayBetweenGrup" min="300" max="5000" required>
                                         <small class="form-text text-muted">Jeda waktu antar batch (dalam milidetik).</small>
                                     </div>
 
                                     <div class="mb-3">
                                         <label for="TimeoutCount" class="form-label">Waktu Tunggu (ms) [2000-100000]</label>
-                                        <input type="number" class="form-control" id="TimeoutCount" min="2000" max="100000" required>
+                                        <input type="number" class="form-control" id="TimeoutCount" x-model.number="settings.TimeoutCount" min="2000" max="100000" required>
                                         <small class="form-text text-muted">Waktu maksimal menunggu proses (ms).</small>
                                     </div>
 
                                     <div class="mb-3">
                                         <label for="PNLFilter" class="form-label">PNL Filter</label>
-                                        <input type="number" class="form-control" id="PNLFilter" min="0" step="0.01" value="0" required>
+                                        <input type="number" class="form-control" id="PNLFilter" x-model.number="settings.PNLFilter" min="0" step="0.01" value="0" required>
                                         <small class="form-text text-muted">Minimal PNL 0 agar ditampilkan.</small>
                                     </div>
 
                                     <div class="mb-3">
                                         <label for="WalletAddress" class="form-label">Wallet Address</label>
-                                        <input type="text" class="form-control" id="WalletAddress" required>
+                                        <input type="text" class="form-control" id="WalletAddress" x-model="settings.WalletAddress" required>
                                         <small class="form-text text-muted">Alamat wallet Anda untuk filter & identifikasi.</small>
                                     </div>
 
                                     <div class="text-end">
-                                        <button type="submit" class="btn btn-primary" id="saveSettingsBtn">
+                                        <button type="submit" class="btn btn-primary" id="saveSettingsBtn" x-on:click.prevent="saveSettings">
                                             <i class="bi bi-check-lg"></i> Save Settings
                                         </button>
                                     </div>
@@ -1085,12 +1227,17 @@
                     </div>
                 </div>
             </div>
+            </template>
        
         </div>
 
     </div>
 <!-- ✅ MODAL TOKEN FORM -->
-    <div class="modal fade" id="tokenModal" tabindex="-1">
+    <div class="modal fade" id="tokenModal" tabindex="-1" x-show="isTokenModalOpen" x-data="{}" x-init="$watch('isTokenModalOpen', value => {
+        const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('tokenModal'));
+        if (value) { modal.show(); } else { modal.hide(); }
+        document.getElementById('tokenModal').addEventListener('hidden.bs.modal', () => { $dispatch('close-modal') });
+    })" @close-modal.window="isTokenModalOpen = false">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
             
@@ -1098,32 +1245,32 @@
                 <div class="modal-header">
                     <h5 class="modal-title">
                         <i class="bi bi-coin me-2"></i>
-                        <span id="modalTitle">Add New Token</span>
+                        <span id="modalTitle" x-text="modalTitle"></span>
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close btn-close-white" @click="isTokenModalOpen = false"></button>
                 </div>
 
                 <!-- BODY -->
                 <div class="modal-body">
-                    <form id="tokenForm">
+                    <form id="tokenForm" @submit.prevent="saveToken">
                         <!-- TOKEN INFO -->
                         <div class="row">
                             <div class="col-md-2">
                                 <div class="mb-3">
                                     <label class="form-label">Token Symbol</label>
-                                    <input type="text" class="form-control" id="tokenSymbol" placeholder="e.g., ZRO" required>
+                                    <input type="text" class="form-control" id="tokenSymbol" placeholder="e.g., ZRO" required x-model="newToken.symbol">
                                 </div>
                             </div>
                             <div class="col-md-8">
                                 <div class="mb-3">
                                     <label class="form-label">Token Contract Address</label>
-                                    <input type="text" class="form-control" id="tokenContract" placeholder="0x..." required>
+                                    <input type="text" class="form-control" id="tokenContract" placeholder="0x..." required x-model="newToken.contractAddress">
                                 </div>
                             </div>
                             <div class="col-md-2">
                                 <div class="mb-3">
                                     <label class="form-label">Token Dec</label>
-                                    <input type="number" class="form-control" id="tokenDecimals" value="18" min="0" max="18">
+                                    <input type="number" class="form-control" id="tokenDecimals" min="0" max="18" x-model.number="newToken.decimals">
                                 </div>
                             </div>
                         </div>
@@ -1134,19 +1281,19 @@
                             <div class="col-md-2">
                                 <div class="mb-3">
                                     <label class="form-label">Pair Symbol</label>
-                                    <input type="text" class="form-control" id="pairSymbol" placeholder="e.g., USDT" required>
+                                    <input type="text" class="form-control" id="pairSymbol" placeholder="e.g., USDT" required x-model="newToken.pairSymbol">
                                 </div>
                             </div>
                             <div class="col-md-8">
                                 <div class="mb-3">
                                     <label class="form-label">Pair Contract Address</label>
-                                    <input type="text" class="form-control" id="pairContract" placeholder="0x..." required>
+                                    <input type="text" class="form-control" id="pairContract" placeholder="0x..." required x-model="newToken.pairContractAddress">
                                 </div>
                             </div>
                             <div class="col-md-2">
                                 <div class="mb-3">
                                     <label class="form-label">Pair Dec</label>
-                                    <input type="number" class="form-control" id="pairDecimals" value="18" min="0" max="18">
+                                    <input type="number" class="form-control" id="pairDecimals" min="0" max="18" x-model.number="newToken.pairDecimals">
                                 </div>
                             </div>
                         </div>
@@ -1156,25 +1303,23 @@
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label class="form-label">Modal CEX → DEX ($)</label>
-                                    <input type="number" class="form-control" id="modalCexToDex" value="100" min="1" step="0.01">
+                                    <input type="number" class="form-control" id="modalCexToDex" min="1" step="0.01" x-model.number="newToken.modalCexToDex">
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label class="form-label">Modal DEX → CEX ($)</label>
-                                    <input type="number" class="form-control" id="modalDexToCex" value="100" min="1" step="0.01">
+                                    <input type="number" class="form-control" id="modalDexToCex" min="1" step="0.01" x-model.number="newToken.modalDexToCex">
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label class="form-label">Chain</label>
-                                    <select class="form-select" id="tokenChain" required>
+                                    <select class="form-select" id="tokenChain" required x-model="newToken.chain">
                                         <option value="">Select Chain</option>
-                                        <option value="BSC">BSC</option>
-                                        <option value="Ethereum">ERC</option>
-                                        <option value="Polygon">Polygon</option>
-                                        <option value="Base">Base</option>
-                                        <option value="Arbitrum">Arbitrum</option>
+                                        <template x-for="chainName in getChainList()" :key="chainName">
+                                            <option :value="chainName" x-text="chainName"></option>
+                                        </template>
                                     </select>
                                 </div>
                             </div>
@@ -1186,22 +1331,12 @@
                                 <div class="mb-3">
                                     <label class="form-label">Select CEX</label>
                                     <div class="border rounded p-3">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="Binance" id="cexBinance">
-                                            <label class="form-check-label" for="cexBinance">Binance</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="Gateio" id="cexGate">
-                                            <label class="form-check-label" for="cexGate">Gateio</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="MEXC" id="cexMexc">
-                                            <label class="form-check-label" for="cexMexc">MEXC</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="INDODAX" id="cexINDODAX">
-                                            <label class="form-check-label" for="cexINDODAX">INDODAX</label>
-                                        </div>
+                                        <template x-for="cexName in getCexList()" :key="cexName">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" :value="cexName" :id="`cex_${cexName}`" x-model="newToken.selectedCexs">
+                                                <label class="form-check-label" :for="`cex_${cexName}`" x-text="cexName"></label>
+                                            </div>
+                                        </template>
                                     </div>
                                 </div>
                             </div>
@@ -1211,45 +1346,21 @@
                                     <label class="form-label">Select DEX (MAX 4)</label>
                                     <div class="border rounded p-3">
                                         <div class="row">
-                                            <!-- Kolom Kiri -->
                                             <div class="col-6">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" value="1inch" id="dex1inch">
-                                                    <label class="form-check-label" for="dex1inch">1INCH</label>
-                                                </div>
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" value="KyberSwap" id="dexKyber">
-                                                    <label class="form-check-label" for="dexKyber">KyberSwap</label>
-                                                </div>
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" value="Matcha" id="dexMatcha">
-                                                    <label class="form-check-label" for="dexMatcha">Matcha</label>
-                                                </div>
-                                               
+                                                <template x-for="dexName in getDexList().slice(0, 3)" :key="dexName">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" :value="dexName" :id="`dex_${dexName}`" x-model="newToken.selectedDexs">
+                                                        <label class="form-check-label" :for="`dex_${dexName}`" x-text="dexName"></label>
+                                                    </div>
+                                                </template>
                                             </div>
-
-                                            <!-- Kolom Kanan -->
                                             <div class="col-6">
-                                                 <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" value="OKXDEX" id="dexOkx">
-                                                    <label class="form-check-label" for="dexOkx">OKX DEX</label>
-                                                </div>
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" value="ODOS" id="dexOdos">
-                                                    <label class="form-check-label" for="dexOdos">ODOS</label>
-                                                </div>
-                                                <!-- <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" value="ParaSwap" id="dexParaSwap">
-                                                    <label class="form-check-label" for="dexParaSwap">ParaSwap</label>
-                                                </div>
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" value="Magpie" id="dexMagpie">
-                                                    <label class="form-check-label" for="dexMagpie">Magpie</label>
-                                                </div> -->
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" value="LIFI" id="dexLIFI">
-                                                    <label class="form-check-label" for="dexLIFI">LIFI (Auto DEX)</label>
-                                                </div>
+                                                <template x-for="dexName in getDexList().slice(3)" :key="dexName">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" :value="dexName" :id="`dex_${dexName}`" x-model="newToken.selectedDexs">
+                                                        <label class="form-check-label" :for="`dex_${dexName}`" x-text="dexName"></label>
+                                                    </div>
+                                                </template>
                                             </div>
                                         </div>
                                     </div>
@@ -1262,8 +1373,8 @@
 
                 <!-- FOOTER -->
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="saveTokenBtn">
+                    <button type="button" class="btn btn-secondary" @click="isTokenModalOpen = false">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveTokenBtn" @click="saveToken">
                         <i class="bi bi-check-lg"></i> Save Token
                     </button>
                 </div>
@@ -1279,10 +1390,15 @@
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.min.js"></script>
-    <!-- Price APIs -->
+    <!-- Config & APIs -->
     <script src="price-apis.js"></script>
-    <!-- Custom JS -->
-    <script src="script.js"></script>
+    <script src="config.js"></script>
+
+    <!-- AlpineJS Core -->
+    <script defer src="https://unpkg.com/alpinejs@3.13.10/dist/cdn.min.js"></script>
+
+    <!-- App Logic -->
+    <script src="app.js"></script>
 
     <!-- Tombol Scroll ke Atas -->
     <button id="scrollTopBtn" title="Kembali ke Atas" class="btn btn-success rounded-circle shadow" style="
