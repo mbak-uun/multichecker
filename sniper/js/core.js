@@ -7,7 +7,7 @@ function calculateArbitrageResult(amount_out, FeeSwap, sc_input, sc_output, cex,
     const profitLossPercent = totalModal !== 0 ? (PNL / totalModal) * 100 : 0;
 
     const settings = getSettings();
-    const filterPNLValue = parseFloat(settings.filterPNL);
+    const filterPNLValue = parseFloat(settings.filterPNL || 0);
 
     const conclusion = (PNL > filterPNLValue) ? "GET SIGNAL" : "NO SELISIH";
     const selisih = PNL > filterPNLValue;
@@ -20,11 +20,11 @@ function calculateArbitrageResult(amount_out, FeeSwap, sc_input, sc_output, cex,
 }
 
 async function processSingleToken(token) {
-    logMessage(`Processing token pair: ${token.symbol_in}/${token.symbol_out} on CEX: ${token.cex}`);
+    logMessage(`Processing: ${token.symbol_in}/${token.symbol_out} on ${token.cex}`);
 
     getPriceCEX(token, token.symbol_in, token.symbol_out, token.cex, (error, cexData) => {
         if (error || !cexData) {
-            logMessage(`Could not get CEX data for ${token.symbol_in}: ${error}`, 'error');
+            logMessage(`CEX Error for ${token.symbol_in}: ${error}`, 'error');
             return;
         }
 
@@ -32,23 +32,56 @@ async function processSingleToken(token) {
             const dexType = dexInfo.dex;
             const modalLeft = dexInfo.left || 0;
             const modalRight = dexInfo.right || 0;
+            const chainConfig = CONFIG_CHAINS[token.chain];
 
-            if (modalLeft > 0) {
+            // --- CEX -> DEX (LEFT) ---
+            if (modalLeft > 0 && cexData.price_buyToken > 0) {
                 const amount_in_token = parseFloat(modalLeft) / parseFloat(cexData.price_buyToken);
-                const dexParamsLeft = { /* ... */ };
+                const dexParamsLeft = {
+                    sc_input_in: token.sc_in, des_input: token.des_in,
+                    sc_output_in: token.sc_out, des_output: token.des_out,
+                    amount_in: amount_in_token, dexType: dexType,
+                    chainName: token.chain, chainCode: chainConfig.Kode_Chain,
+                    action: 'TokentoPair'
+                };
+
                 getPriceDEX(dexParamsLeft, (dexError, dexData) => {
-                    if (dexError) return;
-                    const result = calculateArbitrageResult(/* ... */);
+                    if (dexError || !dexData) {
+                        logMessage(`DEX Error (${dexType}) for ${token.symbol_in}: ${dexError?.message || 'No data'}`, 'error');
+                        return;
+                    }
+                    const result = calculateArbitrageResult(
+                        dexData.amount_out, dexData.FeeSwap, token.sc_in, token.sc_out, token.cex,
+                        modalLeft, amount_in_token, cexData.price_buyToken, cexData.price_sellToken,
+                        cexData.price_buyPair, cexData.price_sellPair, token.symbol_in, token.symbol_out,
+                        cexData.feeWDToken, dexType, token.chain, chainConfig.Kode_Chain, 'TokentoPair', cexData.volumes_buyToken, dexData
+                    );
                     displayArbitrageResult(result);
                 });
             }
 
-            if (modalRight > 0) {
+            // --- DEX -> CEX (RIGHT) ---
+            if (modalRight > 0 && cexData.price_buyPair > 0) {
                 const amount_in_pair = parseFloat(modalRight) / parseFloat(cexData.price_buyPair);
-                const dexParamsRight = { /* ... */ };
-                getPriceDEX(dexParamsRight, (dexError, dexData) => {
-                    if (dexError) return;
-                    const result = calculateArbitrageResult(/* ... */);
+                 const dexParamsRight = {
+                    sc_input_in: token.sc_out, des_input: token.des_out,
+                    sc_output_in: token.sc_in, des_output: token.des_in,
+                    amount_in: amount_in_pair, dexType: dexType,
+                    chainName: token.chain, chainCode: chainConfig.Kode_Chain,
+                    action: 'PairtoToken'
+                };
+
+                 getPriceDEX(dexParamsRight, (dexError, dexData) => {
+                    if (dexError || !dexData) {
+                        logMessage(`DEX Error (${dexType}) for ${token.symbol_out}: ${dexError?.message || 'No data'}`, 'error');
+                        return;
+                    }
+                    const result = calculateArbitrageResult(
+                        dexData.amount_out, dexData.FeeSwap, token.sc_out, token.sc_in, token.cex,
+                        modalRight, amount_in_pair, cexData.price_buyPair, cexData.price_sellPair,
+                        cexData.price_buyToken, cexData.price_sellToken, token.symbol_out, token.symbol_in,
+                        cexData.feeWDPair, dexType, token.chain, chainConfig.Kode_Chain, 'PairtoToken', cexData.volumes_buyPair, dexData
+                    );
                     displayArbitrageResult(result);
                 });
             }
@@ -61,11 +94,11 @@ function monitorArbitrage() {
     const flatTokens = flattenDataKoin(allTokens);
 
     if (flatTokens.length === 0) {
-        logMessage("No tokens to monitor.", "warn");
+        logMessage("No tokens to monitor. Please add some.", "warn");
         return;
     }
 
-    logMessage("Starting arbitrage monitoring cycle...");
+    logMessage("Starting new arbitrage monitoring cycle...");
     flatTokens.forEach(token => {
         if(token.status) {
             processSingleToken(token);
