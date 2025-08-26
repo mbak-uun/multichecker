@@ -1,0 +1,271 @@
+            /* Override semua class UIkit text* agar mengikuti warna Bootstrap */
+    [class*="uk-text"] {
+        color: inherit !important; /* Default mengikuti Bootstrap */
+    }
+
+    /* Mapping warna Bootstrap */
+    .uk-text-primary    { color: var(--bs-primary) !important; }
+    .uk-text-secondary  { color: var(--bs-secondary) !important; }
+    .uk-text-success    { color: var(--bs-success) !important; }
+    .uk-text-danger     { color: var(--bs-danger) !important; }
+    .uk-text-warning    { color: var(--bs-warning) !important; }
+    .uk-text-info       { color: var(--bs-info) !important; }
+    .uk-text-light      { color: var(--bs-light) !important; }
+
+    /* Kalau Bootstrap < 5, bisa pakai kode warna manual */
+    :root {
+        --bs-primary:   #0d6efd;
+        --bs-secondary: #000204;
+        --bs-success:   #05a705;
+        --bs-danger:    #ea0c0c;
+        --bs-warning:   #f68f02;
+        --bs-info:      #0dcaf0;
+        --bs-light:     #f8f9fa;
+    }
+        .uk-container {
+            max-width: 100%;
+            padding-left: 8px;
+            padding-right: 8px;
+        }
+        .status-active { color: green; }
+        .status-inactive { color: red; }
+        .sort-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); }
+        /* Memaksa warna link untuk CEX */
+        .uk-link {
+            color: inherit !important;  /* Memastikan warna link mengikuti warna induk */
+        }
+        a {
+            text-decoration: none; /* Menghapus garis bawah */
+            color: inherit;        /* Menggunakan warna teks elemen induk */
+        }
+        /* Memaksa warna status aktif */
+        .status-active {
+            color: inherit !important;  /* Warna aktif mengikuti warna yang ditentukan */
+        }
+        img:hover {
+                opacity:1;
+                transform: scale(1.8); /* You can adjust the scale factor as needed */
+            }
+        img{
+            margin: 1.5px;
+        }    
+        #progress-container {
+            width: 100%;
+            background-color: #f3f3f3;
+            border-radius: 10px;
+            margin-top: 10px;
+            overflow: hidden; /* biar ujung bar tetap rapi saat animasi */
+        }
+
+        #progress-bar {
+            height: 14px;
+            width: 0%;
+            border-radius: 5px;
+            position: relative;
+
+            /* Warna dasar + pola strip diagonal */
+            background-color: #5c9513;
+            background-image: repeating-linear-gradient(
+                45deg,
+                rgba(255, 255, 255, 0.3) 0,
+                rgba(255, 255, 255, 0.3) 10px,
+                transparent 10px,
+                transparent 20px
+            );
+            background-size: 20px 20px;
+
+            /* Animasi strip bergerak */
+            animation: move-stripes 1s linear infinite;
+        }
+
+        #progress-bar span {
+            color: white;
+            text-align: center;
+            line-height: 14px;
+            display: block;
+            font-weight: bold;
+        } 
+
+        /* Tambahkan scroll untuk tabel */
+        .uk-overflow-auto {
+            overflow-x: auto; /* Scroll horizontal jika diperlukan */
+            max-height: 800px; /* Batasi tinggi untuk memunculkan scroll */
+            background-color: white; 
+        }
+
+        .uk-table tbody td {
+            font-size: 11.5px;
+            border-bottom: 1px solid #000000;
+            padding: 4px;
+            white-space: nowrap;
+        }
+        .uk-background{
+            background-color: #ececec !important; 
+            border-bottom: 1px solid #000000 !important;
+        }
+       
+        .merah{
+            font-weight: bold;
+            color: rgb(250, 249, 249) !important;
+            background-color:#eb6464!important;
+        }
+        .buy {
+            color:#05a705;
+        }
+        .sell {
+            color:#ea0c0c;
+        }
+        .ijo {
+            color: black !important;
+            font-weight: bolder;
+        }
+        .error{
+            color: #fafafa!important;
+            background-color: #f39999!important;
+        }
+        .errorrestapi{
+            background-color: #f6f2f1!important;
+        } 
+
+        body{
+            font-family: Arial, Helvetica, sans-serif;
+            padding: 1px;
+            /* background-image: linear-gradient(#cffad4, #fefefe, #f3f7f4); */
+            color: #0f0f0f;
+        }
+        .icon-wrapper {
+            display: inline-flex;          /* Menjadikan elemen inline fleksibel */
+            justify-content: center;       /* Pusatkan gambar secara horizontal */
+            align-items: center;           /* Pusatkan gambar secara vertikal */
+            margin: 10px;
+            transform: scale(1.6);              /* Tinggi ikon */
+            background-color: #f97aa8;     /* Warna latar belakang */
+            border-radius: 35%;            /* Membuat bentuk lingkaran */
+            cursor: pointer;               /* Ubah kursor menjadi tangan saat diklik */
+            transition: background-color 0.3s ease; /* Animasi untuk efek hover */
+        }
+        /* Warna link default (light mode) */
+        a, .uk-link {
+            color: inherit !important;
+            text-decoration: none;
+        }
+
+        /* Warna link dalam dark mode */
+        .dark-mode a,
+        .dark-mode .uk-link {
+            color: #4fc3f7 !important;  /* Warna biru muda, bisa diganti sesuai preferensi */
+        }
+        
+        .dark-mode .uk-background {
+            background-color: #797a7af5 !important;
+        }
+
+        body.dark-mode .uk-background-a {
+            background-color: #9b9c9bf5 !important;
+        } 
+        /* Mode gelap */
+        body.uk-dark #sinyal-container {
+            background-color: #605d5d !important;
+            color: #f0f0f0 !important;
+        }
+
+        /* CSS dark mode */
+        body {
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .dark-mode {
+            background-color: #121212 !important;
+            color: #5d0404 !important
+        }
+
+        .dark-mode .uk-table tbody td {
+            background-color: #1e1e1e ;
+            color: #f0f0f0 !important;
+            border-color: #444 !important;
+        }
+
+        .dark-mode .uk-overflow-auto {
+            background-color: #1a1a1a !important;
+        }
+
+        .dark-mode .uk-button {
+            background-color: #333 !important;
+            color: #fff !important;
+            border-color: #555 !important;
+        }
+
+        .dark-mode .icon-wrapper {
+            background-color: #333 !important;
+        }
+
+        .dark-mode .merah {
+            background-color: #b00020 !important;
+            color: #fff !important;
+        }
+
+        .dark-mode .buy {
+            color:#20be20 !important
+        }
+
+        .dark-mode .sell {
+            color: #ff6666 !important;
+        }
+        
+         .toggle-radio.active {
+            background-color: #1e87f0; /* uk-primary */
+            color: #fff;
+            font-weight: bold;
+        }
+         .header-card {
+            background: linear-gradient(to right, #e5ebc6, #ffffff);
+            padding: 6px 12px !important; /* lebih kecil agar rapat */
+            border: 1px solid black;
+        }
+
+        .header-card h3 {
+            font-size: 18px;
+            line-height: 1.2;
+            margin: 0;
+            color: #000;
+            font-weight: bold;
+        }
+        .uk-card,
+        .uk-card-default {
+            border-radius: 5px; /* bisa diganti 8px/16px sesuai selera */
+            overflow: hidden;    /* biar konten ikut rounded */
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08); /* optional, biar soft */
+        }
+
+        .uk-card img,
+        .uk-card-default img {
+            border-radius: 5px 5px 0 0; /* gambar di atas ikut rounded */
+        }
+         /* Baris ganjil */
+        .uk-table tbody tr:nth-child(odd) {
+            background-color: #ffffff !important; /* warna abu muda */
+        }
+
+        /* Baris genap */
+        .uk-table tbody tr:nth-child(even) {
+            background-color: #f3f5e3 !important; /* abu sedikit lebih gelap */
+        }
+
+        /* Opsional: hover effect */
+        .uk-table tbody tr:hover {
+            background-color: #f6f4d3 !important; /* abu hover */
+        }
+        .uk-icon {
+            /* width: 24px; */
+            /* height: 24px; */
+            vertical-align: middle;
+            stroke-width: 1;    
+            stroke: black;
+        }
+        #token-management table thead th {
+            position: sticky;
+            top: 0;
+            background: #f8f8f8;   /* warna background biar gak transparan */
+            z-index: 2;            /* supaya di atas konten */
+        }
+      
