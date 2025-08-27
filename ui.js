@@ -338,6 +338,53 @@ function generateInputCheckbox(items, containerId, idPrefix, labelText, style, t
   });
 
   $container.append(wrapper);
+
+  // Handler perubahan (persist ke localStorage)
+  $container.off('change.checkbox').on('change.checkbox', 'input[type="checkbox"]', function(){
+    const valUpper = String(this.value).toUpperCase();
+    const valLower = String(this.value).toLowerCase();
+    let settingData = getFromLocalStorage('SETTING_SCANNER', {});
+
+    if ($(this).hasClass('chain-item')) {
+      let chains = Array.isArray(settingData.AllChains) ? settingData.AllChains.map(x => String(x).toLowerCase()) : [];
+      if (this.checked) {
+        if (!chains.includes(valLower)) chains.push(valLower);
+        toastr.info(`CHAIN ${valUpper} DITAMBAH`);
+      } else {
+        if (chains.length <= 1) {
+          toastr.warning('Minimal harus ada 1 chain yang dipilih!');
+          this.checked = true;
+          return;
+        }
+        chains = chains.filter(c => c !== valLower);
+        toastr.info(`CHAIN ${valUpper} DIHAPUS`);
+      }
+      settingData.AllChains = chains;
+      saveToLocalStorage('SETTING_SCANNER', settingData);
+      try {
+        generateInputCheckbox(CONFIG_CEX, 'cex-filter', 'X', 'CEX: ', 'uk-form-label uk-text-primary', 'cex');
+        refreshTokensTable();
+      } catch(_) { location.reload(); }
+      return;
+    }
+
+    // CEX
+    let filter = Array.isArray(settingData.FilterCEXs) ? settingData.FilterCEXs.map(x => String(x).toUpperCase()) : [];
+    if (this.checked) {
+      if (!filter.includes(valUpper)) filter.push(valUpper);
+      toastr.info(`CEX ${valUpper} AKTIF`);
+    } else {
+      filter = filter.filter(x => x !== valUpper);
+      if (filter.length === 0) {
+        toastr.warning('Tidak memilih CEX mana pun = SEMUA CEX aktif.');
+      } else {
+        toastr.info(`CEX ${valUpper} NONAKTIF`);
+      }
+    }
+    settingData.FilterCEXs = Array.from(new Set(filter));
+    saveToLocalStorage('SETTING_SCANNER', settingData);
+    try { refreshTokensTable(); } catch(_) { location.reload(); }
+  });
 }
 
 /**
