@@ -209,16 +209,16 @@ function GeturlExchanger(cex, NameToken, NamePair) {
  */
 function getChainData(chainName) {
     if (!chainName) return null;
-
+    
     const chainLower = chainName.toLowerCase();
     const chainData = CONFIG_CHAINS[chainLower];
-
+    
     const managedChains = getManagedChains();
     if (!managedChains.includes(chainLower)) {
         console.log(`Chain ${chainName} tidak termasuk dalam chain yang dikelola`);
         return null;
     }
-
+    
     if (!chainData) {
         console.log(`Chain dengan nama ${chainName} tidak ditemukan di CONFIG_CHAINS`);
         return null;
@@ -229,7 +229,7 @@ function getChainData(chainName) {
         Nama_Chain: chainData.Nama_Chain || '',
         DEXS: chainData.DEXS || {},
         PAIRDExS: chainData.PAIRDExS || {},
-        URL_Chain: chainData.URL_Chain || '',
+        URL_Chain: chainData.URL_Chain || '', 
         DATAJSON: chainData.DATAJSON || {},
         BaseFEEDEX: chainData.BaseFEEDEX || '',
         CEXCHAIN: chainData.WALLET_CEX || {},
@@ -412,13 +412,29 @@ function convertIDRtoUSDT(idrAmount) {
  * @param {string} sc_output - The output token contract address.
  * @returns {string|null} The DEX trade URL or null if not supported.
  */
+function getWarnaCEX(cex) {
+    if (!cex || typeof cex !== 'string') {
+        return 'black';
+    }
+    try {
+        const upperCex = cex.toUpperCase();
+        if (CONFIG_CEX && CONFIG_CEX[upperCex] && CONFIG_CEX[upperCex].WARNA) {
+            return CONFIG_CEX[upperCex].WARNA;
+        }
+        return 'black'; // Warna default
+    } catch (error) {
+        console.error('Error dalam getWarnaCEX:', error);
+        return 'black';
+    }
+}
+
 function generateDexLink(dex,chainName,codeChain, NameToken, sc_input, NamePair, sc_output) {
     const link = {
         'kyberswap': `https://kyberswap.com/swap/${chainName}/${sc_input}-to-${sc_output}`,
         'kana': `https://app.paraswap.xyz/#/swap/${sc_input}-${sc_output}?version=6.2&network=${chainName}`,
         'odos': "https://app.odos.xyz",
-        '0x': chainName.toLowerCase() === 'solana'
-            ? `https://matcha.xyz/tokens/solana/${sc_input}?sellChain=1399811149&sellAddress=${sc_output}`
+        '0x': chainName.toLowerCase() === 'solana' 
+            ? `https://matcha.xyz/tokens/solana/${sc_input}?sellChain=1399811149&sellAddress=${sc_output}` 
             : `https://matcha.xyz/tokens/${codeChain}/${sc_input.toLowerCase()}?buyChain=${codeChain}&buyAddress=${sc_output.toLowerCase()}`,
         '1inch': ` https://app.1inch.io/advanced/swap?network=${codeChain}&src=${sc_input.toUpperCase()}&dst=${sc_output.toUpperCase()}`,
       // '1inch': `https://app.1inch.io/#/${codeChain}/advanced/swap/${sc_input}/${sc_output}`,
