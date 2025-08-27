@@ -169,8 +169,11 @@ $(document).ready(function() {
     const config = getFromLocalStorage('STATUS_RUN', {});
     if (config.run === "YES") {
         $('#startSCAN').prop('disabled', true).text('Running...');
+        $('#stopSCAN').show();
+        $('#infoAPP').html('⚠️ Proses sebelumnya tidak selesai. Tekan tombol <b>RESET PROSES</b> untuk memulai ulang.').show();
     } else {
         $('#startSCAN').prop('disabled', false).text('Start');
+        $('#stopSCAN').hide();
     }
 
     const isDark = getFromLocalStorage("DARK_MODE", false);
@@ -303,15 +306,9 @@ $(document).ready(function() {
     });
 
     $("#reload").click(function () {
-        const config = getFromLocalStorage('STATUS_RUN', {});
-        if (config.run === "YES") {
-            if (confirm("⚠️ APAKAH ANDA INGIN RESET PROSES? \nPROSES SCANNING AKAN DIHENTIKAN.")) {
-                saveToLocalStorage('STATUS_RUN', { run: "NO" });
-                location.reload();
-            }
-        } else {
-            location.reload();
-        }
+        // Always set run to NO on reload to ensure a clean state
+        saveToLocalStorage('STATUS_RUN', { run: "NO" });
+        location.reload();
     });
 
     $("#stopSCAN").click(function () {
@@ -542,6 +539,8 @@ $(document).ready(function() {
                                     if(isKiri && !isPosChecked('Actionkiri')) return;
                                     if(!isKiri && !isPosChecked('ActionKanan')) return;
 
+                                    const idCELL = `${token.cex.toUpperCase()}_${dex.toUpperCase()}_${isKiri ? token.symbol_in : token.symbol_out}_${isKiri ? token.symbol_out : token.symbol_in}_${token.chain.toUpperCase()}`;
+
                                     setTimeout(() => {
                                         getPriceDEX(
                                             isKiri ? token.sc_in : token.sc_out,
@@ -555,7 +554,12 @@ $(document).ready(function() {
                                             token.cex, token.chain, CONFIG_CHAINS[token.chain.toLowerCase()].Kode_Chain,
                                             direction,
                                             (err, dexRes) => {
-                                                if(err || !dexRes) return; // Handle error
+                                                if (err || !dexRes) {
+                                                    console.error(`Error fetching from DEX ${dex} for ${direction}:`, err);
+                                                    toastr.error(`Gagal ambil data dari ${dex.toUpperCase()}`);
+                                                    $(`#SWAP_${idCELL}`).html(`<span class="uk-text-danger" title="${err?.pesanDEX || 'Unknown Error'}">[ERROR]</span>`);
+                                                    return;
+                                                }
                                                 ResultEksekusi(
                                                     dexRes.amount_out, dexRes.FeeSwap,
                                                     isKiri ? token.sc_in : token.sc_out,
