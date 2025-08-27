@@ -84,9 +84,9 @@ function loadKointoTable(filteredData) {
 
                let innerHTML = `
                     <strong class="uk-align-center" style="display:inline-block; margin:0;">${dexName.toUpperCase()} [$${modalLeft}]</strong><br>
-                    <span class="buy" id="BUY_${idCELL}" title="BUY_${idCELL}"></span><br>
+                    <span class="buy" id="BUY_${idCELL}" title="BUY on CEX"></span><br>
                     <span class="uk-text-primary uk-text-bolder" id="SWAP_${idCELL}"> 🔒 </span><br>
-                    <span class="sell" id="SELL_${idCELL}" title="SELL_${idCELL}"></span><br>
+                    <span class="sell" id="SELL_${idCELL}" title="SELL on CEX"></span><br>
                     <hr class="uk-divider-small uk-margin-remove">
                     <span class="uk-text-primary" id="RESULT_${idCELL}"></span>
                 `;
@@ -182,9 +182,9 @@ function loadKointoTable(filteredData) {
 
                let innerHTML = `
                     <strong class="uk-align-center" style="display:inline-block; margin:0; padding:0;">${dexName.toUpperCase()} [$${modalRight}]</strong><br>
-                    <span class="buy" id="BUY_${idCELL}" title="BUY_${idCELL}"> </span><br>
+                    <span class="buy" id="BUY_${idCELL}" title="BUY on CEX"> </span><br>
                     <span class="uk-text-primary uk-text-bolder" id="SWAP_${idCELL}"> 🔒 </span><br>
-                    <span class="sell" id="SELL_${idCELL}" title="SELL_${idCELL}"> </span><br>
+                    <span class="sell" id="SELL_${idCELL}" title="SELL on CEX"> </span><br>
                     <hr class="uk-divider-small uk-margin-remove">
                     <span class="uk-text-primary" id="RESULT_${idCELL}"> </span>
                 `;

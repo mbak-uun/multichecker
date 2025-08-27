@@ -168,8 +168,10 @@ $(document).ready(function() {
     // Initialize app state from localStorage
     const config = getFromLocalStorage('STATUS_RUN', {});
     if (config.run === "YES") {
+        form_off();
         $('#startSCAN').prop('disabled', true).text('Running...').addClass('uk-button-disabled');
-        $('#stopSCAN').show();
+        $('#stopSCAN').show().prop('disabled', false); // Ensure stop is usable
+        $('#reload').prop('disabled', false); // Ensure reload is usable
         $('#infoAPP').html('⚠️ Proses sebelumnya tidak selesai. Tekan tombol <b>RESET PROSES</b> untuk memulai ulang.').show();
     } else {
         $('#startSCAN').prop('disabled', false).text('Start').removeClass('uk-button-disabled');

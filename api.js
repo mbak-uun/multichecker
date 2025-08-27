@@ -131,12 +131,22 @@ function getPriceCEX(coins, NameToken, NamePair, cex, callback) {
                             return;
                         }
 
-                        results[tokenName] = {
-                            price_sell: priceSell,
-                            price_buy: priceBuy,
-                            volumes_sell: processedData?.priceBuy || [],
-                            volumes_buy: processedData?.priceSell || []
-                        };
+                        // Special handling for GATE data structure difference
+                        if (cex.toUpperCase() === 'GATE') {
+                            results[tokenName] = {
+                                price_sell: priceBuy, // Swapped
+                                price_buy: priceSell,  // Swapped
+                                volumes_sell: processedData?.priceSell || [],
+                                volumes_buy: processedData?.priceBuy || []
+                            };
+                        } else {
+                            results[tokenName] = {
+                                price_sell: priceSell,
+                                price_buy: priceBuy,
+                                volumes_sell: processedData?.priceSell || [],
+                                volumes_buy: processedData?.priceBuy || []
+                            };
+                        }
 
                         processFinalResult();
                     },
