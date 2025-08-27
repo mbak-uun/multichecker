@@ -182,7 +182,8 @@ function getPriceDEX(sc_input_in, des_input, sc_output_in, des_output, amount_in
     switch (dexType) {
         case 'kyberswap':
                 let NetChain = chainName.toUpperCase() === "AVAX" ? "avalanche" : chainName;
-                apiUrl = `https://aggregator-api.kyberswap.com/${NetChain.toLowerCase()}/api/v1/routes?tokenIn=${sc_input}&tokenOut=${sc_output}&amountIn=${amount_in_big}&gasInclude=true`;
+                const kyberUrl = `https://aggregator-api.kyberswap.com/${NetChain.toLowerCase()}/api/v1/routes?tokenIn=${sc_input}&tokenOut=${sc_output}&amountIn=${amount_in_big}&gasInclude=true`;
+                apiUrl = `https://vercel-proxycors.vercel.app/?url=${encodeURIComponent(kyberUrl)}`;
             break;
 
         case '1inch':
@@ -237,6 +238,7 @@ function getPriceDEX(sc_input_in, des_input, sc_output_in, des_output, amount_in
     $.ajax({
         url: apiUrl,
         method: ['odos', '1inch', 'lifi'].includes(dexType) ? 'POST' : 'GET',
+        dataType: 'json', // Explicitly request JSON
         headers: headers,
         data: ['odos', '1inch', 'lifi'].includes(dexType) ? JSON.stringify(requestData) : undefined,
         contentType: ['odos', '1inch', 'lifi'].includes(dexType) ? 'application/json' : undefined,
