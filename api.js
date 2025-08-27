@@ -10,6 +10,61 @@
  * @param {string} cex - The CEX name.
  * @param {function} callback - The callback function (error, result).
  */
+  // Mapping konfigurasi untuk setiap exchange
+    const exchangeConfig = {
+        GATE: {
+            url: coins => `https://api.gateio.ws/api/v4/spot/order_book?limit=5&currency_pair=${coins.symbol}_USDT`,
+            processData: data => processOrderBook(data)
+        },
+        BINANCE: {
+            url: coins => `https://api.binance.me/api/v3/depth?limit=4&symbol=${coins.symbol}USDT`,
+            processData: data => processOrderBook(data)
+        },
+        MEXC: {
+            url: coins => `https://api.mexc.com/api/v3/depth?symbol=${coins.symbol}USDT&limit=5`,
+            processData: data => processOrderBook(data)
+        },
+        
+        INDODAX: {
+            url: coins => `https://indodax.com/api/depth/${(coins.symbol).toLowerCase()}idr`,
+
+            processData: data => {
+                // Cek kalau data buy/sell tidak ada
+                if (!data?.buy || !data?.sell) {
+                    console.error('Invalid INDODAX response structure:', data);
+                    return { priceBuy: [], priceSell: [] };
+                }
+
+                // Proses data BUY: langsung ambil 3 data teratas dari API (tidak di-sort)
+                const priceBuy = data.buy
+                    .slice(0, 3)
+                    .map(([price, volume]) => {
+                        const priceFloat = parseFloat(price);
+                        const volumeFloat = parseFloat(volume);
+                        return {
+                            price: convertIDRtoUSDT(priceFloat),
+                            volume: convertIDRtoUSDT(priceFloat * volumeFloat)
+                        };
+                    });
+
+                // Proses data SELL: sort harga dari besar ke kecil, baru ambil 3 data teratas
+                const priceSell = data.sell
+                    .slice(0, 3)
+                    .map(([price, volume]) => {
+                        const priceFloat = parseFloat(price);
+                        const volumeFloat = parseFloat(volume);
+                        return {
+                            price: convertIDRtoUSDT(priceFloat),
+                            volume: convertIDRtoUSDT(priceFloat * volumeFloat)
+                        };
+                    });
+
+                // Return hasil BUY dan SELL
+                return { priceSell ,priceBuy};
+            }
+        }
+    };   
+   
 function getPriceCEX(coins, NameToken, NamePair, cex, callback) {
     const config = exchangeConfig[cex];
     if (!config) {
