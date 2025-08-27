@@ -380,3 +380,65 @@ const apiKeysOKXDEX = [
 ];
      
 window.CONFIG_CHAINS = window.CONFIG_CHAINS || CONFIG_CHAINS;
+
+const stablecoins = ["USDT", "DAI", "USDC", "FDUSD"];
+
+function processOrderBook(data) {
+    const priceBuy = data.bids.slice(0, 3).map(([price, volume]) => ({
+        price: parseFloat(price),
+        volume: parseFloat(volume) * parseFloat(price) // Volume dalam USD
+    })).reverse();
+
+    const priceSell = data.asks.slice(0, 3).map(([price, volume]) => ({
+        price: parseFloat(price),
+        volume: parseFloat(volume) * parseFloat(price) // Volume dalam USD
+    })).reverse();
+
+    return { priceBuy, priceSell };
+}
+
+const exchangeConfig = {
+    GATE: {
+        url: coins => `https://api.gateio.ws/api/v4/spot/order_book?limit=5&currency_pair=${coins.symbol}_USDT`,
+        processData: data => processOrderBook(data)
+    },
+    BINANCE: {
+        url: coins => `https://api.binance.me/api/v3/depth?limit=4&symbol=${coins.symbol}USDT`,
+        processData: data => processOrderBook(data)
+    },
+    MEXC: {
+        url: coins => `https://api.mexc.com/api/v3/depth?symbol=${coins.symbol}USDT&limit=5`,
+        processData: data => processOrderBook(data)
+    },
+
+    INDODAX: {
+        url: coins => `https://indodax.com/api/depth/${(coins.symbol).toLowerCase()}idr`,
+        processData: data => {
+            if (!data?.buy || !data?.sell) {
+                console.error('Invalid INDODAX response structure:', data);
+                return { priceBuy: [], priceSell: [] };
+            }
+            const priceBuy = data.buy
+                .slice(0, 3)
+                .map(([price, volume]) => {
+                    const priceFloat = parseFloat(price);
+                    const volumeFloat = parseFloat(volume);
+                    return {
+                        price: convertIDRtoUSDT(priceFloat),
+                        volume: convertIDRtoUSDT(priceFloat * volumeFloat)
+                    };
+                });
+            const priceSell = data.sell
+                .slice(0, 3)
+                .map(([price, volume]) => {
+                    const priceFloat = parseFloat(price);
+                    const volumeFloat = parseFloat(volume);
+                    return {
+                        price: convertIDRtoUSDT(priceFloat),
+                        volume: convertIDRtoUSDT(priceFloat * volumeFloat)
+                    };
+                });
+            return { priceSell ,priceBuy};
+        }
+    }
+};

@@ -119,11 +119,11 @@ function getPriceCEX(coins, NameToken, NamePair, cex, callback) {
                         let priceBuy, priceSell;
 
                         if (isIndodax) {
-                            priceBuy = processedData?.priceSell?.[2]?.price || 0;
-                            priceSell = processedData?.priceBuy?.[2]?.price || 0;
+                            priceBuy = processedData?.priceSell?.[0]?.price || 0;
+                            priceSell = processedData?.priceBuy?.[0]?.price || 0;
                         } else {
-                            priceBuy = (processedData?.priceBuy || []).sort((a, b) => b.price - a.price)[2]?.price || 0;
-                            priceSell = (processedData?.priceSell || []).sort((a, b) => a.price - b.price)[2]?.price || 0;
+                            priceBuy = (processedData?.priceBuy || []).sort((a, b) => b.price - a.price)[0]?.price || 0;
+                            priceSell = (processedData?.priceSell || []).sort((a, b) => a.price - b.price)[0]?.price || 0;
                         }
 
                         if (priceBuy <= 0 || priceSell <= 0) {

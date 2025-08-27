@@ -4,7 +4,6 @@
 
 // --- Global Variables ---
 const storagePrefix = "MULTISCANNER_";
-const stablecoins = ["USDT", "DAI", "USDC", "FDUSD"];
 const REQUIRED_KEYS = {
     SETTINGS: 'SETTING_SCANNER',
     TOKENS: 'TOKEN_SCANNER'
