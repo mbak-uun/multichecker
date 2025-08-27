@@ -482,66 +482,50 @@ function updateTableVolCEX(finalResult, cex) {
 /**
  * Displays the final PNL result in the UI.
  */
-function DisplayPNL( PNL, cex, Coin_in, NameX, totalFee, modal, dex, priceCEX, priceDEX, FeeSwap, FeeWD, sc_input, sc_output, Coin_out, totalValue, totalModal, conclusion, selisih, nameChain, codeChain, trx, profitLossPercent, vol ) {
-    var filterPNLValue = parseFloat(SavedSettingData.filterPNL);
+function DisplayPNL(profitLoss, cex, Name_in, NameX, totalFee, modal, dextype, priceBuyToken_CEX, priceSellToken_CEX, priceBuyPair_CEX, priceSellPair_CEX, FeeSwap, FeeWD, sc_input, sc_output, Name_out, totalValue, totalModal, conclusion, selisih,nameChain,codeChain, trx, profitLossPercent,vol, DataDEX) {
+    var filterPNLValue = parseFloat(SavedSettingData.filterPNL) || 1;
     var nickname = SavedSettingData.nickname;
-    var totalValue = parseFloat(totalValue);
-    var totalGet = totalValue - parseFloat(modal);
-    var totalModal = parseFloat(totalModal);
-    var totalFee = parseFloat(totalFee);
-    var checkVol = $('#checkVOL').is(':checked');
 
-    const urlsCEXToken = GeturlExchanger(cex.toUpperCase(), Coin_in, Coin_out);
-    var buyLink = urlsCEXToken.tradeToken;
-    var sellLink = urlsCEXToken.tradePair;
+    const IdCELL = `${cex.toUpperCase()}_${dextype.toUpperCase()}_${NameX}_${(nameChain).toUpperCase()}`;
+    const rowCell = $(`#${IdCELL}`);
+    const resultCell = $(`#RESULT_${IdCELL}`);
+    const buyCell = $(`#BUY_${IdCELL}`);
+    const sellCell = $(`#SELL_${IdCELL}`);
 
-    const chainNameLower = nameChain.toLowerCase();
-    const chainConfig = CONFIG_CHAINS[chainNameLower];
-    if (!chainConfig) return;
+    // Set CEX prices in the cell
+    if (trx === 'TokentoPair') {
+        buyCell.html(`<label title="${cex} BUY: USDT->${Name_in}"> ${formatPrice(priceBuyToken_CEX)}</label>`);
+        sellCell.html(`<label title="${cex} SELL: ${Name_out}->USDT"> ${formatPrice(priceSellPair_CEX)}</label>`);
+    } else { // PairtoToken
+        buyCell.html(`<label title="${cex} BUY: USDT->${Name_out}"> ${formatPrice(priceBuyPair_CEX)}</label>`);
+        sellCell.html(`<label title="${cex} SELL: ${Name_in}->USDT"> ${formatPrice(priceSellToken_CEX)}</label>`);
+    }
 
-    var IdCELL = `${cex.toUpperCase()}_${dex.toUpperCase()}_${NameX}_${(chainConfig.Nama_Chain).toUpperCase()}`;
-    var rowCell = $(`#${IdCELL}`);
-    var resultCell = $(`#RESULT_${IdCELL}`);
-    var buyCell = $(`#BUY_${IdCELL}`);
-    var sellCell = $(`#SELL_${IdCELL}`);
-
-    var sinyals = `<a href="#SWAP_${cex.toUpperCase()}_${dex.toUpperCase()}_${NameX}_${(nameChain).toUpperCase()}" class='link-class'>${cex.toUpperCase()} VS ${dex.toUpperCase()} : ${NameX} (${PNL.toFixed(2)}$)</a>`;
-
-    const isHighlight = (PNL > totalFee) || (PNL > filterPNLValue);
+    const totalGet = totalValue - modal;
+    const isHighlight = profitLoss > filterPNLValue;
 
     if (isHighlight) {
+        const sinyals = `<a href="#${IdCELL}" class='link-class'>${cex.toUpperCase()} VS ${dextype.toUpperCase()} : ${NameX} (${profitLoss.toFixed(2)}$)</a>`;
         toastr.success(sinyals);
         rowCell.attr("style", "background-color: #94fa95 !important; font-weight: bolder !important; color: black !important; vertical-align: middle !important; text-align: center !important;");
-
-        let htmlFee = '';
-        if (trx === "TokentoPair") {
-            htmlFee = `<span style="color:#0f04e2 !important;">FeeWD: ${FeeWD.toFixed(2)}$</span> | ${createLink(urlsCEXToken.withdrawUrl, 'WD')}<br/>`;
-        } else if (trx === "PairtoToken") {
-            htmlFee = `<span style="color:#0f04e2 !important;">FeeWD: ${FeeWD.toFixed(2)}$</span> | ${createLink(urlsCEXToken.depositUrl, 'DP')}<br/>`;
-        }
-        let htmlResult = `${htmlFee}<span style="color: #d20000;">All: ${totalFee.toFixed(2)}$</span> <span style="color: #1e87f0;">SW: ${FeeSwap.toFixed(2)}$</span><br/><span style="color: #444;">GT: ${totalGet.toFixed(2)}$</span> <span style="color: #444;">PNL: ${PNL.toFixed(2)}$</span><br/>`;
-        resultCell.html(htmlResult);
-
-        if (!buyCell.parent().is("a")) buyCell.wrap(`<a href="${buyLink}" target="_blank"></a>`);
-        if (!sellCell.parent().is("a")) sellCell.wrap(`<a href="${sellLink}" target="_blank"></a>`);
-
-        InfoSinyal(dex.toLowerCase(), NameX, PNL, totalFee, cex.toUpperCase(), Coin_in, Coin_out, profitLossPercent, modal, nameChain, codeChain, trx);
-
-    } else {
-        resultCell.html(`<span style="color:black;" title="FEE WD CEX">FeeWD : ${FeeWD.toFixed(2)}$</span><br/><span class="uk-text-danger" title="FEE ALL">ALL:${totalFee.toFixed(2)}$</span> <span class="uk-text-primary" title="FEE SWAP"> ${FeeSwap.toFixed(2)}$</span><br/><span class="uk-text-success" title="GET BRUTO">GT:${totalGet.toFixed(2)}$</span> <span class="uk-text-warning" title="GET NETTO / PNL" > ${PNL.toFixed(2)}$</span>`);
-        if (PNL > totalFee) {
-            InfoSinyal(dex.toLowerCase(), NameX, PNL, totalFee, cex.toUpperCase(), Coin_in, Coin_out, profitLossPercent, modal, nameChain, codeChain, trx);
-        }
+        InfoSinyal(dextype.toLowerCase(), NameX, profitLoss, totalFee, cex.toUpperCase(), Name_in, Name_out, profitLossPercent, modal, nameChain, codeChain, trx);
     }
 
-    if (PNL > 0.25) {
-        const direction = (trx === 'TokentoPair') ? 'cex_to_dex' : 'dex_to_cex';
-        const priceBUY  = (direction === 'cex_to_dex') ? priceCEX : priceDEX;
-        const priceSELL = (direction === 'cex_to_dex') ? priceDEX : priceCEX;
-        const tokenData = { symbol: Coin_in, pairSymbol: Coin_out, contractAddress: sc_input, pairContractAddress: sc_output, chain: nameChain };
-        MultisendMessage(cex, dex.toUpperCase(), tokenData, modal, PNL, priceBUY, priceSELL, FeeSwap, FeeWD, totalFee, nickname, direction);
+    let htmlResult = `
+        <span style="color:#0f04e2 !important;">FeeWD: ${FeeWD.toFixed(2)}$</span> |
+        <span style="color: #d20000;">All: ${totalFee.toFixed(2)}$</span>
+        <span style="color: #1e87f0;">SW: ${FeeSwap.toFixed(2)}$</span><br/>
+        <span style="color: #444;">GT: ${totalGet.toFixed(2)}$</span>
+        <span style="color: #444;">PNL: ${profitLoss.toFixed(2)}$</span><br/>
+    `;
+    resultCell.html(htmlResult);
+
+    if (profitLoss > 0.25) {
+        const tokenData = { symbol: Name_in, pairSymbol: Name_out, contractAddress: sc_input, pairContractAddress: sc_output, chain: nameChain };
+        MultisendMessage(cex, dextype.toUpperCase(), tokenData, modal, profitLoss, priceBuyToken_CEX, priceSellPair_CEX, FeeSwap, FeeWD, totalFee, nickname, trx);
     }
 }
+
 
 /**
  * Renders a new signal in the top signal container.

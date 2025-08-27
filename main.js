@@ -168,11 +168,11 @@ $(document).ready(function() {
     // Initialize app state from localStorage
     const config = getFromLocalStorage('STATUS_RUN', {});
     if (config.run === "YES") {
-        $('#startSCAN').prop('disabled', true).text('Running...');
+        $('#startSCAN').prop('disabled', true).text('Running...').addClass('uk-button-disabled');
         $('#stopSCAN').show();
         $('#infoAPP').html('⚠️ Proses sebelumnya tidak selesai. Tekan tombol <b>RESET PROSES</b> untuk memulai ulang.').show();
     } else {
-        $('#startSCAN').prop('disabled', false).text('Start');
+        $('#startSCAN').prop('disabled', false).text('Start').removeClass('uk-button-disabled');
         $('#stopSCAN').hide();
     }
 
@@ -200,10 +200,10 @@ $(document).ready(function() {
         const $stop  = $('#stopSCAN');
 
         if (config.run === 'NO') {
-            $start.prop('disabled', false).text('START').show();
+            $start.prop('disabled', false).text('START').removeClass('uk-button-disabled').show();
             $stop.hide();
         } else if (config.run === 'YES') {
-            $start.prop('disabled', true).text('Running...').show();
+            $start.prop('disabled', true).text('Running...').addClass('uk-button-disabled').show();
             $stop.prop('disabled', false).show();
         }
     });
@@ -472,7 +472,7 @@ $(document).ready(function() {
         }
 
         saveToLocalStorage('STATUS_RUN', { run: 'YES' });
-        $('#startSCAN').prop('disabled', true).text('Running...');
+        $('#startSCAN').prop('disabled', true).text('Running...').addClass('uk-button-disabled');
         $('#searchInput').val('');
         $('#sinyal-container span[id^="sinyal"]').empty();
         form_off();
@@ -618,7 +618,7 @@ $(document).ready(function() {
             form_on();
             $("#stopSCAN").hide().prop("disabled", false);
             saveToLocalStorage('STATUS_RUN', { run: 'NO' });
-            $('#startSCAN').prop('disabled', false).text('Start');
+            $('#startSCAN').prop('disabled', false).text('Start').removeClass('uk-button-disabled');
             $("#LoadDataBtn, #SettingModal, #MasterData,#UpdateWalletCEX,#chain-links-container,.sort-toggle").css("pointer-events", "auto").css("opacity", "1");
             $('[id^="EditMulti-"]').css({'pointer-events':'auto','opacity':'1'}).removeAttr('aria-disabled');
         }
@@ -759,12 +759,14 @@ function ResultEksekusi(amount_out, FeeSwap, sc_input, sc_output, cex, Modal, am
     var FeeWD = parseFloat(feeWD);
     var FeeTrade = parseFloat(0.0014 * Modal);
 
-    FeeSwap = parseFloat(FeeSwap);
-    Modal = parseFloat(Modal);
-    amount_in = parseFloat(amount_in);
-    amount_out = parseFloat(amount_out);
-    priceBuyToken_CEX = parseFloat(priceBuyToken_CEX);
-    priceSellPair_CEX = parseFloat(priceSellPair_CEX);
+    FeeSwap = parseFloat(FeeSwap) || 0;
+    Modal = parseFloat(Modal) || 0;
+    amount_in = parseFloat(amount_in) || 0;
+    amount_out = parseFloat(amount_out) || 0;
+    priceBuyToken_CEX = parseFloat(priceBuyToken_CEX) || 0;
+    priceSellToken_CEX = parseFloat(priceSellToken_CEX) || 0;
+    priceBuyPair_CEX = parseFloat(priceBuyPair_CEX) || 0;
+    priceSellPair_CEX = parseFloat(priceSellPair_CEX) || 0;
 
     var rateSellTokenDEX = (amount_out * priceSellPair_CEX) / amount_in;
     var rateBuyPairDEX = (amount_in * priceBuyToken_CEX) / amount_out;
@@ -772,12 +774,17 @@ function ResultEksekusi(amount_out, FeeSwap, sc_input, sc_output, cex, Modal, am
     var totalModal = Modal + FeeSwap + FeeWD + FeeTrade;
     var totalFee = FeeSwap + FeeWD + FeeTrade;
 
-    var totalValue = amount_out * priceSellPair_CEX;
+    let totalValue = 0;
+    if (trx === "TokentoPair") {
+        totalValue = amount_out * priceSellPair_CEX;
+    } else { // PairtoToken
+        totalValue = amount_out * priceSellToken_CEX;
+    }
 
     var profitLoss = totalValue - totalModal;
     var profitLossPercent = totalModal !== 0 ? (profitLoss / totalModal) * 100 : 0;
 
-    var filterPNLValue = parseFloat(SavedSettingData.filterPNL);
+    var filterPNLValue = parseFloat(SavedSettingData.filterPNL) || 1;
     var conlusion = "NO SELISIH";
     var selisih = false;
 
@@ -833,5 +840,5 @@ function ResultEksekusi(amount_out, FeeSwap, sc_input, sc_output, cex, Modal, am
         $(`#SWAP_${IdCELL}`).html(`<a href="${linkDEX}" target="_blank">${RateSwap}</a>`);
     }
 
-    DisplayPNL(profitLoss, cex, Name_in, NameX, totalFee, Modal, dextype, priceBuyToken_CEX, rateSellTokenDEX, FeeSwap, FeeWD, sc_input, sc_output, Name_out, totalValue, totalModal, conlusion, selisih,nameChain,codeChain, trx, profitLossPercent,vol);
+    DisplayPNL(profitLoss, cex, Name_in, NameX, totalFee, Modal, dextype, priceBuyToken_CEX, priceSellToken_CEX, priceBuyPair_CEX, priceSellPair_CEX, FeeSwap, FeeWD, sc_input, sc_output, Name_out, totalValue, totalModal, conlusion, selisih,nameChain,codeChain, trx, profitLossPercent,vol, DataDEX);
 }

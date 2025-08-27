@@ -412,6 +412,22 @@ function convertIDRtoUSDT(idrAmount) {
  * @param {string} sc_output - The output token contract address.
  * @returns {string|null} The DEX trade URL or null if not supported.
  */
+function getWarnaCEX(cex) {
+    if (!cex || typeof cex !== 'string') {
+        return 'black';
+    }
+    try {
+        const upperCex = cex.toUpperCase();
+        if (CONFIG_CEX && CONFIG_CEX[upperCex] && CONFIG_CEX[upperCex].WARNA) {
+            return CONFIG_CEX[upperCex].WARNA;
+        }
+        return 'black'; // Warna default
+    } catch (error) {
+        console.error('Error dalam getWarnaCEX:', error);
+        return 'black';
+    }
+}
+
 function generateDexLink(dex,chainName,codeChain, NameToken, sc_input, NamePair, sc_output) {
     const link = {
         'kyberswap': `https://kyberswap.com/swap/${chainName}/${sc_input}-to-${sc_output}`,
