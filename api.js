@@ -10,61 +10,6 @@
  * @param {string} cex - The CEX name.
  * @param {function} callback - The callback function (error, result).
  */
-  // Mapping konfigurasi untuk setiap exchange
-    const exchangeConfig = {
-        GATE: {
-            url: coins => `https://api.gateio.ws/api/v4/spot/order_book?limit=5&currency_pair=${coins.symbol}_USDT`,
-            processData: data => processOrderBook(data)
-        },
-        BINANCE: {
-            url: coins => `https://api.binance.me/api/v3/depth?limit=4&symbol=${coins.symbol}USDT`,
-            processData: data => processOrderBook(data)
-        },
-        MEXC: {
-            url: coins => `https://api.mexc.com/api/v3/depth?symbol=${coins.symbol}USDT&limit=5`,
-            processData: data => processOrderBook(data)
-        },
-        
-        INDODAX: {
-            url: coins => `https://indodax.com/api/depth/${(coins.symbol).toLowerCase()}idr`,
-
-            processData: data => {
-                // Cek kalau data buy/sell tidak ada
-                if (!data?.buy || !data?.sell) {
-                    console.error('Invalid INDODAX response structure:', data);
-                    return { priceBuy: [], priceSell: [] };
-                }
-
-                // Proses data BUY: langsung ambil 3 data teratas dari API (tidak di-sort)
-                const priceBuy = data.buy
-                    .slice(0, 3)
-                    .map(([price, volume]) => {
-                        const priceFloat = parseFloat(price);
-                        const volumeFloat = parseFloat(volume);
-                        return {
-                            price: convertIDRtoUSDT(priceFloat),
-                            volume: convertIDRtoUSDT(priceFloat * volumeFloat)
-                        };
-                    });
-
-                // Proses data SELL: sort harga dari besar ke kecil, baru ambil 3 data teratas
-                const priceSell = data.sell
-                    .slice(0, 3)
-                    .map(([price, volume]) => {
-                        const priceFloat = parseFloat(price);
-                        const volumeFloat = parseFloat(volume);
-                        return {
-                            price: convertIDRtoUSDT(priceFloat),
-                            volume: convertIDRtoUSDT(priceFloat * volumeFloat)
-                        };
-                    });
-
-                // Return hasil BUY dan SELL
-                return { priceSell ,priceBuy};
-            }
-        }
-    };   
-   
 function getPriceCEX(coins, NameToken, NamePair, cex, callback) {
     const config = exchangeConfig[cex];
     if (!config) {
@@ -231,15 +176,15 @@ function getPriceDEX(sc_input_in, des_input, sc_output_in, des_output, amount_in
     var SavedSettingData = getFromLocalStorage('SETTING_SCANNER', {});
     var selectedApiKey = getRandomApiKeyOKX();
     var amount_in_big = BigInt(Math.round(Math.pow(10, des_input) * amount_in));
-    var apiUrl, requestData,headers;
+    var apiUrl, requestData,headers;   
     var linkDEX = generateDexLink(dexType,chainName,chainCode,NameToken,sc_input_in, NamePair, sc_output_in);
-
+  
     switch (dexType) {
         case 'kyberswap':
                 let NetChain = chainName.toUpperCase() === "AVAX" ? "avalanche" : chainName;
                 apiUrl = `https://aggregator-api.kyberswap.com/${NetChain.toLowerCase()}/api/v1/routes?tokenIn=${sc_input}&tokenOut=${sc_output}&amountIn=${amount_in_big}&gasInclude=true`;
             break;
-
+        
         case '1inch':
         case 'lifi':
             const isLifi = dexType === 'lifi';
@@ -268,7 +213,7 @@ function getPriceDEX(sc_input_in, des_input, sc_output_in, des_output, amount_in
         case '0x':
             apiUrl = chainName.toLowerCase() === 'solana' ? `https://matcha.xyz/api/swap/quote/solana?sellTokenAddress=${sc_input_in}&buyTokenAddress=${sc_output_in}&sellAmount=${amount_in_big}&dynamicSlippage=true&slippageBps=50&userPublicKey=Eo6CpSc1ViboPva7NZ1YuxUnDCgqnFDXzcDMDAF6YJ1L` : `https://matcha.xyz/api/swap/price?chainId=${chainCode}&buyToken=${sc_output}&sellToken=${sc_input}&sellAmount=${amount_in_big}`;
             break;
-
+            
         case 'okx':
             var timestamp = new Date().toISOString();
             var path = "/api/v5/dex/aggregator/quote";
@@ -282,8 +227,8 @@ function getPriceDEX(sc_input_in, des_input, sc_output_in, des_output, amount_in
         case 'jupiter':
             apiUrl = `https://quote-api.jup.ag/v6/quote?inputMint=${sc_input_in}&outputMint=${sc_output_in}&amount=${amount_in_big}`;
             headers = {};
-            break;
-
+            break; 
+        
         default:
             console.error("Unsupported DEX type");
             return;
@@ -354,7 +299,7 @@ function getPriceDEX(sc_input_in, des_input, sc_output_in, des_output, amount_in
             var alertMessage = "Terjadi kesalahan", warna = "#f39999";
             // Error handling logic remains the same
             callback({ statusCode: xhr.status, pesanDEX:`${dexType.toUpperCase()}: ${alertMessage}`, color: warna, DEX: dexType.toUpperCase(), dexURL: linkDEX }, null);
-        },
+        }, 
     });
 }
 
@@ -528,7 +473,7 @@ async function fetchWalletStatus(cex) {
 async function checkAllCEXWallets() {
     $('#loadingOverlay').fadeIn(150);
     infoSet('🚀 Memulai pengecekan DATA CEX...');
-
+    
     const settings = getFromLocalStorage('SETTING_SCANNER', {});
     const selectedCexes = Object.keys(settings.api_keys || {});
     if (selectedCexes.length === 0) {
@@ -537,7 +482,7 @@ async function checkAllCEXWallets() {
         return;
     }
 
-    const fetchJobs = selectedCexes.map(cex =>
+    const fetchJobs = selectedCexes.map(cex => 
         fetchWalletStatus(cex).catch(err => {
             console.error(`❌ ${cex} gagal:`, err);
             infoAdd(`❌ ${cex} GAGAL (${err.message})`);
@@ -561,7 +506,7 @@ async function checkAllCEXWallets() {
     });
 
     infoAdd(`✅ Data wallet dari ${selectedCexes.join(', ')} berhasil diambil.`);
-
+    
     let tokens = getFromLocalStorage('TOKEN_SCANNER', []);
     if (!tokens.length) {
         infoAdd('⚠ Tidak ada data token untuk di-update.');
