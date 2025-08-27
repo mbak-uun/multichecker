@@ -1,4 +1,85 @@
-TOKEN_SCANNER [
+
+STRUKTUR DATA :
+1. MULTICHECKER_ALL_GAS_FEES [
+  {
+    "chain": "polygon",
+    "key": "POL",
+    "symbol": "POL",
+    "tokenPrice": 0.2324,
+    "gwei": 2.36e-7,
+    "gasUSD": 1.1517744000000002e-12
+  },
+  {
+    "chain": "arbitrum",
+    "key": "ETH",
+    "symbol": "ETH",
+    "tokenPrice": 4461.05,
+    "gwei": 0.027574,
+    "gasUSD": 0.0025831888467
+  },
+  {
+    "chain": "ethereum",
+    "key": "ETH",
+    "symbol": "ETH",
+    "tokenPrice": 4461.05,
+    "gwei": 1.403708408,
+    "gasUSD": 0.1315022812636764
+  },
+  {
+    "chain": "bsc",
+    "key": "BNB",
+    "symbol": "BNB",
+    "tokenPrice": 827.15,
+    "gwei": 0,
+    "gasUSD": 0
+  },
+  {
+    "chain": "base",
+    "key": "ETH",
+    "symbol": "ETH",
+    "tokenPrice": 4461.05,
+    "gwei": 0.009202328,
+    "gasUSD": 0.0008620929518124
+  }
+]
+
+2. MULTICHECKER_HISTORY {
+  "time": "09:28:37 | 15/08/2025",
+  "action": "IMPORT DATA KOIN"
+}
+
+3. MULTICHECKER_SETTING_SCANNER {
+  "nickname": "SADDAR",
+  "jedaTimeGroup": 500,
+  "jedaKoin": 500,
+  "filterPNL": 2,
+  "walletMeta": "0xDA90575Cd63269A951e225e47842d13b27Fb8Fe5",
+  "scanPerKoin": 5,
+  "speedScan": 2,
+  "JedaCexs": {
+    "GATE": 300,
+    "BINANCE": 300,
+    "MEXC": 300,
+    "INDODAX": 300
+  },
+  "JedaDexs": {
+    "kyberswap": 700,
+    "0x": 700,
+    "odos": 700,
+    "okx": 700,
+    "1inch": 700,
+    "lifi": 700
+  },
+  "AllChains": [
+    "polygon",
+    "arbitrum",
+    "ethereum",
+    "bsc",
+    "base"
+  ]
+}
+
+4. TOKEN_SCANNER [
       {
         "id": "27",
         "no": 27,
@@ -101,338 +182,69 @@ TOKEN_SCANNER [
     }
 ]
 
-berdasarkan data tersebut. cara scanningnya (2 arah) seperti ini:
-Siap. Di bawah ini saya berikan rumus & algoritma yang bisa langsung dipakai untuk kasus multi-modal, beda chain, beda pair (perlu normalisasi ke USDT), serta PNL yang mempertimbangkan fee (trade, withdraw, swap) dan biaya kirim/gas per chain. Saya sertakan contoh kode JavaScript (CDN, tanpa build) agar bisa Anda adaptasi ke app Anda.
-
-# 1) Definisi Simbol (singkat)
-
-* $M_{CEX}$: modal USDT di CEX (untuk skenario CEX→DEX)
-* $M_{DEX}$: modal USDT di wallet (untuk skenario DEX→CEX)
-* $P^{CEX}_{T/USDT}$: harga 1 token T dalam USDT di CEX (taker)
-* $f^{CEX}_{trade}$: fee trade CEX (persen, desimal), contoh 0.001 = 0.1%
-* $WD^{CEX}_T$: fee withdraw CEX untuk token T (satuan token T, nilai tetap)
-* $gas_{op}^{chain}$: biaya gas USDT untuk operasi on-chain tertentu (approve, swap, transfer) di chain terkait
-* $\text{DexQuote}(amountIn)$: fungsi DEX (amount-based) yang mengembalikan amountOut setelah fee DEX/price impact
-* $R_{X\to USDT}$: kurs 1 X ke USDT (untuk normalisasi bila quote ≠ USDT)
-
-> Catatan: di banyak DEX, fee swap sudah “tertanam” di amountOut. Pastikan fungsi quote Anda mengembalikan nilai *setelah fee pool* dan *price impact*.
-
----
-
-# 2) Normalisasi ke USDT
-
-Jika pair bukan USDT (misal T/BNB, T/ETH, atau T/IDR):
-
-$$
-P^{CEX}_{T/USDT} \equiv \frac{P^{CEX}_{T/QUOTE}}{R_{QUOTE\to USDT}}
-$$
-
-atau
-
-$$
-R_{QUOTE\to USDT} = P^{CEX}_{QUOTE/USDT}
-$$
-
-Untuk gas:
-
-$$
-gas^{USDT} = (\text{gas units} \times \text{gwei} \times 10^{-9}) \times P^{USDT}_{GAS\_TOKEN}
-$$
-
-Jika Anda sudah punya `gasUSD` per operasi, pakai langsung.
-
----
-
-# 3) Arah 1 — CEX → DEX (Beli di CEX, Jual/Swap di DEX)
-
-**Tujuan:** mulai $M_{CEX}$ USDT di CEX → akhiri dalam USDT di wallet (atau kirim balik ke CEX bila mau round-trip penuh).
-
-1. **Beli token di CEX (taker):**
-
-$$
-T_{in}=\frac{M_{CEX}\cdot (1-f^{CEX}_{trade})}{P^{CEX}_{T/USDT}}
-$$
-
-2. **Withdraw token dari CEX ke wallet:**
-
-$$
-T_{wd}=T_{in}-WD^{CEX}_T
-$$
-
-(anggap fee wd sudah termasuk network fee CEX; bila tidak, tambahkan biaya jaringan ekstra ke $gas$).
-
-3. **Biaya on-chain sebelum swap (approve, dll., opsional):**
-
-$$
-Cost^{USDT}_{preSwap}=\sum gas^{USDT}_{approve/dll}
-$$
-
-4. **Swap di DEX (Token → USDT), amount-based:**
-
-$$
-USDT_{out}=\text{DexQuote}(T_{wd}) \quad \text{(sudah termasuk fee pool & price impact)}
-$$
-
-5. **Biaya on-chain untuk swap & kirim USDT (opsional):**
-
-$$
-Cost^{USDT}_{swap/send}=\sum gas^{USDT}_{swap, transfer}
-$$
-
-6. **PNL & PNL% (finish di wallet):**
-
-$$
-PNL = USDT_{out} - M_{CEX} - Cost^{USDT}_{preSwap} - Cost^{USDT}_{swap/send}
-$$
-
-$$
-PNL\% = \frac{PNL}{M_{CEX}}\times 100\%
-$$
-
-> Jika ingin **round-trip ke CEX** (USDT kembali ke CEX), tambahkan biaya transfer USDT ke CEX (gas) dan (jika diperlukan) biaya deposit (biasanya 0).
-
----
-
-# 4) Arah 2 — DEX → CEX (Beli di DEX, Jual di CEX)
-
-**Tujuan:** mulai $M_{DEX}$ USDT di wallet → akhiri USDT di CEX.
-
-1. **Biaya on-chain pra-swap (approve):**
-
-$$
-Cost^{USDT}_{preSwap}=\sum gas^{USDT}_{approve/dll}
-$$
-
-2. **Swap di DEX (USDT → Token):**
-
-$$
-T_{out}=\text{DexQuote}(M_{DEX})
-$$
-
-3. **Biaya on-chain kirim token ke CEX (network transfer):**
-
-$$
-Cost^{USDT}_{sendToken}=\sum gas^{USDT}_{transfer}
-$$
-
-4. **Jual token di CEX (taker):**
-
-$$
-USDT_{cex}=T_{out}\cdot P^{CEX}_{T/USDT}\cdot (1-f^{CEX}_{trade})
-$$
-
-5. **PNL & PNL% (finish di CEX):**
-
-$$
-PNL = USDT_{cex} - M_{DEX} - Cost^{USDT}_{preSwap} - Cost^{USDT}_{sendToken}
-$$
-
-$$
-PNL\%=\frac{PNL}{M_{DEX}}\times 100\%
-$$
-
----
-
-# 5) Multi-Modal (modal kiri/kanan berbeda)
-
-Karena $\text{DexQuote}(\cdot)$ tergantung *amountIn*, untuk **modal berbeda** hasil berbeda. Maka:
-
-* Simulasikan terpisah: $M_{CEX}^{(k)}$ atau $M_{DEX}^{(k)}$ untuk setiap modal k.
-* Untuk **setiap k**, hitung ulang $\text{DexQuote}$ dan seluruh biaya gas (karena jumlah langkah sama, tapi total PNL bisa berubah).
-
----
-
-# 6) Edge Cases (penting)
-
-* **Pair mengandung USDT** (mis. T/USDT): lewati normalisasi.
-* **Pair tidak mengandung USDT**: pakai kurs antar-mata uang (QUOTE→USDT) terbaru per venue/chain.
-* **USDT “tetap”**: bila langkah Anda berakhir USDT, jangan konversi lagi.
-* **Min withdraw / min deposit**: pastikan $T_{wd}$ ≥ minimum CEX.
-* **Slippage tolerance**: jika $\text{DexQuote}$ < batas minOut, anggap gagal.
-* **Biaya fee wd dalam token**: selalu kurangi di unit token, lalu normalisasi ke USDT untuk PNL.
-
----
-
-# 7) Contoh Numerik Singkat (CEX→DEX)
-
-* $M_{CEX}=100$ USDT, $f^{CEX}_{trade}=0.001$ (0.1%)
-* $P^{CEX}_{T/USDT}=2.00$ USDT
-* $WD^{CEX}_T=0.2$ T
-* $DexQuote(T_{wd})=49.5$ USDT (sudah after-fee)
-* Gas approve+swap+send = $Cost^{USDT}=0.7$ USDT
-  Langkah:
-  $T_{in} = 100\times0.999/2 = 49.95$ T
-  $T_{wd} = 49.95-0.2 = 49.75$ T
-  $USDT_{out}=49.5$ USDT
-  $PNL = 49.5-100-0.7=-51.2$ USDT (rugi) → skip.
-
----
-
-# 8) Kode JavaScript (reusable, amount-based)
-
-```js
-// ===== Helper Rate & Gas =====
-function toUSDT(amount, symbol, priceMap) {
-  // priceMap[symbol] = USDT per 1 symbol (misal BNB, ETH, T, dsb)
-  return amount * (priceMap[symbol] || 0);
-}
-function normalizePairPrice_T_per_USDT(price_T_per_QUOTE, quoteSymbol, priceMap) {
-  // price_T_per_QUOTE / (USDT per QUOTE)  => USDT per T
-  const quoteToUSDT = priceMap[quoteSymbol];
-  if (!quoteToUSDT) throw new Error(`No USDT rate for ${quoteSymbol}`);
-  return price_T_per_QUOTE / quoteToUSDT;
-}
-function gasCostUSDT(gasListUSD = []) {
-  // gasListUSD: array biaya gas dalam USDT (sudah dihitung dari gwei*price)
-  return gasListUSD.reduce((a,b)=>a+(+b||0), 0);
-}
-
-// ===== Dex Quote Interface (YOU implement) =====
-// Should return amountOut AFTER pool fee & price impact
-async function dexQuoteAmountOut({chain, dex, path, amountIn}) {
-  // integrasikan ke Kyber/Odos/0x/1inch sesuai chain
-  // return { amountOut, ok: true }
-  return { amountOut: 0, ok: false, reason: 'Not implemented' };
-}
-
-// ===== Direction A: CEX -> DEX =====
-async function cexToDexPNL({
-  modalUSDT,                       // M_CEX
-  cexTradeFee,                     // f_CEX_trade (e.g., 0.001)
-  price_T_per_USDT,                // USDT per 1 T (final, sudah ternormalisasi)
-  wdTokenFee_T,                    // WD fee dalam T (fixed)
-  gasUSDT_preSwap = [],            // [approve, ...]
-  chain, dex, path_T_to_USDT,      // DEX params
-  gasUSDT_swap_send = []           // [swap, transfer USDT], dalam USDT
-}) {
-  // 1) Buy T on CEX
-  const T_in = (modalUSDT * (1 - cexTradeFee)) / price_T_per_USDT;
-
-  // 2) Withdraw T
-  const T_wd = T_in - wdTokenFee_T;
-  if (T_wd <= 0) return { ok:false, reason:'T_wd <= 0 (kalah di WD fee)' };
-
-  // 3) Pre-swap gas
-  const costPre = gasCostUSDT(gasUSDT_preSwap);
-
-  // 4) Swap T->USDT (amount-based)
-  const q = await dexQuoteAmountOut({ chain, dex, path: path_T_to_USDT, amountIn: T_wd });
-  if (!q.ok) return { ok:false, reason: q.reason || 'quote failed' };
-  const USDT_out = q.amountOut;
-
-  // 5) Swap/send gas
-  const costSwapSend = gasCostUSDT(gasUSDT_swap_send);
-
-  // 6) PNL
-  const PNL = USDT_out - modalUSDT - costPre - costSwapSend;
-  const PNLpct = (PNL / modalUSDT) * 100;
-  return { ok:true, dir:'CEX->DEX', T_in, T_wd, USDT_out, costPre, costSwapSend, PNL, PNLpct };
-}
-
-// ===== Direction B: DEX -> CEX =====
-async function dexToCexPNL({
-  modalUSDT,                       // M_DEX
-  cexTradeFee,                     // f_CEX_trade
-  price_T_per_USDT,                // USDT per 1 T (final)
-  gasUSDT_preSwap = [],            // [approve...]
-  chain, dex, path_USDT_to_T,      // DEX params
-  gasUSDT_sendToken = []           // [transfer token ke CEX]
-}) {
-  // 1) Pre-swap gas
-  const costPre = gasCostUSDT(gasUSDT_preSwap);
-
-  // 2) Swap USDT->T
-  const q = await dexQuoteAmountOut({ chain, dex, path: path_USDT_to_T, amountIn: modalUSDT });
-  if (!q.ok) return { ok:false, reason: q.reason || 'quote failed' };
-  const T_out = q.amountOut;
-
-  // 3) Kirim token ke CEX (gas)
-  const costSend = gasCostUSDT(gasUSDT_sendToken);
-
-  // 4) Jual T di CEX (taker)
-  const USDT_cex = T_out * price_T_per_USDT * (1 - cexTradeFee);
-
-  // 5) PNL
-  const PNL = USDT_cex - modalUSDT - costPre - costSend;
-  const PNLpct = (PNL / modalUSDT) * 100;
-  return { ok:true, dir:'DEX->CEX', T_out, USDT_cex, costPre, costSend, PNL, PNLpct };
-}
-
-// ===== Multi-Modal Runner (array modal) =====
-async function simulateMultiModal({
-  modalsUSDT = [50,100,200], // contoh multi modal
-  computeFn,                 // cexToDexPNL atau dexToCexPNL (sudah terikat param lain)
-  minPNLPercent = 0          // filter PNL%
-}) {
-  const results = [];
-  for (const m of modalsUSDT) {
-    const r = await computeFn(m);
-    if (r.ok && r.PNLpct >= minPNLPercent) results.push(r);
-  }
-  return results.sort((a,b)=>b.PNLpct - a.PNLpct);
-}
-```
-
-**Cara pakai (contoh ringkas):**
-
-```js
-// Anggap sudah punya priceMap (USDT per 1 asset) & gasUSD per operasi
-const price_T_per_USDT = 2.0; // atau normalizePairPrice_T_per_USDT(...)
-const cexTradeFee = 0.001;    // 0.1%
-const wdTokenFee_T = 0.2;     // WD fee (T)
-const gasUSDT_preSwap = [0.10];           // approve
-const gasUSDT_swap_send = [0.35, 0.10];   // swap + send USDT
-
-const computeA = (M)=> cexToDexPNL({
-  modalUSDT: M,
-  cexTradeFee,
-  price_T_per_USDT,
-  wdTokenFee_T,
-  gasUSDT_preSwap,
-  chain:'bsc',
-  dex:'kyberswap',
-  path_T_to_USDT: ['T','USDT'],
-  gasUSDT_swap_send
-});
-simulateMultiModal({ modalsUSDT:[50,100,200,500], computeFn: computeA, minPNLPercent: 1 })
-  .then(console.log);
-```
-
----
-
-# 9) Checklist Integrasi ke App Anda
-
-1. **Sumber harga & kurs**:
-
-   * CEX: ticker T/USDT atau T/QUOTE + QUOTE/USDT.
-   * DEX: gunakan *amount-based quote* (Kyber/Odos/0x/1inch) untuk setiap modal.
-2. **Gas per chain**: pakai tabel `gasUSD` per operasi (approve, swap, transfer).
-3. **Fee CEX**: taker fee (persen) + WD fee (fixed token).
-4. **Validasi minimum**: min WD CEX, min deposit CEX, min amountOut (slippage).
-5. **Loop multi-modal**: jalankan untuk $M$ berbeda → bandingkan PNL%.
-
----
-
-# 10) Inti Rumus yang Wajib Diimplementasikan
-
-* **CEX→DEX**
-
-$$
-PNL = \underbrace{\text{DexQuote}\big(T_{in}-WD^{CEX}_T\big)}_{\text{USDT out}} - M_{CEX} - \sum gas^{USDT}
-$$
-
-dengan
-
-$$
-T_{in}=\frac{M_{CEX}(1-f^{CEX}_{trade})}{P^{CEX}_{T/USDT}}
-$$
-
-* **DEX→CEX**
-
-$$
-PNL = \underbrace{\Big(\text{DexQuote}(M_{DEX})\cdot P^{CEX}_{T/USDT}(1-f^{CEX}_{trade})\Big)}_{\text{USDT di CEX}} - M_{DEX} - \sum gas^{USDT}
-$$
-
----
-
-Kalau mau, saya bisa langsung sambungkan fungsi di atas ke struktur data Anda (localStorage: setting, daftar chain, fee WD per CEX, `MULTICHECKER_ALL_GAS_FEES`, dsb.) dan contohkan pemakaian pada 2–3 DEX sekaligus—tinggal Anda sebut struktur objek yang sudah fix di app Anda.
+Fitur-Fitur Utama
+Monitoring Multi-Aset: Memantau banyak pasangan token di berbagai CEX dan DEX secara bersamaan dengan modal untuk qoute DEX berbeda2.
+Manajemen Token (CRUD): Fitur penuh untuk menambah, membaca, memperbarui, dan menghapus token yang akan dipantau.
+Konfigurasi Detail: Pengguna bisa mengatur jeda waktu (delay) API per CEX dan per DEX, serta modal untuk setiap arah transaksi.
+Impor/Ekspor Data: Mendukung backup dan restore data token via file CSV.
+semua settingan kebutuhan app ada di file config.js
+update wallet cex : memungkinan memeriksa status depo dan wd koin sesuai chain pada cex
+
+Algoritma Pemindaian Final (Langkah-demi-Langkah)
+Proses ini dimulai saat pengguna menekan tombol START.
+
+Tahap 1: Inisialisasi dan Persiapan Data (startSCAN & flattenDataKoin)
+Kunci Status "RUN": Aplikasi segera menyimpan status { run: 'YES' } ke localStorage. Ini mencegah pemindaian ganda dan memberitahu tab lain bahwa proses sedang berjalan. UI dinonaktifkan untuk mencegah perubahan konfigurasi selama pemindaian.
+
+Pengambilan Konfigurasi: Semua pengaturan terbaru dari SETTING_SCANNER di localStorage dimuat ke dalam memori, termasuk jeda waktu, filter PNL, dan daftar Chain yang aktif.
+
+"Perataan" Data Token (Langkah Paling Krusial): Ini adalah kunci untuk menangani skenario kompleks. Aplikasi tidak langsung menggunakan data TOKEN_SCANNER Anda. Sebaliknya, ia membuat daftar tugas baru yang "datar" (flatTokens) dengan logika berikut:
+
+Ia akan mengulang setiap token dalam TOKEN_SCANNER.
+Untuk setiap token, ia akan mengulang lagi daftar selectedCexs.
+Hasilnya: Jika satu token memiliki 2 CEX terpilih, aplikasi akan membuat 2 tugas pemindaian terpisah dalam daftar flatTokens.
+Contoh data Anda: Token MDT/BNT akan dipecah menjadi dua tugas: satu untuk GATE dan satu untuk BINANCE.
+Setiap tugas dalam flatTokens berisi semua informasi yang dibutuhkan: satu CEX, satu pasangan token, dan daftar DEX yang relevan beserta modalnya masing-masing.
+Pengurutan Tugas: Daftar tugas flatTokens yang baru dibuat ini diurutkan berdasarkan abjad nama token (A-Z atau Z-A, sesuai pilihan di UI) untuk memastikan urutan pemindaian yang konsisten.
+
+Tahap 2: Orkestrasi Proses Pemindaian (processTokens)
+Pembagian Grup: Daftar flatTokens dibagi menjadi beberapa grup. Jumlah token per grup ditentukan oleh pengaturan KOIN/GRUP di setting.
+
+Loop Per Grup: Aplikasi mulai memproses grup demi grup.
+
+Jeda Antar Grup: Setelah menyelesaikan satu grup, aplikasi akan berhenti sejenak sesuai pengaturan jedaTimeGroup (misalnya, 1500ms) sebelum melanjutkan ke grup berikutnya.
+Update Data Pendukung: Di awal setiap grup, aplikasi memperbarui data penting seperti biaya gas (gas fee) untuk setiap chain dan kurs USDT/IDR.
+Eksekusi Paralel dalam Grup: Token-token di dalam satu grup diproses secara bersamaan (paralel), hingga batas maksimum yang ditentukan oleh scanPerKoin.
+
+Tahap 3: Eksekusi Tugas Inti (Per Pasangan Token-CEX)
+Ini adalah proses yang terjadi untuk setiap tugas di dalam flatTokens. Mari kita gunakan contoh tugas MDT/BNT di CEX GATE.
+
+Pengambilan Harga CEX (getPriceCEX):
+
+Aplikasi mengirim permintaan API ke GATE untuk mendapatkan harga MDT/USDT dan BNT/USDT (menggunakan USDT sebagai mata uang jembatan).
+Ia mengambil harga jual/beli dan volume dari order book.
+Ia juga membaca data dataCexs dari TOKEN_SCANNER untuk mendapatkan biaya penarikan (WD) yang sudah dikonfigurasi untuk MDT dan BNT di GATE. Biaya ini dikonversi ke nilai Dolar.
+Data harga dan volume CEX ini kemudian ditampilkan di kolom paling kiri dan kanan pada tabel UI.
+Loop Per DEX: Setelah mendapatkan harga CEX, aplikasi akan mengulang daftar selectedDexs untuk token ini (contoh: ["odos", "okx"]).
+
+Simulasi Per DEX (getPriceDEX): Untuk setiap DEX (misal, odos):
+
+Baca Modal Spesifik: Aplikasi membaca modal dari dataDexs untuk odos, yaitu { "left": 900, "right": 800 }.
+Jeda Per DEX: Aplikasi menunggu sejenak sesuai jeda yang diatur di setting untuk DEX tersebut.
+Simulasi Arah KIRI (CEX → DEX): a. Kalkulasi Input: Menghitung berapa MDT yang bisa dibeli di GATE dengan modal $900. b. Permintaan Quote: Mengirim permintaan API ke odos untuk mensimulasikan penukaran (swap) sejumlah MDT tersebut menjadi BNT. c. Penanganan Respons: Jika berhasil, ia mendapatkan jumlah BNT yang akan diterima (amount_out) dan estimasi biaya swap (FeeSwap).
+Simulasi Arah KANAN (DEX → CEX): a. Kalkulasi Input: Menghitung berapa BNT yang bisa dibeli di GATE dengan modal $800. b. Permintaan Quote: Mengirim permintaan API ke odos untuk mensimulasikan swap sejumlah BNT tersebut menjadi MDT. c. Penanganan Respons: Mendapatkan hasil amount_out MDT dan FeeSwap.
+Penanganan Error dan Fallback: Jika API DEX (misalnya odos) mengembalikan error (seperti Insufficient liquidity atau Timeout), aplikasi akan menampilkan pesan error di UI. Untuk beberapa DEX dan jenis error tertentu (misalnya error 500 dari Odos), aplikasi memiliki mekanisme fallback dengan mencoba API lain (getPriceSWOOP) untuk mendapatkan harga alternatif.
+Kalkulasi PNL dan Update UI (ResultEksekusi & DisplayPNL):
+
+Segera setelah hasil dari simulasi DEX diterima (baik KIRI maupun KANAN), fungsi ini dipanggil.
+Menghitung Nilai Akhir: Jumlah token output (amount_out) dikonversi ke nilai Dolar menggunakan harga CEX yang didapat di langkah 1. (Contoh: jumlah_BNT_diterima * harga_BNT/USDT_di_GATE).
+Menghitung Biaya Total: Biaya Total = Biaya WD CEX + Biaya Trading CEX (0.14%) + Biaya Swap DEX.
+Menghitung PNL: PNL = (Nilai Akhir dalam Dolar) - (Modal Awal + Biaya Total).
+Update UI: Sel yang sesuai di tabel diperbarui dengan harga swap dari DEX dan hasil PNL.
+Sinyal: Jika PNL positif dan melebihi filter, sel diwarnai hijau, suara diputar, dan notifikasi Telegram dikirim.
+Proses pada Tahap 3 ini diulang untuk setiap DEX (okx, dst.) dan kemudian untuk setiap tugas lain dalam flatTokens (misalnya, tugas MDT/BNT di BINANCE).
+
+Tahap 4: Penyelesaian
+Setelah semua tugas dalam flatTokens selesai diproses, aplikasi akan mengubah status kembali ke { run: 'NO' }, mengaktifkan kembali UI, dan menampilkan status "SELESAI" pada progress bar.
+
+Semoga penjelasan super mendetail ini memberikan gambaran paling lengkap mengenai cara kerja algoritma pemindaiannya.
