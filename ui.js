@@ -12,17 +12,17 @@ function applyControlsFor(state) {
     const $stop   = $('#stopSCAN');
     const $import = $('#uploadJSON');
     const $export = $('a[onclick="downloadTokenScannerCSV()"]');
-
+    
     function setDisabled($els, disabled) {
         $els.prop('disabled', disabled)
             .css('opacity', disabled ? '0.5' : '')
             .css('pointer-events', disabled ? 'none' : '');
     }
-
+    
     // lock everything by default
     setDisabled($form.find('input, select, button'), true);
     setDisabled($start.add($stop).add($export).add($import), true);
-
+    
     if (state === 'READY') {
         setDisabled($form.find('input, select, button'), false);
         setDisabled($start.add($stop).add($export).add($import), false);
@@ -54,7 +54,7 @@ function loadKointoTable(filteredData) {
 
     const fragment = document.createDocumentFragment();
     const maxSlots = 4;
-
+   
     filteredData.forEach((data, index) => {
         const row = document.createElement('tr');
 
@@ -149,21 +149,22 @@ function loadKointoTable(filteredData) {
         tdDetail.style.border='1px solid black';
         const chainShort = (data.chain || '').substring(0,3).toUpperCase();
         tdDetail.innerHTML = `
-            [${index + 1}] <span style="color: ${warnaCex}; font-weight:bolder;">${data.cex} </span>
+            [${index + 1}] 
+            <span style="color: ${warnaCex}; font-weight:bolder;">${data.cex} </span> 
             on <span style="color: ${warnaChain}; font-weight:bolder;">${chainShort} </span><br/>
-            <span class="uk-text-secondary uk-text-bolder">${linkToken} VS ${linkPair}</span>
-            <span id="EditMulti-${data.id}"
-                data-id="${data.id}"
-                data-cex="${data.cex}"
-                data-coin="${data.symbol_in}"
-                title="UBAH DATA KOIN"
-                uk-icon="icon: pencil; ratio: 0.6"
-                class="uk-text-secondary uk-text-bolder"
+            <span style="color: ${warnaChain}; font-weight:bolder;">${linkToken}</span> ⇆ <span style="color: ${warnaChain}; font-weight:bolder;">${linkPair}</span>
+            <span id="EditMulti-${data.id}"  
+                data-id="${data.id}" 
+                data-cex="${data.cex}" 
+                data-coin="${data.symbol_in}"  
+                title="UBAH DATA KOIN" 
+                uk-icon="icon: pencil; ratio: 0.6"   
+                class="uk-text-secondary uk-text-bolder"  
                 style="cursor:pointer"></span> </br>
-            <span class="uk-text-bolder">${WD_TOKEN} ~ ${DP_TOKEN}</span> |
+            <span class="uk-text-bolder">${WD_TOKEN} ~ ${DP_TOKEN}</span> | 
             <span class="uk-text-bolder">${WD_PAIR} ~ ${DP_PAIR}</span><br/>
-            <span class="uk-text-primary uk-text-bolder">${(data.symbol_in||'').toUpperCase()} [${data.feeWDToken}]</span> ${linkSCtoken} : ${linkStokToken} <br/>
-            <span class="uk-text-primary uk-text-bolder">${(data.symbol_out||'').toUpperCase()} [${data.feeWDPair}]</span> ${linkSCpair} : ${linkStokPair}<br/>
+            <span class="uk-text-primary uk-text-bolder">${(data.symbol_in||'').toUpperCase()} </span> ${linkSCtoken} : ${linkStokToken} <br/>
+            <span class="uk-text-primary uk-text-bolder">${(data.symbol_out||'').toUpperCase()} </span> ${linkSCpair} : ${linkStokPair}<br/>
              ${linkUNIDEX} ${linkOKDEX} ${linkDEFIL} ${linkLiFi}
         `;
         row.appendChild(tdDetail);
@@ -290,9 +291,9 @@ function generateInputCheckbox(items, containerId, idPrefix, labelText, style, t
   const persistedFilterCEX = Array.isArray(settingData.FilterCEXs)
     ? settingData.FilterCEXs.map(x => String(x).toUpperCase())
     : [];
-
+  
   const hasFilterCEX = persistedFilterCEX.length > 0;
-
+  
   const wrapper = $('<div style="display:flex; flex-wrap:wrap; gap:10px;"></div>');
 
   itemsArr.forEach(item => {
@@ -460,7 +461,7 @@ function updateTableVolCEX(finalResult, cex) {
 
     const volumesBuyPair = isIndodax
         ? finalResult.volumes_buyPair.slice().sort((a, b) => b.price - a.price)
-        : finalResult.volumes_buyPair.slice().sort((a, b) => b.price - a.price);
+        : finalResult.volumes_buyPair.slice().sort((a, b) => b.price - a.price); 
 
     const volumesSellToken = isIndodax
         ? finalResult.volumes_sellToken
@@ -482,50 +483,120 @@ function updateTableVolCEX(finalResult, cex) {
 /**
  * Displays the final PNL result in the UI.
  */
-function DisplayPNL(profitLoss, cex, Name_in, NameX, totalFee, modal, dextype, priceBuyToken_CEX, priceSellToken_CEX, priceBuyPair_CEX, priceSellPair_CEX, FeeSwap, FeeWD, sc_input, sc_output, Name_out, totalValue, totalModal, conclusion, selisih,nameChain,codeChain, trx, profitLossPercent,vol, DataDEX) {
-    var filterPNLValue = parseFloat(SavedSettingData.filterPNL) || 1;
-    var nickname = SavedSettingData.nickname;
+function DisplayPNL(
+  profitLoss, cex, Name_in, NameX, totalFee, modal, dextype,
+  priceBuyToken_CEX, priceSellToken_CEX, priceBuyPair_CEX, priceSellPair_CEX,
+  FeeSwap, FeeWD, sc_input, sc_output, Name_out,
+  totalValue, totalModal, conclusion, selisih, nameChain, codeChain, trx,
+  profitLossPercent, vol, DataDEX
+) {
+  // --- Konfigurasi & filter
+  const filterPNLValue = parseFloat(SavedSettingData?.filterPNL) || 0; // samakan perilaku “0 = no floor”
+  const nickname = SavedSettingData?.nickname || '';
+  const checkVol = $('#checkVOL').is(':checked');
+  const chainName = String(nameChain || '').toLowerCase();
+  const chainConfig = (window.CONFIG_CHAINS || {})[chainName];
+  if (!chainConfig) {
+    console.error(`❌ Chain configuration not found for: '${chainName}'`);
+    return;
+  }
 
-    const IdCELL = `${cex.toUpperCase()}_${dextype.toUpperCase()}_${NameX}_${(nameChain).toUpperCase()}`;
-    const rowCell = $(`#${IdCELL}`);
-    const resultCell = $(`#RESULT_${IdCELL}`);
-    const buyCell = $(`#BUY_${IdCELL}`);
-    const sellCell = $(`#SELL_${IdCELL}`);
+  // --- ID konsisten
+  const IdCELL = `${cex.toUpperCase()}_${dextype.toUpperCase()}_${NameX}_${String(chainConfig.Nama_Chain || chainName).toUpperCase()}`;
+  const rowCell = $(`#${IdCELL}`);
+  const resultCell = $(`#RESULT_${IdCELL}`);
+  const buyCell = $(`#BUY_${IdCELL}`);
+  const sellCell = $(`#SELL_${IdCELL}`);
 
-    // Set CEX prices in the cell
-    if (trx === 'TokentoPair') {
-        buyCell.html(`<label title="${cex} BUY: USDT->${Name_in}"> ${formatPrice(priceBuyToken_CEX)}</label>`);
-        sellCell.html(`<label title="${cex} SELL: ${Name_out}->USDT"> ${formatPrice(priceSellPair_CEX)}</label>`);
-    } else { // PairtoToken
-        buyCell.html(`<label title="${cex} BUY: USDT->${Name_out}"> ${formatPrice(priceBuyPair_CEX)}</label>`);
-        sellCell.html(`<label title="${cex} SELL: ${Name_in}->USDT"> ${formatPrice(priceSellToken_CEX)}</label>`);
+  // --- Harga CEX pada sel + link market (seperti versi lama)
+  const urlsCEXToken = GeturlExchanger(cex.toUpperCase(), Name_in, Name_out); // {tradeToken, tradePair, depositUrl, withdrawUrl}
+  const buyLink  = urlsCEXToken.tradeToken;
+  const sellLink = urlsCEXToken.tradePair;
+
+  if (trx === 'TokentoPair') {
+    buyCell.text(` ${formatPrice(priceBuyToken_CEX)}`);
+    sellCell.text(` ${formatPrice(priceSellPair_CEX)}`);
+  } else { // PairtoToken
+    buyCell.text(` ${formatPrice(priceBuyPair_CEX)}`);
+    sellCell.text(` ${formatPrice(priceSellToken_CEX)}`);
+  }
+  if (!buyCell.parent().is("a"))  buyCell.wrap('<a href="'+buyLink+'" target="_blank"></a>');
+  if (!sellCell.parent().is("a")) sellCell.wrap('<a href="'+sellLink+'" target="_blank"></a>');
+
+  // --- Perhitungan dasar
+  const totalGet = parseFloat(totalValue) - parseFloat(modal);
+  const pnl = parseFloat(profitLoss);
+  const feeAll = parseFloat(totalFee);
+  const volOK = parseFloat(vol) >= parseFloat(modal);
+
+  // === Highlight: samakan logika lama (PNL>feeAll ATAU PNL>filter), plus opsi volume
+  const passPNL = (filterPNLValue === 0 && (totalValue > totalModal)) || ((totalValue - totalModal) > filterPNLValue) || (pnl > feeAll);
+  const isHighlight = (!checkVol && passPNL) || (checkVol && passPNL && volOK);
+
+  if (isHighlight) {
+    const sinyals = `<a href="#SWAP_${cex.toUpperCase()}_${dextype.toUpperCase()}_${NameX}_${nameChain.toUpperCase()}" class='link-class'>
+      ${cex.toUpperCase()} VS ${dextype.toUpperCase()} : ${NameX} (${pnl.toFixed(2)}$)</a>`;
+    toastr.success(sinyals);
+
+    rowCell.attr("style",
+      "background-color:#94fa95!important;font-weight:bolder!important;color:black!important;vertical-align:middle!important;text-align:center!important;"
+    );
+
+    // DP/WD sesuai arah
+    let htmlFee = '';
+    if (trx === "TokentoPair") {
+      htmlFee = `<span style="color:#0f04e2!important;">FeeWD: ${FeeWD.toFixed(2)}$</span> | ${createLink(urlsCEXToken.withdrawUrl,'WD')}<br/>`;
+    } else {
+      htmlFee = `<span style="color:#0f04e2!important;">FeeWD: ${FeeWD.toFixed(2)}$</span> | ${createLink(urlsCEXToken.depositUrl,'DP')}<br/>`;
     }
 
-    const totalGet = totalValue - modal;
-    const isHighlight = profitLoss > filterPNLValue;
+    resultCell.html(`
+      ${htmlFee}
+      <span style="color:#d20000;">All: ${feeAll.toFixed(2)}$</span>
+      <span style="color:#1e87f0;">SW: ${FeeSwap.toFixed(2)}$</span><br/>
+      <span style="color:#444;">GT: ${totalGet.toFixed(2)}$</span>
+      <span style="color:#444;">PNL: ${pnl.toFixed(2)}$</span><br/>
+    `);
 
-    if (isHighlight) {
-        const sinyals = `<a href="#${IdCELL}" class='link-class'>${cex.toUpperCase()} VS ${dextype.toUpperCase()} : ${NameX} (${profitLoss.toFixed(2)}$)</a>`;
-        toastr.success(sinyals);
-        rowCell.attr("style", "background-color: #94fa95 !important; font-weight: bolder !important; color: black !important; vertical-align: middle !important; text-align: center !important;");
-        InfoSinyal(dextype.toLowerCase(), NameX, profitLoss, totalFee, cex.toUpperCase(), Name_in, Name_out, profitLossPercent, modal, nameChain, codeChain, trx);
+    InfoSinyal(dextype.toLowerCase(), NameX, pnl, feeAll, cex.toUpperCase(),
+      Name_in, Name_out, profitLossPercent, modal, nameChain, codeChain, trx);
+  } else {
+    resultCell.html(`
+      <span style="color:black;" title="FEE WD CEX">FeeWD : ${FeeWD.toFixed(2)}$</span><br/>
+      <span class="uk-text-danger" title="FEE ALL">ALL:${feeAll.toFixed(2)}$</span>
+      <span class="uk-text-primary" title="FEE SWAP"> ${FeeSwap.toFixed(2)}$</span><br/>
+      <span class="uk-text-success" title="GET BRUTO">GT:${totalGet.toFixed(2)}$</span>
+      <span class="uk-text-warning" title="GET NETTO / PNL">${pnl.toFixed(2)}$</span>
+    `);
+    if (pnl > feeAll) {
+      InfoSinyal(dextype.toLowerCase(), NameX, pnl, feeAll, cex.toUpperCase(),
+        Name_in, Name_out, profitLossPercent, modal, nameChain, codeChain, trx);
     }
+  }
 
-    let htmlResult = `
-        <span style="color:#0f04e2 !important;">FeeWD: ${FeeWD.toFixed(2)}$</span> |
-        <span style="color: #d20000;">All: ${totalFee.toFixed(2)}$</span>
-        <span style="color: #1e87f0;">SW: ${FeeSwap.toFixed(2)}$</span><br/>
-        <span style="color: #444;">GT: ${totalGet.toFixed(2)}$</span>
-        <span style="color: #444;">PNL: ${profitLoss.toFixed(2)}$</span><br/>
-    `;
-    resultCell.html(htmlResult);
+  // === Telegram: pastikan harga BUY/SELL sesuai arah (perbaikan penting)
+  if (pnl > 0.25) {
+    const direction = (trx === 'TokentoPair') ? 'cex_to_dex' : 'dex_to_cex';
+    const priceBUY  = (direction === 'cex_to_dex') ? priceBuyToken_CEX  : priceSellToken_CEX; // BUY di sisi asal
+    const priceSELL = (direction === 'cex_to_dex') ? priceSellPair_CEX : priceBuyPair_CEX;   // SELL di sisi tujuan
 
-    if (profitLoss > 0.25) {
-        const tokenData = { symbol: Name_in, pairSymbol: Name_out, contractAddress: sc_input, pairContractAddress: sc_output, chain: nameChain };
-        MultisendMessage(cex, dextype.toUpperCase(), tokenData, modal, profitLoss, priceBuyToken_CEX, priceSellPair_CEX, FeeSwap, FeeWD, totalFee, nickname, trx);
-    }
+    const tokenData = {
+      symbol: Name_in,
+      pairSymbol: Name_out,
+      contractAddress: sc_input,
+      pairContractAddress: sc_output,
+      chain: nameChain
+    };
+
+    MultisendMessage(
+      cex, dextype.toUpperCase(),
+      tokenData, modal, pnl,
+      priceBUY, priceSELL,
+      FeeSwap, FeeWD, feeAll,
+      nickname, direction
+    );
+  }
 }
-
 
 /**
  * Renders a new signal in the top signal container.
@@ -612,7 +683,7 @@ function openEditModalById(id) {
     const $ctx = $('#FormEditKoinModal');
     const $sel = $ctx.find('#mgrChain');
     populateChainSelect($sel, token.chain);
-
+    
     try { buildCexCheckboxForKoin(token); } catch (e) { console.warn('Build CEX gagal:', e); }
     try { buildDexCheckboxForKoin(token); } catch (e) { console.warn('Build DEX gagal:', e); }
 
@@ -728,7 +799,7 @@ function buildDexCheckboxForKoin(token = {}) {
  * Disables all form inputs.
  */
 function form_off() {
-    $('input, select, textarea, button').prop('disabled', true);
+    $('input, select, textarea, button').prop('disabled', true); 
 }
 
 /**
