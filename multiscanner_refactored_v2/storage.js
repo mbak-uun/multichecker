@@ -1,6 +1,6 @@
 const storagePrefix = "MULTISCANNER_";
 
-export function getFromLocalStorage(key, defaultValue) {
+function getFromLocalStorage(key, defaultValue) {
     try {
         const raw = localStorage.getItem(storagePrefix + key);
         if (!raw) return defaultValue;
@@ -11,34 +11,34 @@ export function getFromLocalStorage(key, defaultValue) {
     }
 }
 
-export function saveToLocalStorage(key, value) {
+function saveToLocalStorage(key, value) {
     try {
         localStorage.setItem(storagePrefix + key, JSON.stringify(value));
     } catch (error) {
         console.error("Error saat menyimpan data:", error);
         if (error.name === "QuotaExceededError") {
-            toastr.error("MEMORY BROWSER PENUH!!! Sisa ruang tidak mencukupi.");
+            toastr.error("MEMORY BROWSER PENUH!!!");
         } else {
             toastr.error("Terjadi kesalahan tak terduga saat menyimpan data.");
         }
     }
 }
 
-export function removeFromLocalStorage(key) {
+function removeFromLocalStorage(key) {
     localStorage.removeItem(storagePrefix + key);
 }
 
-export function setLastAction(action) {
+function setLastAction(action) {
     const now = new Date();
     const formattedTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')} | ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`;
     const lastAction = { time: formattedTime, action: action };
     saveToLocalStorage("HISTORY", lastAction);
-    try {
-     $('#infoAPP').html(`${lastAction.action} at ${lastAction.time}`);
-    } catch(e) {/*UI might not be ready*/}
+    if(document.getElementById('infoAPP')) {
+        document.getElementById('infoAPP').textContent = `${lastAction.action} at ${lastAction.time}`;
+    }
 }
 
-export function downloadTokenScannerCSV() {
+function downloadTokenScannerCSV() {
     const tokenData = getFromLocalStorage("TOKEN_SCANNER", []);
     const headers = ["id", "no", "symbol_in", "symbol_out", "chain", "sc_in", "des_in", "sc_out", "des_out", "dataCexs", "dataDexs", "status", "selectedCexs", "selectedDexs"];
 
@@ -64,7 +64,7 @@ export function downloadTokenScannerCSV() {
     setLastAction("EXPORT DATA KOIN");
 }
 
-export function uploadTokenScannerCSV(event) {
+function uploadTokenScannerCSV(event) {
     const file = event.target.files[0];
     if (!file) return;
 

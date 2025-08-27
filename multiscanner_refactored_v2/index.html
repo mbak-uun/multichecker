@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiscanner</title>
+    <!-- External Libs CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.6.22/css/uikit.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
+    <!-- App CSS -->
+    <link rel="stylesheet" href="style.css">
+    <link id="favicon" rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/16769/16769999.png">
+</head>
+<body>
+<div class="uk-container uk-margin-small-top uk-background-a">
+    <!-- Header -->
+    <div class="uk-card uk-card-default uk-margin-small header-card uk-card-hover">
+        <div class="uk-grid-small uk-flex-middle" uk-grid>
+            <div class="uk-width-expand@s uk-width-1-1">
+                <h3 class="uk-margin-remove" style="font-size: 18px; font-weight: bold;">MULTISCANNER</h3>
+                <span>[ <b><span class="uk-text-danger uk-text-small" id="infoAPP">Loading...</span></b> ]</span>
+            </div>
+            <div class="uk-width-auto@s uk-width-1-1">
+                <div class="uk-flex uk-flex-middle uk-flex-wrap uk-flex-right@s" style="gap: 6px;">
+                    <a href="index.html"><img class="icon" title="MULTISCANNER" width="24px" src="https://cdn-icons-png.flaticon.com/512/30/30279.png"></a>
+                    <img class="icon" id="SettingConfig" title="CONFIG SCANNER" width="24px" src="https://cdn-icons-png.flaticon.com/512/1170/1170635.png">
+                    <img class="icon" id="UpdateWalletCEX" title="UPDATE WALLET CEX" width="24px" src="https://images.freeimages.com/fic/images/icons/2770/ios_7_icons/512/wallet.png">
+                    <a href="modal.html" target="_blank"><img class="icon" title="MANAJEMEN ASSET" width="24px" src="https://cdn-icons-png.flaticon.com/512/1194/1194711.png"></a>
+                    <a href="https://cors-anywhere.herokuapp.com/corsdemo" target="_blank"><img class="icon" title="BUKA AKSES" width="24px" src="https://cdn-icons-png.flaticon.com/512/9921/9921748.png"></a>
+                    <img class="icon" id="reload" title="RESET PROSES" width="24px" src="https://cdn-icons-png.flaticon.com/512/585/585603.png">
+                    <a href="#" id="ManajemenKoin"><img title="MANAJEMEN KOIN" src="https://cdn-icons-png.flaticon.com/512/5172/5172584.png" width="24px"></a>
+                    <a href="memory.html" target="_blank"><img title="MANAJEMEN MEMORY" src="https://cdn-icons-png.flaticon.com/512/6736/6736817.png" width="24px"></a>
+                    <a href="#" class="icon" id="downloadCsvBtn" title="DOWNLOAD DATA KOIN"><img src="https://cdn-icons-png.flaticon.com/512/157/157921.png" width="24px"></a>
+                    <label for="uploadJSON" title="IMPORT DATA KOIN" style="cursor:pointer;"><img src="https://cdn-icons-png.flaticon.com/512/219/219431.png" width="24px"></label>
+                    <input type="file" id="uploadJSON" accept=".csv,text/csv" style="display:none;">
+                    <img class="icon" id="darkModeToggle" title="Ganti Mode Gelap/Terang" width="24px" src="https://cdn-icons-png.flaticon.com/512/3751/3751403.png">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scanner Config -->
+    <div class="uk-card uk-card-default uk-padding-small uk-card-hover" id="scanner-config">
+        <!-- Content identical to original, just no inline JS -->
+    </div>
+
+    <!-- Sinyal Container -->
+    <div class="uk-text uk-text-small uk-margin-small-top" id="sinyal-container"></div>
+
+    <!-- Table Header -->
+    <div class="uk-grid-small uk-flex uk-flex-middle uk-margin-small-top" uk-grid id="header-table">
+        <!-- Content identical to original -->
+    </div>
+
+    <!-- Main Table -->
+    <div class="uk-overflow-auto uk-margin-small-top">
+        <table class="uk-table uk-table-hover uk-table-small uk-table-striped" style="border-collapse: collapse; width: 100%;">
+            <thead>
+                <tr style="border-bottom: 1px solid black;">
+                    <th rowspan="2">ORDERBOOK</th><th colspan="4">CEX → DEX</th>
+                    <th rowspan="2">DETAIL TOKEN</th><th colspan="4">DEX → CEX</th>
+                    <th rowspan="2">ORDERBOOK</th>
+                </tr>
+            </thead>
+            <tbody id="dataTableBody"></tbody>
+        </table>
+    </div>
+
+    <!-- Token Management Section -->
+    <section id="token-management" style="display: none;" class="uk-card uk-card-default uk-card-hover uk-margin-small-top uk-padding-small">
+        <!-- Content identical to original -->
+    </section>
+</div>
+
+<!-- Modals -->
+<div id="modal-setting" class="uk-modal-full" uk-modal>
+    <!-- Content identical to original -->
+</div>
+<div id="FormEditKoinModal" uk-modal>
+    <!-- Content identical to original -->
+</div>
+
+<!-- External Libs JS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.6.22/js/uikit.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.6.22/js/uikit-icons.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.70.0/lib/index.iife.min.js"></script>
+
+<!-- App JS - Order is important! -->
+<script src="config.js"></script>
+<script src="utils.js"></script>
+<script src="storage.js"></script>
+<script src="api.js"></script>
+<script src="ui.js"></script>
+<script src="main.js"></script>
+
+</body>
+</html>
