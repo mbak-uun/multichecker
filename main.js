@@ -164,12 +164,14 @@ function refreshTokensTable() {
 
 // --- Main Execution ---
 
-$(document).ready(function() {  
+$(document).ready(function() {
     // Initialize app state from localStorage
     const config = getFromLocalStorage('STATUS_RUN', {});
     if (config.run === "YES") {
+        form_off();
         $('#startSCAN').prop('disabled', true).text('Running...').addClass('uk-button-disabled');
-        $('#stopSCAN').show();
+        $('#stopSCAN').show().prop('disabled', false); // Ensure stop is usable
+        $('#reload').prop('disabled', false); // Ensure reload is usable
         $('#infoAPP').html('⚠️ Proses sebelumnya tidak selesai. Tekan tombol <b>RESET PROSES</b> untuk memulai ulang.').show();
     } else {
         $('#startSCAN').prop('disabled', false).text('Start').removeClass('uk-button-disabled');
@@ -182,12 +184,12 @@ $(document).ready(function() {
     } else {
         $('body').removeClass('dark-mode uk-dark');
     }
-    
+
     $('title').text("MULTISCANNER");
     $('#namachain').text("MULTISCANNER");
     $('#sinyal-container').css('color',"black");
     $('h4#daftar,h4#judulmanajemenkoin').css({ 'color': 'white', 'background': `linear-gradient(to right, #5c9513, #ffffff)`, 'padding-left': '7px','border-radius': '5px' });
-    
+
     bootApp();
     updateDarkIcon(isDark);
 
@@ -230,7 +232,7 @@ $(document).ready(function() {
         window.filteredTokens = sortedData;
         loadKointoTable(window.filteredTokens, false);
     });
-   
+
     $('#btn-save-setting').on('click', function() {
         const nickname = $('#user').val().trim();
         let filterPNL = parseFloat($('#inFilterPNL').val());
@@ -286,7 +288,7 @@ $(document).ready(function() {
     UIkit.util.on('#modal-setting', 'show', function () {
         form_on();
     });
-                           
+
     $('#searchInput').on('input', function() {
         const searchValue = $(this).val().toLowerCase();
         $('#dataTableBody tr').filter(function() {
@@ -309,7 +311,7 @@ $(document).ready(function() {
         // Always set run to NO on reload to ensure a clean state
         saveToLocalStorage('STATUS_RUN', { run: "NO" });
         location.reload();
-    });     
+    });
 
     $("#stopSCAN").click(function () {
         const config = getFromLocalStorage('STATUS_RUN', {});
@@ -323,10 +325,10 @@ $(document).ready(function() {
             alert("⚠️ SCAN SUDAH NONAKTIF");
         }
     });
-        
+
     $("#SettingConfig").on("click", function () {
         UIkit.modal("#modal-setting").show();
-        
+
         // Generate CEX delay inputs
         const cexList = Object.keys(CONFIG_CEX || {});
         let cexDelayHtml = '<h4>Jeda CEX</h4>';
@@ -380,7 +382,7 @@ $(document).ready(function() {
             const dex = $(this).data('dex');
             if (modalDexs[dex] !== undefined) $(this).val(modalDexs[dex]);
         });
-        
+
         const apiKeys = appSettings.api_keys || {};
         $('.cex-api-key-input').each(function() {
             const cex = $(this).data('cex');
@@ -401,7 +403,7 @@ $(document).ready(function() {
     });
 
     $('#searchMgr').on('input', renderTokenManagementList);
-    
+
     $('#btnNewToken').on('click', () => {
       const keys = Object.keys(window.CONFIG_CHAINS || {});
       const firstChainWithDex = keys.find(k => {
@@ -418,7 +420,7 @@ $(document).ready(function() {
 
       const $sel = $('#FormEditKoinModal #mgrChain');
       populateChainSelect($sel, empty.chain);
-      
+
       const currentChain = String($sel.val() || empty.chain).toLowerCase();
       const baseToken = { ...empty, chain: currentChain };
 
@@ -437,7 +439,7 @@ $(document).ready(function() {
         if (confirm("APAKAH ANDA INGIN UPDATE WALLET EXCHANGER?")) {
             checkAllCEXWallets();
         }
-    }); 
+    });
 
     $("#startSCAN").click(function () {
         const ConfigScan = getFromLocalStorage('SETTING_SCANNER', {}) || {};
@@ -488,7 +490,7 @@ $(document).ready(function() {
         let jedaKoin      = parseInt(ConfigScan.jedaKoin || 500);
         let jedaTimeGroup = parseInt(ConfigScan.jedaTimeGroup || 1000);
         let speedScan = parseInt(getFromLocalStorage('SavedSettingData.speedScan', 500)) * 1000;
-        
+
         const jedaDexMap = (window.SavedSettingData || getFromLocalStorage('SETTING_SCANNER', {}) || {}).JedaDexs || {};
         const getJedaDex = (dx) => parseInt(jedaDexMap[dx]) || 0;
 
@@ -525,7 +527,7 @@ $(document).ready(function() {
                             resolve();
                             return;
                         }
-                        
+
                         if (token.dexs && Array.isArray(token.dexs)) {
                             token.dexs.forEach((dexData) => {
                                 const dex = dexData.dex.toLowerCase();
@@ -600,16 +602,16 @@ $(document).ready(function() {
 
             for (let groupIndex = 0; groupIndex < tokenGroups.length; groupIndex++) {
                 let groupTokens = tokenGroups[groupIndex];
-                
+
                 if ($('#autoScrollCheckbox').is(':checked')) {
                     const first = groupTokens[0];
                     const rowId = `DETAIL_${first.cex.toUpperCase()}_${first.symbol_in.toUpperCase()}_${first.symbol_out.toUpperCase()}_${first.chain.toUpperCase()}`.replace(/[^A-Z0-9_]/g,'');
                     const target = document.getElementById(rowId);
                     if(target) target.scrollIntoView({ behavior:'smooth', block:'center' });
                 }
-                
+
                 await Promise.all(groupTokens.map(processRequest));
-                
+
                 updateProgress((groupIndex + 1) * scanPerKoin, flatTokens.length, startTime, 'GROUP');
                 await delay(jedaTimeGroup);
             }
@@ -651,7 +653,7 @@ $(document).ready(function() {
 
         let tokens = getFromLocalStorage('TOKEN_SCANNER', []);
         const idx = tokens.findIndex(t => String(t.id) === String(id));
-        
+
         const buildDataCexs = (prev = {}) => {
             const obj = {};
             (updatedToken.selectedCexs || []).forEach(cx => {
@@ -759,7 +761,7 @@ function ResultEksekusi(amount_out, FeeSwap, sc_input, sc_output, cex, Modal, am
     var FeeWD = parseFloat(feeWD);
     var FeeTrade = parseFloat(0.0014 * Modal);
 
-    FeeSwap = parseFloat(FeeSwap) || 0;    
+    FeeSwap = parseFloat(FeeSwap) || 0;
     Modal = parseFloat(Modal) || 0;
     amount_in = parseFloat(amount_in) || 0;
     amount_out = parseFloat(amount_out) || 0;
@@ -770,17 +772,17 @@ function ResultEksekusi(amount_out, FeeSwap, sc_input, sc_output, cex, Modal, am
 
     var rateSellTokenDEX = (amount_out * priceSellPair_CEX) / amount_in;
     var rateBuyPairDEX = (amount_in * priceBuyToken_CEX) / amount_out;
-    
+
     var totalModal = Modal + FeeSwap + FeeWD + FeeTrade;
     var totalFee = FeeSwap + FeeWD + FeeTrade;
-    
+
     let totalValue = 0;
     if (trx === "TokentoPair") {
         totalValue = amount_out * priceSellPair_CEX;
     } else { // PairtoToken
         totalValue = amount_out * priceSellToken_CEX;
     }
-    
+
     var profitLoss = totalValue - totalModal;
     var profitLossPercent = totalModal !== 0 ? (profitLoss / totalModal) * 100 : 0;
 
@@ -801,7 +803,7 @@ function ResultEksekusi(amount_out, FeeSwap, sc_input, sc_output, cex, Modal, am
     }
 
     let IdCELL = `${cex.toUpperCase()}_${dextype.toUpperCase()}_${NameX}_${(nameChain).toUpperCase()}`;
-    var linkDEX = generateDexLink(dextype,nameChain,codeChain,Name_in,sc_input, Name_out, sc_output);   
+    var linkDEX = generateDexLink(dextype,nameChain,codeChain,Name_in,sc_input, Name_out, sc_output);
 
     if (!linkDEX) {
         console.error(`DEX Type "${dextype}" tidak valid atau belum didukung.`);
@@ -829,7 +831,7 @@ function ResultEksekusi(amount_out, FeeSwap, sc_input, sc_output, cex, Modal, am
          if (trx === "TokentoPair") {
             titleInfo += ` ${formatPrice(rateSellTokenDEX)} ${Name_in}/${Name_out}`;
             titleInfo += ` | ${toIDR(rateSellTokenDEX)}`;
-            RateSwap = `<label class="uk-text-primary" title="${titleInfo}">${formatPrice(rateSellTokenDEX)}</label>`;                   
+            RateSwap = `<label class="uk-text-primary" title="${titleInfo}">${formatPrice(rateSellTokenDEX)}</label>`;
         } else {
             titleInfo += ` ${formatPrice(rateBuyPairDEX/priceBuyToken_CEX)} ${Name_in}/${Name_out}`;
             titleInfo += ` | ${toIDR(rateBuyPairDEX)}`;
