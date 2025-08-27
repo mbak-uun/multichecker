@@ -750,3 +750,88 @@ function getManagedChains() {
     const settings = getFromLocalStorage('SETTING_SCANNER', {});
     return settings.AllChains || Object.keys(CONFIG_CHAINS);
 }
+
+/**
+ * Calculates the final PNL and triggers the UI update.
+ */
+function ResultEksekusi(amount_out, FeeSwap, sc_input, sc_output, cex, Modal, amount_in, priceBuyToken_CEX, priceSellToken_CEX, priceBuyPair_CEX, priceSellPair_CEX, Name_in, Name_out, feeWD, dextype,nameChain,codeChain, trx, vol,DataDEX) {
+    var NameX = Name_in + "_" + Name_out;
+    var FeeWD = parseFloat(feeWD);
+    var FeeTrade = parseFloat(0.0014 * Modal);
+
+    FeeSwap = parseFloat(FeeSwap);
+    Modal = parseFloat(Modal);
+    amount_in = parseFloat(amount_in);
+    amount_out = parseFloat(amount_out);
+    priceBuyToken_CEX = parseFloat(priceBuyToken_CEX);
+    priceSellPair_CEX = parseFloat(priceSellPair_CEX);
+
+    var rateSellTokenDEX = (amount_out * priceSellPair_CEX) / amount_in;
+    var rateBuyPairDEX = (amount_in * priceBuyToken_CEX) / amount_out;
+
+    var totalModal = Modal + FeeSwap + FeeWD + FeeTrade;
+    var totalFee = FeeSwap + FeeWD + FeeTrade;
+
+    var totalValue = amount_out * priceSellPair_CEX;
+
+    var profitLoss = totalValue - totalModal;
+    var profitLossPercent = totalModal !== 0 ? (profitLoss / totalModal) * 100 : 0;
+
+    var filterPNLValue = parseFloat(SavedSettingData.filterPNL);
+    var conlusion = "NO SELISIH";
+    var selisih = false;
+
+    if (filterPNLValue === 0) {
+        if (totalValue > totalModal + totalFee) {
+            conlusion = "GET SIGNAL";
+            selisih = true;
+        }
+    } else {
+        if ((totalValue - totalModal) > filterPNLValue) {
+            conlusion = "GET SIGNAL";
+            selisih = true;
+        }
+    }
+
+    let IdCELL = `${cex.toUpperCase()}_${dextype.toUpperCase()}_${NameX}_${(nameChain).toUpperCase()}`;
+    var linkDEX = generateDexLink(dextype,nameChain,codeChain,Name_in,sc_input, Name_out, sc_output);
+
+    if (!linkDEX) {
+        console.error(`DEX Type "${dextype}" tidak valid atau belum didukung.`);
+        return;
+    }
+
+    const rateUSDTtoIDR = getFromLocalStorage("PRICE_RATE_USDT", 0);
+    const toIDR = usdt => rateUSDTtoIDR ? (usdt * rateUSDTtoIDR).toLocaleString("id-ID", {
+        style: "currency",
+        currency: "IDR"
+    }) : "N/A";
+
+    let titleInfo = `${DataDEX.dexTitle.toUpperCase()}: `;
+    let RateSwap = "";
+
+    if (stablecoins.includes(Name_in)) {
+        titleInfo += `(${Name_in}->${Name_out}) : ${formatPrice(rateBuyPairDEX)}`;
+        titleInfo += ` | ${toIDR(rateBuyPairDEX)}`;
+        RateSwap = `<label class="uk-text-success" title="${titleInfo}">${formatPrice(rateBuyPairDEX)}</label>`;
+    } else if (stablecoins.includes(Name_out)) {
+        titleInfo += ` (${Name_in}->${Name_out}) : ${formatPrice(rateSellTokenDEX)}`;
+        titleInfo += ` | ${toIDR(rateSellTokenDEX)}`;
+        RateSwap = `<label class="uk-text-danger" title="${titleInfo}">${formatPrice(rateSellTokenDEX)}</label>`;
+    } else {
+         if (trx === "TokentoPair") {
+            titleInfo += ` ${formatPrice(rateSellTokenDEX)} ${Name_in}/${Name_out}`;
+            titleInfo += ` | ${toIDR(rateSellTokenDEX)}`;
+            RateSwap = `<label class="uk-text-primary" title="${titleInfo}">${formatPrice(rateSellTokenDEX)}</label>`;
+        } else {
+            titleInfo += ` ${formatPrice(rateBuyPairDEX/priceBuyToken_CEX)} ${Name_in}/${Name_out}`;
+            titleInfo += ` | ${toIDR(rateBuyPairDEX)}`;
+            RateSwap = `<label class="uk-text-primary" title="${titleInfo}">${formatPrice(rateBuyPairDEX)}</label>`;
+        }
+    }
+    if ($(`#SWAP_${IdCELL}`).length > 0) {
+        $(`#SWAP_${IdCELL}`).html(`<a href="${linkDEX}" target="_blank">${RateSwap}</a>`);
+    }
+
+    DisplayPNL(profitLoss, cex, Name_in, NameX, totalFee, Modal, dextype, priceBuyToken_CEX, rateSellTokenDEX, FeeSwap, FeeWD, sc_input, sc_output, Name_out, totalValue, totalModal, conlusion, selisih,nameChain,codeChain, trx, profitLossPercent,vol);
+}
