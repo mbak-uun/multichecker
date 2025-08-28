@@ -2008,37 +2008,6 @@ function loadSignalData() {
             });
     }
 
-    // Fungsi untuk mendapatkan kredensial API secara acak
-    function getRandomApiKeyOKX() {
-        const randomIndex = Math.floor(Math.random() * apiKeysOKXDEX.length);
-        return apiKeysOKXDEX[randomIndex];
-    }  
-       // Fungsi untuk Signature
-    function calculateSignature(exchange, apiSecret, dataToSign, hashMethod = "HmacSHA256") {
-        if (!apiSecret || !dataToSign) {
-            console.error(`[${exchange}] API Secret atau Data untuk Signature tidak valid!`);
-            return null;
-        }
-    
-        switch (exchange.toUpperCase()) {
-            case "MEXC":
-            case "BINANCE":
-            case "KUCOIN":
-            case "BYBIT":
-                // Gunakan HMAC-SHA256
-                return CryptoJS[hashMethod](dataToSign, apiSecret).toString(CryptoJS.enc.Hex);
-    
-            case "OKX":
-                // Gunakan BASE64 untuk OKX
-                const hmac = CryptoJS.HmacSHA256(dataToSign, apiSecret);
-                return CryptoJS.enc.Base64.stringify(hmac);
-    
-            default:
-                console.error(`[${exchange}] Exchange tidak didukung untuk perhitungan signature.`);
-                return null;
-        }
-    } 
-
     function DisplayPNL( PNL, cex, Coin_in, NameX, totalFee, modal, dex, priceCEX, priceDEX, FeeSwap, FeeWD, sc_input, sc_output, Coin_out, totalValue, totalModal, conclusion, selisih, nameChain, codeChain, trx, profitLossPercent, vol ) {
         // Ambil setting
         var filterPNLValue = parseFloat(SavedSettingData.filterPNL);
