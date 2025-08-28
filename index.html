@@ -374,7 +374,7 @@
                     <!-- Kanan: Toolbar icon -->
                     <div class="uk-width-auto@s uk-width-1-1">
                         <div class="uk-flex uk-flex-middle uk-flex-wrap uk-flex-right@s" style="gap: 6px;">
-                            <a href="sniper.html"  target="_blank"><img class="icon" title="MULTICHECKER [SNIPER]" width="22px"
+                            <a href="multiscanner/index.html"  target="_blank"><img class="icon" title="MULTISCANNER" width="22px"
                                 src="https://cdn-icons-png.flaticon.com/512/30/30279.png" /></a>
                             <a href="multichecker/index.html"  target="_blank"><img class="icon" title="MULTICHECKER" width="22px"
                                 src="https://cdn-icons-png.flaticon.com/512/16770/16770026.png" /></a>                                
@@ -460,7 +460,7 @@
                 <div class="uk-flex uk-flex-middle uk-margin-small-bottom" id="judulmodal">
                     <div class="uk-width-expand"></div>
                     <div class="uk-text-center uk-width-auto">
-                        <h4 class="uk-modal-title uk-margin-remove">Import Koin [SNIPER]</h4>
+                        <h4 class="uk-modal-title uk-margin-remove">Import Koin MULTISCANNER</h4>
                     </div>
                     <div class="uk-width-expand uk-text-right">
                         <button class="uk-modal-close-default" type="button" uk-close></button>
@@ -881,7 +881,7 @@ $('#multiTokenForm').on('submit', function (e) {
         return;
     }
 
-    let tokens = JSON.parse(localStorage.getItem('MULTIALL_V1_TOKEN_SCANNER') || '[]');
+    let tokens = JSON.parse(localStorage.getItem('MULTISCANNER_TOKEN_SCANNER') || '[]');
     if (!Array.isArray(tokens)) tokens = [];
 
     const timestamp = Date.now().toString();
@@ -976,7 +976,7 @@ $('#multiTokenForm').on('submit', function (e) {
     };
 
     tokens.push(tokenData);
-    localStorage.setItem('MULTIALL_V1_TOKEN_SCANNER', JSON.stringify(tokens));
+    localStorage.setItem('MULTISCANNER_TOKEN_SCANNER', JSON.stringify(tokens));
 
     UIkit.modal('#multiTokenModal').hide();
     toastr.success(`✔️ Simpan ${tokenSymbol} VS ${pairSymbol} di Chain ${chainFormatted}`, "✅ Tersimpan", {
@@ -2257,7 +2257,7 @@ $(document).ready(function() {
             }
 
             const linkOKDEX = createHoverLink(`https://www.okx.com/web3/dex-swap?inputChain=${DTChain.Kode_Chain}&inputCurrency=${data.sc_in}&outputChain=501&outputCurrency=${data.sc_out}`, '#OKX', 'uk-text-secondary');
-            const linkUNIDEX = createHoverLink(`https://app.unidex.exchange/?chain=${DTChain.Nama_Chain}&from=${data.sc_in}&to=${data.sc_out}`, '#UND', 'uk-text-secondary');
+            const linkUNIDEX = createHoverLink(`https://app.unidex.exchange/?chain=${DTChain.Nama_Chain}&from=${data.sc_in}&to=${data.sc_out}`, '#UND', 'uk-text-danger');
             const linkRango = createHoverLink(`https://app.rango.exchange/bridge?fromBlockchain=${chainName}&toBlockchain=${chainName}&fromToken=${data.symbol_in}--${data.sc_in}&toToken=${data.symbol_out}--${data.sc_out}`, '#RGX', 'uk-text-success');
           //  const linkRBX = createHoverLink(`https://app.rubic.exchange/?fromChain=${chainName}&toChain=${chainName}&from=${data.sc_in}&to=${data.sc_out}`, '#RBCX', 'uk-text-warning');
             const linkDEFIL = createHoverLink(`https://swap.defillama.com/?chain=${DTChain.Nama_Chain}&from=${data.sc_in}&to=${data.sc_out}`, '#DFL', 'uk-text-primary');
@@ -2316,9 +2316,9 @@ $(document).ready(function() {
                 <input type="checkbox" class="statusCheckbox" data-id="${index}" data-index="${data.no}" ${data.status ? 'checked' : ''}>#${index+1}
                 <span style="color: ${warnaCEX}; font-weight:bolder;">${data.cex} </span>
                 <span id="SelMulti-${index}" data-index="${index}" uk-icon="icon:crosshairs; ratio: 0.8" style="cursor: pointer;"  class="uk-text-secondary uk-text-bolder"  > </span><br/>
-                <span class="uk-text-danger uk-text-bolder">${linkToken} VS ${linkPair}</span><br/>
-                <span class="uk-text-primary uk-text-bolder">${withdrawToken}~${depositToken}</span> | 
-                <span class="uk-text-primary uk-text-bolder">${withdrawPair}~${depositPair}</span><br/>
+                <span class="uk-text-secondary uk-text-bolder">${linkToken} ⇄ ${linkPair}</span><br/>
+                <span class="uk-text-success uk-text-bolder">${withdrawToken}~${depositToken}</span> | 
+                <span class="uk-text-success uk-text-bolder">${withdrawPair}~${depositPair}</span><br/>
                 <span class="uk-text-primary uk-text-bolder">${data.symbol_in}</span> 
                 <a href="${DTChain.URL_Chain}/token/${data.sc_in}" target="_blank" class="uk-link">[SC]</a>: ${linkStokToken}<br>    
                 <span class="uk-text-primary uk-text-bolder">${data.symbol_out}</span> 
