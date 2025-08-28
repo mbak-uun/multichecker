@@ -7,7 +7,7 @@
     <title>???</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.6.22/css/uikit.min.css" />
     
-    <script src="config.js"></script>
+    <script src="../config.js"></script>
     <script src="storage.js"></script>
     <script src="scanner.js"></script>
     <script src="walletCEX.js"></script>
@@ -59,7 +59,7 @@
                             src="https://cdn-icons-png.flaticon.com/512/1194/1194711.png" /></a>
                         <a href="https://cors-anywhere.herokuapp.com/corsdemo" target="_blank"><img class="icon" title="BUKA AKSES" width="24px"
                             src="https://cdn-icons-png.flaticon.com/512/9921/9921748.png" /></a>
-                        <img class="icon" id="reload" title="RESET PROSES" width="24px" src="https://cdn-icons-png.flaticon.com/512/585/585603.png" />
+                        
                          <a href="#" target="_blank" id="ManajemenKoin">
                             <img title="MANAJEMEN KOIN" src="https://cdn-icons-png.flaticon.com/512/5172/5172584.png" width="24px" />
                         </a>    
@@ -73,6 +73,8 @@
                             <img src="https://cdn-icons-png.flaticon.com/512/219/219431.png" width="24px"  />
                         </label>
                         <input type="file" id="uploadJSON" accept=".csv,text/csv" style="display:none;" onchange="uploadTokenScannerCSV(event)">
+                        <img class="icon" id="reload" title="RESET PROSES" width="24px" src="https://cdn-icons-png.flaticon.com/512/585/585603.png" />
+                        <span id="chain-links-container"></span>
                         <img class="icon" id="darkModeToggle" title="Ganti Mode Gelap/Terang" width="24px" src="https://cdn-icons-png.flaticon.com/512/3751/3751403.png" onclick="toggleDarkMode()" /> 
                     </div>
                     
@@ -2698,7 +2700,7 @@ function MultisendMessage(
 
             const linkHTML = `
                 <span class="chain-link">
-                    <a href="index.html?chain=${chainKey}" target="_blank">
+                    <a href="../index.html?chain=${chainKey}" target="_blank">
                         <img src="${chainData.ICON}" 
                             alt="${chainData.Nama_Chain} icon" 
                             width="24"
